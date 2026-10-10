@@ -205,6 +205,48 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------
+# CONTROL DE SEGURIDAD Y ACCESO CORPORATIVO (GATEKEEPER)
+# ----------------------------------------------------
+def check_authentication():
+    if "authenticated" not in st.session_state:
+        st.session_state["authenticated"] = False
+
+    if not st.session_state["authenticated"]:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #0F766E 0%, #1E293B 100%); color: white; padding: 32px 24px; border-radius: 16px; text-align: center; max-width: 520px; margin: 40px auto 20px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+            <div style="font-size: 44px; margin-bottom: 8px;">🔒</div>
+            <h2 style="margin: 0; color: white; font-weight: 700; font-size: 24px;">Optimus Health IPS</h2>
+            <p style="margin: 6px 0 0 0; opacity: 0.9; font-size: 14px;">GAP Analysis NewCare | Sistema de Acreditación y Baremación</p>
+            <div style="display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 14px; border-radius: 20px; font-size: 12px; margin-top: 12px; font-weight: 600;">ACCESO CONFIDENCIAL RESTRINGIDO</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            with st.form("login_gatekeeper_form"):
+                st.markdown("<p style='font-size: 14px; color: #475569; font-weight: 500; margin-bottom: 4px;'>Ingrese la clave autorizada para desbloquear:</p>", unsafe_allow_html=True)
+                input_pwd = st.text_input("Clave de Acceso", type="password", label_visibility="collapsed", placeholder="Contraseña corporativa...")
+                submitted = st.form_submit_button("🔓 Acceder al Sistema", use_container_width=True)
+
+                if submitted:
+                    valid_keys = ["OPTIMUS-2026", "MSM-IA-2026"]
+                    secret_key = st.secrets.get("OPTIMUS_PASSWORD", None)
+                    if secret_key:
+                        valid_keys.append(secret_key)
+
+                    if input_pwd in valid_keys:
+                        st.session_state["authenticated"] = True
+                        st.success("✅ Acceso autorizado. Cargando...")
+                        st.rerun()
+                    else:
+                        st.error("❌ Contraseña incorrecta. Acceso restringido.")
+
+            st.markdown("<p style='text-align: center; color: #64748b; font-size: 12px; margin-top: 16px;'>Optimus Health IPS &bull; Fundación New Health &bull; Sede Sincelejo</p>", unsafe_allow_html=True)
+        st.stop()
+
+check_authentication()
+
+# ----------------------------------------------------
 # CARGA Y GESTIÓN DEL ESTADO EN SESIÓN
 # ----------------------------------------------------
 if "assessment_items" not in st.session_state:
@@ -285,6 +327,10 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
+    if st.button("🔒 Bloquear / Salir", use_container_width=True):
+        st.session_state["authenticated"] = False
+        st.rerun()
+
     st.markdown("<small style='color:#64748B;'>Versión 2.0 • Sede Sincelejo, Sucre<br>Diseñado para Optimus Health IPS</small>", unsafe_allow_html=True)
 
 # ----------------------------------------------------
