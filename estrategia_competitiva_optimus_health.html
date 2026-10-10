@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimus Health - Dashboard Estratégico Competitivo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        accent: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        warm: {
+                            50: '#fdfbf7',
+                            100: '#f7f4ed',
+                            200: '#e7e2d5',
+                            800: '#433d35',
+                            900: '#292520'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chosen Palette: Warm Professional Healthcare -->
+    <!-- Application Structure Plan: An interactive single-page strategic dashboard designed around 6 functional tabs (Overview, Demographics & Epidemiology, PESTEL Analysis, Competitive Landscape, TOWS/SWOT Analysis, Strategic Directives). This structure breaks down complex healthcare intelligence into actionable modules, allowing health executives to toggle perspectives, filter strategic dimensions, explore competitor differences, and simulate financial/clinical outcomes for Optimus Health in Sincelejo. -->
+    <!-- Visualization & Content Choices: 
+       - Demographics & Ageing -> Chart.js Bar Chart -> Interactive toggle for projected growth -> Illustrate critical mass for home care -> Chart.js
+       - Disease Burden -> Chart.js Donut Chart -> Hover/click interactions -> Highlight dominant ECNT cost drivers -> Chart.js
+       - Competitor Analysis -> Dynamic HTML Table + Filters -> Interactive filtering by competitor feature -> Compare Optimus Health's dual model vs pure homecare -> HTML/CSS + JS
+       - Transitional Care Impact -> Chart.js Horizontal Bar Chart -> Interactive Cost/Length-of-Stay savings toggle -> Demonstrate EPS value proposition -> Chart.js
+       - PESTEL & SWOT -> Interactive Pill Tabs -> Click to reveal specific policy/economic drivers -> Enhance readable exploration -> HTML/CSS + JS
+       - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            background-color: #fcfbf9;
+            color: #2d3748;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 310px;
+            max-height: 380px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-btn.active {
+            border-bottom-color: #0d9488;
+            color: #0d9488;
+            font-weight: 600;
+            background-color: #f0fdfa;
+        }
+        .filter-btn.active {
+            background-color: #0d9488;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white rounded-lg p-2 text-xl font-bold">
+                    OH
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900 leading-tight">Optimus Health S.A.S.</h1>
+                    <p class="text-xs text-gray-500">Diagnóstico Estratégico y Modelo de Competencia | Sincelejo, Sucre</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-xs bg-brand-50 border border-brand-100 text-brand-800 px-3 py-1.5 rounded-full font-medium">
+                <span>📍 Mercado Objetivo: Sincelejo & Subregiones de Sucre</span>
+            </div>
+        </div>
+        
+        <!-- Navigation Bar -->
+        <nav class="bg-white border-t border-gray-100 overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-1 sm:space-x-4">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active text-sm py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-gray-600 hover:text-brand-600 whitespace-nowrap transition-colors">
+                    📊 Resumen General
+                </button>
+                <button onclick="switchTab('demographics')" id="tab-demographics" class="tab-btn text-sm py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-gray-600 hover:text-brand-600 whitespace-nowrap transition-colors">
+                    👥 Demografía & Salud
+                </button>
+                <button onclick="switchTab('pestel')" id="tab-pestel" class="tab-btn text-sm py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-gray-600 hover:text-brand-600 whitespace-nowrap transition-colors">
+                    🏛️ Entorno PESTEL
+                </button>
+                <button onclick="switchTab('competitors')" id="tab-competitors" class="tab-btn text-sm py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-gray-600 hover:text-brand-600 whitespace-nowrap transition-colors">
+                    ⚔️ Competencia & Modelo
+                </button>
+                <button onclick="switchTab('swot')" id="tab-swot" class="tab-btn text-sm py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-gray-600 hover:text-brand-600 whitespace-nowrap transition-colors">
+                    🎯 Amenazas & Oportunidades
+                </button>
+                <button onclick="switchTab('strategy')" id="tab-strategy" class="tab-btn text-sm py-3 px-3 sm:px-4 border-b-2 border-transparent font-medium text-gray-600 hover:text-brand-600 whitespace-nowrap transition-colors">
+                    🚀 Plan Estratégico & ROI
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: OVERVIEW -->
+        <section id="sec-overview" class="space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-2">Visión General de la Estrategia Competitiva</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Este dashboard interactivo resume el análisis estratégico para <strong>Optimus Health S.A.S.</strong> en Sincelejo (Sucre). Explora las dinámicas demográficas de envejecimiento, la carga de enfermedades crónicas, las regulaciones del SGSSS (Giro Directo ADRES, PGP) y el modelo diferenciador dual (camas institucionales + atención domiciliaria) para la alta gerencia.
+                </p>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Población Sucre</div>
+                    <div class="text-2xl font-extrabold text-brand-700 mt-1">1.006.044</div>
+                    <div class="text-xs text-gray-600 mt-1">61% Urbana | 39% Rural</div>
+                    <div class="mt-2 text-xs bg-amber-50 text-amber-800 p-1.5 rounded font-medium">Sincelejo: >300.000 habitantes</div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Adultos Mayores (>60 años)</div>
+                    <div class="text-2xl font-extrabold text-brand-700 mt-1">140.567</div>
+                    <div class="text-xs text-gray-600 mt-1">14.0% total (16.1% proj. 2030)</div>
+                    <div class="mt-2 text-xs bg-emerald-50 text-emerald-800 p-1.5 rounded font-medium">Índice Envejecimiento: 43 / 100 menores</div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Perfil Socioeconómico</div>
+                    <div class="text-2xl font-extrabold text-brand-700 mt-1">&gt;78%</div>
+                    <div class="text-xs text-gray-600 mt-1">Viviendas Estratos 1 y 2</div>
+                    <div class="mt-2 text-xs bg-blue-50 text-blue-800 p-1.5 rounded font-medium">&gt;72% Régimen Subsidiado (Sisbén)</div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ahorro Extramural / Domiciliario</div>
+                    <div class="text-2xl font-extrabold text-brand-700 mt-1">40% - 60%</div>
+                    <div class="text-xs text-gray-600 mt-1">Menor costo vs cama agudo hospitalario</div>
+                    <div class="mt-2 text-xs bg-indigo-50 text-indigo-800 p-1.5 rounded font-medium">Sostenibilidad para EPS/ADRES</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Strategic Focus Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Strategic Pillar 1 -->
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🏥</span>
+                        <h3 class="text-base font-bold text-gray-900">1. Ventaja Competitiva: Modelo Dual</h3>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        A diferencia de competidores 100% extramurales, Optimus Health combina <strong>camas institucionales para crónicos</strong> (con y sin ventilación) con <strong>atención domiciliaria</strong>. Esto permite un desescalonamiento seguro (cuidado transicional) sin devolver el paciente a urgencias.
+                    </p>
+                    <div class="p-3 bg-gray-50 rounded-lg text-xs space-y-1">
+                        <div class="font-semibold text-gray-700">Diferenciador Clave:</div>
+                        <div class="text-gray-600">• Servicio farmacéutico propio con licencia para medicamentos de control especial.</div>
+                        <div class="text-gray-600">• Unidad integral de cuidados paliativos y acompañamiento en duelo.</div>
+                    </div>
+                </div>
+
+                <!-- Strategic Pillar 2 -->
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">💵</span>
+                        <h3 class="text-base font-bold text-gray-900">2. Blindaje Financiero: Giro Directo & PGP</h3>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        En un mercado dominado por el Régimen Subsidiado (Mutual Ser, Nueva EPS, Coosalud), la clave de liquidez radica en el <strong>Giro Directo de la ADRES (Dec. 489/2024)</strong> y contratos de Pago Global Prospectivo (PGP - Dec. 441/2022) respaldados por RIPS electrónicos validados sin glosas.
+                    </p>
+                    <div class="p-3 bg-gray-50 rounded-lg text-xs space-y-1">
+                        <div class="font-semibold text-gray-700">Requisito Operativo:</div>
+                        <div class="text-gray-600">• Calidad de facturación electrónica integrada con RIPS digital.</div>
+                        <div class="text-gray-600">• Control de frecuencias y notas técnicas auditadas por cohorte.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DEMOGRAPHICS & EPIDEMIOLOGY -->
+        <section id="sec-demographics" class="hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-1">Análisis Sociodemográfico y Perfil Epidemiológico</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Esta sección examina la transición demográfica del departamento de Sucre y la alta prevalencia de Enfermedades Crónicas No Transmisibles (ECNT) en Sincelejo, identificando la demanda estructural de cuidados domiciliarios y hospitalización de estancia prolongada.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Demographic Chart -->
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-bold text-gray-900">Proyección de Población &gt;60 Años en Sucre</h3>
+                            <span class="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-medium">Censo vs Proyección</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Evolución sostenida de la masa crítica de adultos mayores susceptibles de atención continua.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartDemographics"></canvas>
+                    </div>
+                </div>
+
+                <!-- Epidemiological Chart -->
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-bold text-gray-900">Carga de Enfermedad Crónica (ECNT)</h3>
+                            <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-medium">Mortalidad / Morbilidad</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Distribución porcentual del impacto nosológico en servicios de salud locales.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chartEpidemiology"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Qualitative Insights Breakdown Table -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-base font-bold text-gray-900 mb-4">Grupos Nosológicos Crónicos y Repercusión Domiciliaria</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-gray-600">
+                        <thead class="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3">Grupo Nosológico</th>
+                                <th class="p-3">Indicador Epidemiológico Local</th>
+                                <th class="p-3">Requerimiento Domiciliario / Extramural</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Patologías Cardiovasculares</td>
+                                <td class="p-3">22.76% - 25.0% de muertes en Sucre. Alta incidencia de falla cardíaca.</td>
+                                <td class="p-3">Monitorización hemodinámica, titulación diurética endovenosa y seguimiento de adherencia.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Hipertensión & Diabetes</td>
+                                <td class="p-3">Sobrepeso &gt;78% en grupos de riesgo. HTA multiplica por 9 el riesgo de DM.</td>
+                                <td class="p-3">Clínica de heridas para pie diabético, nutrición, prevención de nefropatía.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Respiratorias (EPOC)</td>
+                                <td class="p-3">Tabaquismo y humo de leña en áreas periurbanas y rurales dispersas.</td>
+                                <td class="p-3">Oxigenoterapia domiciliaria, terapia respiratoria y ventilación mecánica en casa.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Neoplasias Malignas (Cáncer)</td>
+                                <td class="p-3">2da causa de muerte (13.5%), cuello uterino, próstata y mama. Diagnóstico tardío.</td>
+                                <td class="p-3">Cuidados paliativos integrales, manejo multimodal del dolor y acompañamiento de duelo.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Secuelas Neurológicas & Úlceras</td>
+                                <td class="p-3">Alta prevalencia de sequías por ACV y trauma con dependencia física funcional.</td>
+                                <td class="p-3">Rehabilitación física, fonoaudiología, cura avanzada de escaras y soporte enteral.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PESTEL ANALYSIS -->
+        <section id="sec-pestel" class="hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-1">Análisis del Entorno Macroeconómico e Institucional (PESTEL)</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Evaluación multidimensional de las fuerzas externas que condicionan la sostenibilidad y el crecimiento de Optimus Health en Sincelejo. Filtra las dimensiones para explorar detalles específicos.
+                </p>
+                
+                <!-- Filter Pills -->
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <button onclick="filterPestel('all')" class="pestel-btn filter-btn active text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Todos</button>
+                    <button onclick="filterPestel('politico')" class="pestel-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Político</button>
+                    <button onclick="filterPestel('economico')" class="pestel-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Económico</button>
+                    <button onclick="filterPestel('social')" class="pestel-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Social</button>
+                    <button onclick="filterPestel('tecnologico')" class="pestel-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Tecnológico</button>
+                    <button onclick="filterPestel('ambiental')" class="pestel-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Ambiental</button>
+                    <button onclick="filterPestel('legal')" class="pestel-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Legal</button>
+                </div>
+            </div>
+
+            <!-- PESTEL Cards Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="pestelGrid">
+                <!-- Politico -->
+                <div class="pestel-card politico bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2 py-0.5 rounded">Dimensión Política</span>
+                        <span class="text-xl">🏛️</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900">Reforma a la Salud & Redes RIITS</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Desplazamiento del centro de gravedad hacia la Atención Primaria (CAPS) y equipos extramurales. La intervención forzosa de aseguradoras clave (Nueva EPS) exige interlocución directa con comités de red.
+                    </p>
+                </div>
+
+                <!-- Economico -->
+                <div class="pestel-card economico bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-green-600 bg-green-50 px-2 py-0.5 rounded">Dimensión Económica</span>
+                        <span class="text-xl">💵</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900">Suficiencia UPC & Giro Directo ADRES</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Tensiones de liquidez en EPS impulsan la adopción de hospitalización en casa (ahorro del 40-60%). El Giro Directo ADRES (Dec. 489/2024) liquida directo a la IPS, protegiendo la caja.
+                    </p>
+                </div>
+
+                <!-- Social -->
+                <div class="pestel-card social bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded">Dimensión Social</span>
+                        <span class="text-xl">👥</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900">Colapso del Cuidador Informal</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Alta informalidad (&gt;55%) y pobreza limita el pago particular. La carga recae sobre mujeres familiares. Se requiere el programa "Escuela de Cuidadores" (Ley 2297/2023) para apoyo psicosocial.
+                    </p>
+                </div>
+
+                <!-- Tecnologico -->
+                <div class="pestel-card tecnologico bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Dimensión Tecnológica</span>
+                        <span class="text-xl">📱</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900">RIPS Electrónicos & Telemonitoreo</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Obligatoriedad de validar RIPS con factura electrónica (FEV) para evitar rechazos. Implementación de telemonitoreo de signos vitales para optimizar visitas en terreno.
+                    </p>
+                </div>
+
+                <!-- Ambiental -->
+                <div class="pestel-card ambiental bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Dimensión Ambiental</span>
+                        <span class="text-xl">🌿</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900">Cadena de Frío & Residuos Biosanitarios</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Clima cálido con altas temperaturas requiere estrictos protocolos de cadena de frío para biológicos/insulinas. Manejo seguro y rutas de recolección de residuos biológicos en el hogar.
+                    </p>
+                </div>
+
+                <!-- Legal -->
+                <div class="pestel-card legal bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Dimensión Legal</span>
+                        <span class="text-xl">⚖️</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900">Res. 3100/2019 & Ley 1733 Paliativa</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Habilitación rigurosa para atención extramural ventilada (mantenimiento biomédico) y respaldo legal de la Ley Consuelo Devis para garantizr derecho a cuidados paliativos.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: COMPETITOR ANALYSIS -->
+        <section id="sec-competitors" class="hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-1">Ecosistema Competitivo en Sincelejo</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Comparativa técnica entre los principales prestadores de salud extramural y crónica. Analiza la diferenciación clave del <strong>Modelo Dual de Optimus Health</strong> frente a competidores regionales y locales.
+                </p>
+            </div>
+
+            <!-- Competitor Feature Comparison Chart -->
+            <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                <h3 class="text-sm font-bold text-gray-900 mb-2">Evaluación de Capacidades por Prestador</h3>
+                <div class="chart-container">
+                    <canvas id="chartCompetitors"></canvas>
+                </div>
+            </div>
+
+            <!-- Competitors Dynamic Table -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-base font-bold text-gray-900 mb-4">Matriz de Competidores Directos en Sincelejo</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3">IPS / Operador</th>
+                                <th class="p-3">Alcance y Portafolio</th>
+                                <th class="p-3">Fortalezas Principales</th>
+                                <th class="p-3">Debilidades o Brechas Detectadas</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-gray-600">
+                            <tr class="bg-teal-50/50 font-medium">
+                                <td class="p-3 font-bold text-brand-800">Optimus Health S.A.S.</td>
+                                <td class="p-3">Sede Sincelejo. Camas institucionales para crónicos + Domiciliario + Paliativos + Farmacia interna.</td>
+                                <td class="p-3 text-emerald-800">Modelo dual integrado (Camas + Domicilio), farmacia de medicamentos de control especial.</td>
+                                <td class="p-3 text-amber-800">Operación concentrada localmente; presión de márgenes por costos médicos.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Cuidado Seguro en Casa IPS</td>
+                                <td class="p-3">Multirregional (266 municipios, Caribe). Ventilación y crónicos.</td>
+                                <td class="p-3">Gran escala operativa, volumen en atención domiciliaria básica y compleja.</td>
+                                <td class="p-3">Baja personalización; Cuidados Paliativos representan &lt;1% de su facturación.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Amedi Ltda.</td>
+                                <td class="p-3">Sincelejo. Especialistas en ventilación mecánica domiciliaria.</td>
+                                <td class="p-3">Alta reputación técnica en soporte respiratorio y mantenimiento biomédico.</td>
+                                <td class="p-3">Escasa oferta psicosocial, sin camas institucionales de transición ni duelo.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">Servimed IPS</td>
+                                <td class="p-3">Sincelejo. Clínica de heridas, consulta externa, hospitalización en casa.</td>
+                                <td class="p-3">Más de 20 años en la región, alta recordación en manejo avanzado de heridas.</td>
+                                <td class="p-3">Enfoque prioritario en primer nivel/ambulatorio; menor densidad en ventilados.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 font-semibold text-gray-900">911 Asistencia Médica IPS</td>
+                                <td class="p-3">Sincelejo. Atención básica, traslados asistenciales, consulta prioritaria.</td>
+                                <td class="p-3">Agilidad en visitas de baja complejidad y traslados no programados.</td>
+                                <td class="p-3">Capacidad acotada; baja participación en paquetes PGP para cohortes complejas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: SWOT / TOWS ANALYSIS -->
+        <section id="sec-swot" class="hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-1">Matriz de Amenazas y Oportunidades (FODA/TOWS)</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Análisis estratégico cruzado por perspectivas operativas para fundamentar la toma de decisiones gerenciales en Optimus Health.
+                </p>
+                
+                <!-- Perspective Filter Buttons -->
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <button onclick="filterSwot('all')" class="swot-btn filter-btn active text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Todas las Perspectivas</button>
+                    <button onclick="filterSwot('financiera')" class="swot-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Financiera y Liquidez</button>
+                    <button onclick="filterSwot('comercial')" class="swot-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Comercial y Mercado</button>
+                    <button onclick="filterSwot('operativa')" class="swot-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Técnico-Operativa</button>
+                    <button onclick="filterSwot('social_clinica')" class="swot-btn filter-btn text-xs px-3 py-1.5 rounded-full border border-gray-200 font-medium transition-colors">Sociocultural y Clínica</button>
+                </div>
+            </div>
+
+            <!-- SWOT Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="swotGrid">
+                <!-- Perspective 1: Financiera -->
+                <div class="swot-card financiera bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900">Perspectiva Financiera y Liquidez</h3>
+                        <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium">Finanzas</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="p-3 bg-red-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-red-800 mb-1">⚠️ Amenazas Críticas:</div>
+                            <p class="text-red-700">• Cartera morosa atrapada en EPS intervenidas o en liquidación.<br>• Glosas por fallas en la integración de RIPS electrónicos.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-emerald-800 mb-1">💡 Oportunidades Clave:</div>
+                            <p class="text-emerald-700">• Giro Directo obligatorio de la ADRES (Dec. 489/2024).<br>• Incentivos por desempeño y contención de gasto en acuerdos PGP.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perspective 2: Comercial -->
+                <div class="swot-card comercial bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900">Perspectiva Comercial y Mercado</h3>
+                        <span class="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-medium">Mercado</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="p-3 bg-red-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-red-800 mb-1">⚠️ Amenazas Críticas:</div>
+                            <p class="text-red-700">• Presión tarifaria por competidores masivos multirregionales.<br>• Concentración monopsónica en Mutual Ser y Nueva EPS.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-emerald-800 mb-1">💡 Oportunidades Clave:</div>
+                            <p class="text-emerald-700">• Reorganización del rediseño del FOMAG (Magisterio).<br>• Alta necesidad de las EPS por descongestionar camas hospitalarias de agudos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perspective 3: Operativa -->
+                <div class="swot-card operativa bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900">Perspectiva Técnico-Operativa</h3>
+                        <span class="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium">Operaciones</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="p-3 bg-red-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-red-800 mb-1">⚠️ Amenazas Críticas:</div>
+                            <p class="text-red-700">• Vías periurbanas anegadas e interrupciones del fluido eléctrico en hogares.<br>• Escasez de especialistas en paliativo y terapia en Sincelejo.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-emerald-800 mb-1">💡 Oportunidades Clave:</div>
+                            <p class="text-emerald-700">• Integración del Modelo Dual (Cuidado Transicional).<br>• Plataformas de telemonitoreo y georreferenciación de rutas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perspective 4: Social/Clinica -->
+                <div class="swot-card social_clinica bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900">Perspectiva Sociocultural y Clínica</h3>
+                        <span class="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded font-medium">Clínica & Social</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="p-3 bg-red-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-red-800 mb-1">⚠️ Amenazas Críticas:</div>
+                            <p class="text-red-700">• Colapso del cuidador informal no remunerado en estratos 1 y 2.<br>• Resistencia cultural familiar a la limitación del esfuerzo terapéutico.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50/60 rounded-lg text-xs">
+                            <div class="font-bold text-emerald-800 mb-1">💡 Oportunidades Clave:</div>
+                            <p class="text-emerald-700">• Creación de la "Escuela de Cuidadores" institucional.<br>• Liderazgo en medicina paliativa y duelo (segmento desatendido por competidores).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: STRATEGIC PLAN & ROI SIMULATOR -->
+        <section id="sec-strategy" class="hidden space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-900 mb-1">Plan de Acción Estratégico & Calculadora de Valor EPS</h2>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Formulación de las 3 directrices competitivas para Optimus Health y simulador de ahorros en costo/día de cama de cuidado transicional frente a estancia en hospitalización de agudos.
+                </p>
+            </div>
+
+            <!-- 3 Directives Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-brand-200 shadow-sm space-y-2 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-brand-600 text-white text-[10px] px-2 py-0.5 rounded-bl font-bold">Pilar 1</div>
+                    <h3 class="text-sm font-bold text-gray-900">Cuidado Transicional Integral</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Desescalonamiento coordinado de pacientes desde clínicas de agudos hacia la sede de Optimus Health para estabilización y entrenamiento del cuidador, finalizando en atención domiciliaria con el mismo equipo tratante. Reducción &gt;50% en reingresos a 30 días.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-brand-200 shadow-sm space-y-2 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-brand-600 text-white text-[10px] px-2 py-0.5 rounded-bl font-bold">Pilar 2</div>
+                    <h3 class="text-sm font-bold text-gray-900">Contratación PGP & Giro Directo</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Estructuración de canastas integrales (Cardiometabólica, Neumológica y Oncopaliativa) bajo PGP (Dec. 441/2022). Vinculación obligatoria del Giro Directo ADRES (Dec. 489/2024) respaldado por RIPS validados sin glosas.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-brand-200 shadow-sm space-y-2 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-brand-600 text-white text-[10px] px-2 py-0.5 rounded-bl font-bold">Pilar 3</div>
+                    <h3 class="text-sm font-bold text-gray-900">Especialización Paliativa & Digital</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Liderazgo en Programa de Dolor, Paliativos y Unidad de Duelo con farmacia propia. Despliegue de la Escuela de Cuidadores e historia clínica móvil georreferenciada con telemonitoreo asincrónico.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Value Proposition & ROI Simulator -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-6">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 mb-1">Simulador de Ahorro para EPS: Cuidado Transicional vs Hospitalización de Agudos</h3>
+                    <p class="text-xs text-gray-500">Calcula el impacto económico para una EPS al trasladar cohortes crónicas descompensadas a la modalidad extramural/transicional de Optimus Health.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <!-- Controls -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Número de Pacientes Crónicos / Mes:</label>
+                            <input type="range" id="simPatients" min="10" max="200" value="50" step="5" oninput="updateSimulator()" class="w-full accent-brand-600">
+                            <div class="flex justify-between text-xs text-gray-500 font-bold mt-1">
+                                <span>10 pac.</span>
+                                <span id="valPatients" class="text-brand-700 font-extrabold text-sm">50 pac.</span>
+                                <span>200 pac.</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Días Promedio Estancia / Mes:</label>
+                            <input type="range" id="simDays" min="5" max="30" value="15" step="1" oninput="updateSimulator()" class="w-full accent-brand-600">
+                            <div class="flex justify-between text-xs text-gray-500 font-bold mt-1">
+                                <span>5 días</span>
+                                <span id="valDays" class="text-brand-700 font-extrabold text-sm">15 días</span>
+                                <span>30 días</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-200">
+                            <div class="text-[11px] text-gray-500 leading-tight">
+                                Tarifa estimativa Cama Agudos: <strong>$850.000 COP/día</strong><br>
+                                Tarifa Domiciliario/Transicional: <strong>$380.000 COP/día</strong> (~55% ahorro)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Chart -->
+                    <div class="md:col-span-2">
+                        <div class="chart-container">
+                            <canvas id="chartSavings"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Dynamic Results Callout -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div class="bg-red-50 p-3 rounded-lg border border-red-100">
+                        <div class="text-[11px] font-semibold text-red-700">Costo Hospitalización Tradicional</div>
+                        <div id="resHospitalCost" class="text-lg font-black text-red-800">$637.500.000 COP</div>
+                    </div>
+                    <div class="bg-teal-50 p-3 rounded-lg border border-teal-100">
+                        <div class="text-[11px] font-semibold text-teal-700">Costo Optimus Health (Transicional)</div>
+                        <div id="resOptimusCost" class="text-lg font-black text-teal-800">$285.000.000 COP</div>
+                    </div>
+                    <div class="bg-emerald-100 p-3 rounded-lg border border-emerald-200">
+                        <div class="text-[11px] font-semibold text-emerald-800">Ahorro Neto Estimado EPS</div>
+                        <div id="resNetSavings" class="text-lg font-black text-emerald-900">$352.500.000 COP</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-4">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500">
+            Optimus Health S.A.S. — Diagnóstico del Entorno Competitivo y Formulación Estratégica | Sincelejo, Sucre
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Global State & Data Storage
+        let chartDemographicsInstance = null;
+        let chartEpidemiologyInstance = null;
+        let chartCompetitorsInstance = null;
+        let chartSavingsInstance = null;
+
+        // Init App on DOM Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initDemographicsChart();
+            initEpidemiologyChart();
+            initCompetitorsChart();
+            initSavingsChart();
+            updateSimulator();
+        });
+
+        // Tab Navigation Function
+        function switchTab(tabId) {
+            // Hide all sections
+            const sections = ['overview', 'demographics', 'pestel', 'competitors', 'swot', 'strategy'];
+            sections.forEach(id => {
+                const sec = document.getElementById(`sec-${id}`);
+                const tab = document.getElementById(`tab-${id}`);
+                if (sec) sec.classList.add('hidden');
+                if (tab) tab.classList.remove('active');
+            });
+
+            // Show current section & active tab
+            const targetSec = document.getElementById(`sec-${tabId}`);
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+            if (targetTab) targetTab.classList.add('active');
+
+            // Resize charts upon visibility
+            if (tabId === 'demographics') {
+                if (chartDemographicsInstance) chartDemographicsInstance.resize();
+                if (chartEpidemiologyInstance) chartEpidemiologyInstance.resize();
+            } else if (tabId === 'competitors') {
+                if (chartCompetitorsInstance) chartCompetitorsInstance.resize();
+            } else if (tabId === 'strategy') {
+                if (chartSavingsInstance) chartSavingsInstance.resize();
+            }
+        }
+
+        // Filter Functions
+        function filterPestel(category) {
+            const buttons = document.querySelectorAll('.pestel-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = document.querySelectorAll('.pestel-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.classList.contains(category)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        function filterSwot(category) {
+            const buttons = document.querySelectorAll('.swot-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const cards = document.querySelectorAll('.swot-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.classList.contains(category)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Chart 1: Demographics (Bar Chart)
+        function initDemographicsChart() {
+            const ctx = document.getElementById('chartDemographics').getContext('2d');
+            chartDemographicsInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['2018 (Censo)', '2024 (Actual)', '2030 (Proyección)'],
+                    datasets: [{
+                        label: 'Población >60 Años en Sucre',
+                        data: [110964, 140567, 171000],
+                        backgroundColor: ['#ccfbf1', '#14b8a6', '#0f766e'],
+                        borderColor: ['#0f766e', '#0f766e', '#134e4a'],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Adultos mayores: ${context.parsed.y.toLocaleString()} hab.`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000) + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 2: Epidemiology (Donut Chart)
+        function initEpidemiologyChart() {
+            const ctx = document.getElementById('chartEpidemiology').getContext('2d');
+            chartEpidemiologyInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cardiovasculares (HTA/IAM)', 'Diabetes & Metabólicas', 'Respiratorias (EPOC)', 'Neoplasias (Cáncer)', 'Secuelas Neurológicas'],
+                    datasets: [{
+                        data: [25.0, 30.0, 18.0, 13.5, 13.5],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.parsed}% demanda`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 3: Competitor Comparison (Radar Chart)
+        function initCompetitorsChart() {
+            const ctx = document.getElementById('chartCompetitors').getContext('2d');
+            chartCompetitorsInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Camas Institucionales Crónicos', 'Atención Domiciliaria Extramural', 'Cuidados Paliativos & Duelo', 'Farmacia Especializada', 'Cobertura Territorial'],
+                    datasets: [
+                        {
+                            label: 'Optimus Health S.A.S.',
+                            data: [95, 85, 95, 90, 75],
+                            borderColor: '#0d9488',
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                            pointBackgroundColor: '#0d9488'
+                        },
+                        {
+                            label: 'Cuidado Seguro en Casa',
+                            data: [10, 95, 20, 40, 95],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            pointBackgroundColor: '#3b82f6'
+                        },
+                        {
+                            label: 'Amedi Ltda.',
+                            data: [10, 90, 30, 50, 60],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            pointBackgroundColor: '#f59e0b'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e5e7eb' },
+                            grid: { color: '#f3f4f6' },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart 4: Savings Simulator (Bar Chart)
+        function initSavingsChart() {
+            const ctx = document.getElementById('chartSavings').getContext('2d');
+            chartSavingsInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Costo Hospitalización Tradicional', 'Costo Modelo Transicional Optimus'],
+                    datasets: [{
+                        label: 'Gasto Mensual Estimado (COP)',
+                        data: [637500000, 285000000],
+                        backgroundColor: ['#f87171', '#2dd4bf'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Costo: $${context.parsed.x.toLocaleString('es-CO')} COP`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000000) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Simulator Logic Update
+        function updateSimulator() {
+            const patients = parseInt(document.getElementById('simPatients').value);
+            const days = parseInt(document.getElementById('simDays').value);
+
+            document.getElementById('valPatients').innerText = `${patients} pac.`;
+            document.getElementById('valDays').innerText = `${days} días`;
+
+            const hospitalRate = 850000; // COP / day
+            const optimusRate = 380000;  // COP / day
+
+            const totalHospitalCost = patients * days * hospitalRate;
+            const totalOptimusCost = patients * days * optimusRate;
+            const netSavings = totalHospitalCost - totalOptimusCost;
+
+            document.getElementById('resHospitalCost').innerText = `$${totalHospitalCost.toLocaleString('es-CO')} COP`;
+            document.getElementById('resOptimusCost').innerText = `$${totalOptimusCost.toLocaleString('es-CO')} COP`;
+            document.getElementById('resNetSavings').innerText = `$${netSavings.toLocaleString('es-CO')} COP`;
+
+            if (chartSavingsInstance) {
+                chartSavingsInstance.data.datasets[0].data = [totalHospitalCost, totalOptimusCost];
+                chartSavingsInstance.update();
+            }
+        }
+    </script>
+</body>
+</html>

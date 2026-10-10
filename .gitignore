@@ -1,0 +1,27 @@
+﻿# Entornos virtuales
+env_newcare/
+venv/
+.venv/
+env/
+ENV/
+
+# Archivos comprimidos pesados
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Cache de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Variables de entorno
+.env
+.env*.local
+
+# Archivos del sistema
+Thumbs.db
+Desktop.ini
+.DS_Store
