@@ -209,7 +209,7 @@
     "default_status": "Implementado",
     "score": 2,
     "evidence": "Manual Cap. 1.5.1 delimita las 4 insuficiencias orgánicas crónicas avanzadas.",
-    "findings": "Patologías diana estandarizadas de acuerdo al modelo NewCare.",
+    "findings": "Patologías diana estandarizadas de acuerdo al modelo NewCare.\nActualizado",
     "action": "Validar compatibilidad con guías clínicas adoptadas.",
     "responsible": "Dirección Médica",
     "priority": "Baja",
