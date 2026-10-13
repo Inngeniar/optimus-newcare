@@ -37,7 +37,7 @@ ensure_data_dir = ensure_dirs
 
 def get_github_config() -> Tuple[Optional[str], str, str]:
     """
-    Obtiene las credenciales de GitHub desde st.secrets o variables de entorno.
+    Obtiene y limpia las credenciales de GitHub desde st.secrets o variables de entorno.
     """
     token = None
     repo = "Inngeniar/optimus-newcare"
@@ -47,14 +47,14 @@ def get_github_config() -> Tuple[Optional[str], str, str]:
         import streamlit as st
         if hasattr(st, "secrets"):
             if "GITHUB_TOKEN" in st.secrets:
-                token = st.secrets["GITHUB_TOKEN"]
+                token = str(st.secrets["GITHUB_TOKEN"])
             elif "github_token" in st.secrets:
-                token = st.secrets["github_token"]
+                token = str(st.secrets["github_token"])
             
             if "GITHUB_REPO" in st.secrets:
-                repo = st.secrets["GITHUB_REPO"]
+                repo = str(st.secrets["GITHUB_REPO"])
             if "GITHUB_BRANCH" in st.secrets:
-                branch = st.secrets["GITHUB_BRANCH"]
+                branch = str(st.secrets["GITHUB_BRANCH"])
     except Exception:
         pass
         
@@ -64,6 +64,14 @@ def get_github_config() -> Tuple[Optional[str], str, str]:
             repo = os.environ.get("GITHUB_REPO")
         if os.environ.get("GITHUB_BRANCH"):
             branch = os.environ.get("GITHUB_BRANCH")
+            
+    if token:
+        # Sanitizar estrictamente: remover comillas externas, espacios o saltos de linea accidentales
+        token = token.strip().strip('"').strip("'").strip()
+    if repo:
+        repo = repo.strip().strip('"').strip("'").strip()
+    if branch:
+        branch = branch.strip().strip('"').strip("'").strip()
             
     return token, repo, branch
 
@@ -159,8 +167,12 @@ def push_to_github(items: List[Dict[str, Any]], commit_message: str = "Actualiza
             sha = check_resp.json().get("sha")
         elif check_resp.status_code == 404:
             sha = None # Archivo nuevo
-        elif check_resp.status_code in [401, 403]:
-            return False, f"Permiso denegado ({check_resp.status_code}): El token no tiene permiso 'repo' o 'Contents: write' en {repo}"
+        elif check_resp.status_code == 401:
+            tok_len = len(token) if token else 0
+            tok_preview = f"{token[:6]}...{token[-3:]}" if tok_len > 10 else "invalido"
+            return False, f"Error 401 (Bad credentials): El token enviado ({tok_preview}, longitud {tok_len}) fue rechazado por GitHub. Verifica que copiaste el token completo en Secrets de share.streamlit.io sin comillas ni caracteres faltantes."
+        elif check_resp.status_code == 403:
+            return False, f"Error 403 (Permisos insuficientes): El token es válido pero no tiene permiso de escritura 'repo' en el repositorio {repo}." 
     except Exception as e:
         print(f"Error consultando sha de GitHub: {e}")
 
