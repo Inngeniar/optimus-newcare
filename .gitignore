@@ -1,27 +1,28 @@
-﻿# Entornos virtuales
-env_newcare/
-venv/
-.venv/
-env/
-ENV/
-
-# Archivos comprimidos pesados
-*.zip
-*.tar.gz
-*.rar
-*.7z
-
-# Cache de Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-.pytest_cache/
+*.so
+.Python
+env/
+venv/
+env_newcare/
+*.env
 
-# Variables de entorno
-.env
-.env*.local
+# Distribuciones y zips
+*.zip
+*.tar.gz
 
-# Archivos del sistema
+# Archivos de SO
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Streamlit secrets y configuracion privada
+.streamlit/secrets.toml
+secrets.toml
+*.secret*
+storage_backup.py
+
+# Permitir plantillas de configuracion
+!.streamlit/secrets.toml.example

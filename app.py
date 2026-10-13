@@ -306,13 +306,40 @@ with st.sidebar:
     st.session_state.target_pct = target_slider
     
     st.markdown("---")
-    st.markdown("#### 🔄 Gestión de Datos")
+    st.markdown("#### 🔄 Gestión y Sincronización")
     
+    # Estado de la conexión con GitHub Cloud
+    sync_st = storage.get_sync_status()
+    if sync_st.get("active"):
+        st.markdown(
+            f'''<div style="background:rgba(16,185,129,0.12); border:1px solid #10B981; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
+            <div style="color:#10B981; font-weight:700; font-size:11px;">🟢 NUBE CONECTADA (GITHUB)</div>
+            <div style="color:#94A3B8; font-size:10px; margin-top:2px;">Repo: {sync_st['repo']}</div>
+            <div style="color:#94A3B8; font-size:10px;">Última sync: {sync_st['last_sync']}</div>
+            </div>''',
+            unsafe_allow_html=True
+        )
+        if st.button("☁️ Traer Último de la Nube", use_container_width=True, help="Descarga los cambios más recientes guardados por otros miembros del equipo"):
+            st.session_state.assessment_items = storage.load_assessment_data(force_remote=True)
+            st.toast("✅ Datos actualizados desde la nube GitHub", icon="☁️")
+            st.rerun()
+    else:
+        st.markdown(
+            '''<div style="background:rgba(148,163,184,0.1); border:1px solid #64748B; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
+            <div style="color:#94A3B8; font-weight:700; font-size:11px;">⚪ MODO LOCAL (SIN TOKEN)</div>
+            <div style="color:#64748B; font-size:10px; margin-top:2px;">Los cambios se guardan localmente. Configura GITHUB_TOKEN en Streamlit Secrets para activar sync colaborativo.</div>
+            </div>''',
+            unsafe_allow_html=True
+        )
+
     col_s1, col_s2 = st.columns(2)
     with col_s1:
-        if st.button("💾 Guardar", use_container_width=True, help="Guarda cambios en el archivo local"):
-            storage.save_assessment_data(st.session_state.assessment_items)
-            st.success("Guardado exitoso")
+        if st.button("💾 Guardar", use_container_width=True, help="Guarda cambios en disco local y los confirma en la nube de GitHub"):
+            ok, msg = storage.save_assessment_data(st.session_state.assessment_items)
+            if ok:
+                st.success(msg)
+            else:
+                st.error(msg)
     with col_s2:
         if st.button("↺ Base", use_container_width=True, help="Restaura la línea base diagnóstica inicial"):
             st.session_state.assessment_items = storage.reset_to_baseline()
