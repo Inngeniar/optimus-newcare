@@ -140,10 +140,13 @@ def push_to_github(items: List[Dict[str, Any]], commit_message: str = "Actualiza
     token, repo, branch = get_github_config()
     if not token:
         return False, "Token de GitHub no configurado"
-        
+    
+    token = token.strip()
+    auth_header = f"Bearer {token}" if token.startswith("github_pat_") else f"token {token}"
+    
     url = f"https://api.github.com/repos/{repo}/contents/data/gap_assessment.json"
     headers = {
-        "Authorization": f"Bearer {token}",
+        "Authorization": auth_header,
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "OptimusHealth-NewCare-Streamlit"
     }
@@ -154,6 +157,10 @@ def push_to_github(items: List[Dict[str, Any]], commit_message: str = "Actualiza
         check_resp = requests.get(url, headers=headers, params={"ref": branch}, timeout=8)
         if check_resp.status_code == 200:
             sha = check_resp.json().get("sha")
+        elif check_resp.status_code == 404:
+            sha = None # Archivo nuevo
+        elif check_resp.status_code in [401, 403]:
+            return False, f"Permiso denegado ({check_resp.status_code}): El token no tiene permiso 'repo' o 'Contents: write' en {repo}"
     except Exception as e:
         print(f"Error consultando sha de GitHub: {e}")
 
@@ -191,7 +198,9 @@ def push_to_github(items: List[Dict[str, Any]], commit_message: str = "Actualiza
                         return True, "Sincronizado tras resolver concurrencia"
             except Exception:
                 pass
-            return False, f"Conflicto de concurrencia en GitHub (409)"
+            return False, "Conflicto de concurrencia en GitHub (409). Intenta 'Traer Último de la Nube' y luego Guardar."
+        elif put_resp.status_code in [401, 403]:
+            return False, f"Error de autenticación/permisos ({put_resp.status_code}): Verifica que el token tenga permiso de escritura (scope 'repo')."
         else:
             return False, f"Error GitHub PUT ({put_resp.status_code}): {put_resp.text[:120]}"
     except Exception as e:
@@ -297,7 +306,7 @@ def save_assessment_data(items: List[Dict[str, Any]], sync_cloud: bool = True, c
         if cloud_ok:
             return True, "Guardado localmente y sincronizado en la nube (GitHub)."
         else:
-            return True, f"Guardado localmente. Aviso Cloud: {cloud_msg}"
+            return False, f"Guardado localmente, pero falló en la nube: {cloud_msg}"
             
     return local_ok, "Guardado localmente."
 
