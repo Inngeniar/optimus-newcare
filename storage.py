@@ -68,6 +68,11 @@ def get_github_config() -> Tuple[Optional[str], str, str]:
     if token:
         # Sanitizar estrictamente: remover comillas externas, espacios o saltos de linea accidentales
         token = token.strip().strip('"').strip("'").strip()
+        # Si accidentalmente se pegó texto o prefijo previo (ej. ghp_tu_token_ghp_...)
+        if "ghp_" in token and token.count("ghp_") > 1:
+            token = token[token.rfind("ghp_"):]
+        elif "tu_token" in token and "ghp_" in token:
+            token = token[token.rfind("ghp_"):]
     if repo:
         repo = repo.strip().strip('"').strip("'").strip()
     if branch:
