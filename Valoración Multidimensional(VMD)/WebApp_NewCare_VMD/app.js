@@ -306,6 +306,7 @@ function switchTab(tabId) {
     renderTeamDirectory();
   }
   if (tabId === "tab-guia") tabs[6]?.classList.add("active");
+  if (tabId === "tab-manual-tecnico") tabs[7]?.classList.add("active");
 
   if (window.lucide) lucide.createIcons();
 }
@@ -2782,3 +2783,49 @@ function calculateImportedScores(crit, nyha, gold, cp, erc, barthel, lawton, pfe
 }
 
 window.addEventListener("DOMContentLoaded", initApp);
+
+
+// ============================================================================
+// FUNCIONES DE INTERACTIVIDAD PARA EL MANUAL TÉCNICO ASISTENCIAL
+// ============================================================================
+function filterTechManual(category, btnElement) {
+  // Actualizar botones activos
+  document.querySelectorAll(".filter-tech-btn").forEach(b => {
+    b.className = "btn btn-secondary btn-sm filter-tech-btn";
+  });
+  if (btnElement) {
+    btnElement.className = "btn btn-primary btn-sm filter-tech-btn";
+  }
+
+  const cards = document.querySelectorAll(".tech-card");
+  cards.forEach(c => {
+    if (category === "ALL" || c.getAttribute("data-category") === category) {
+      c.style.display = "block";
+    } else {
+      c.style.display = "none";
+    }
+  });
+}
+
+function searchTechManual(query) {
+  const q = (query || "").toLowerCase().trim();
+  const cards = document.querySelectorAll(".tech-card");
+  cards.forEach(c => {
+    const text = (c.textContent + " " + (c.getAttribute("data-keywords") || "")).toLowerCase();
+    if (!q || text.includes(q)) {
+      c.style.display = "block";
+    } else {
+      c.style.display = "none";
+    }
+  });
+}
+
+
+function openTechManualScale(keyword) {
+  switchTab("tab-manual-tecnico");
+  const searchInput = document.getElementById("tech-manual-search");
+  if (searchInput) {
+    searchInput.value = keyword;
+    searchTechManual(keyword);
+  }
+}

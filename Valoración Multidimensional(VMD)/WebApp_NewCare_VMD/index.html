@@ -79,6 +79,9 @@
     <div class="nav-tab" onclick="switchTab('tab-guia')">
       <i data-lucide="book-open" style="width: 16px; height: 16px;"></i> Guía Metodológica NewCare
     </div>
+    <div class="nav-tab" onclick="switchTab('tab-manual-tecnico')">
+      <i data-lucide="book-marked" style="width: 16px; height: 16px;"></i> Manual Técnico de Escalas & Riesgos
+    </div>
   </nav>
 
   <!-- Main Container -->
@@ -300,7 +303,7 @@
             <!-- Insuficiencia Cardiaca -->
             <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
               <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span>1. Insuficiencia Cardíaca (NYHA)</span>
+                <span>1. Insuficiencia Cardíaca (NYHA) <a href="javascript:void(0)" onclick="openTechManualScale('nyha')" title="Ver Ficha Técnica" style="font-size: 11px; color: #1e40af; text-decoration: none; margin-left: 6px;">📖 Guía</a></span>
                 <span id="score-nyha" class="badge-role badge-med">Valor: 0</span>
               </div>
               <div class="form-group">
@@ -424,7 +427,7 @@
             <!-- Funcionalidad: Barthel -->
             <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
               <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span>Actividades Básicas (Índice de Barthel)</span>
+                <span>Actividades Básicas (Índice de Barthel) <a href="javascript:void(0)" onclick="openTechManualScale('barthel')" title="Ver Ficha Técnica" style="font-size: 11px; color: #0d9488; text-decoration: none; margin-left: 6px;">📖 Guía</a></span>
                 <span id="badge-barthel" class="badge-role badge-enf">Valor: 0</span>
               </div>
               <div class="form-group">
@@ -444,7 +447,7 @@
             <!-- Funcionalidad: Lawton Brody -->
             <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
               <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span>Actividades Instrumentales (Lawton & Brody)</span>
+                <span>Actividades Instrumentales (Lawton & Brody) <a href="javascript:void(0)" onclick="openTechManualScale('lawton')" title="Ver Ficha Técnica" style="font-size: 11px; color: #0d9488; text-decoration: none; margin-left: 6px;">📖 Guía</a></span>
                 <span id="badge-lawton" class="badge-role badge-enf">Valor: 0</span>
               </div>
               <div class="form-group">
@@ -464,7 +467,7 @@
             <!-- Nutrición Cribaje: MNA-SF -->
             <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
               <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span>Cribaje Nutricional (MNA-SF)</span>
+                <span>Cribaje Nutricional (MNA-SF) <a href="javascript:void(0)" onclick="openTechManualScale('mna')" title="Ver Ficha Técnica" style="font-size: 11px; color: #0d9488; text-decoration: none; margin-left: 6px;">📖 Guía</a></span>
                 <span id="badge-mna-sf" class="badge-role badge-enf">Valor: 0</span>
               </div>
               <div class="form-group">
@@ -1304,6 +1307,9 @@
         <!-- ======================================================== -->
     <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
     <!-- ======================================================== -->
+        <!-- ======================================================== -->
+    <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
+    <!-- ======================================================== -->
     <section id="tab-guia" class="tab-content" style="display: none;">
       <div class="card">
         <div class="card-header" style="flex-wrap: wrap; gap: 12px; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px;">
@@ -1598,6 +1604,613 @@
               <!-- Rendered by JS -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- ======================================================== -->
+    <!-- TAB: MANUAL TÉCNICO ASISTENCIAL DE ESCALAS Y RIESGOS VMD -->
+    <!-- ======================================================== -->
+    <section id="tab-manual-tecnico" class="tab-content" style="display: none;">
+      <div class="card">
+        <!-- Header del Manual Técnico -->
+        <div class="card-header" style="flex-wrap: wrap; gap: 14px; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px;">
+          <div class="card-title" style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 8px; background: #0f172a; color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+              📖
+            </div>
+            <div>
+              <div style="font-size: 18px; font-weight: 800; color: #1e3a8a;">Manual Técnico Asistencial de Escalas y Riesgos Clínicos</div>
+              <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Guía Operativa, Puntos de Corte, Interpretación y Conducta para el Equipo de Salud &bull; New Care Optimus</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-secondary" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 12px;">
+              <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Imprimir Manual
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra de Búsqueda y Filtros de Disciplina -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin: 16px 0 20px 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Filtrar por Área:</span>
+            <button class="btn btn-primary btn-sm filter-tech-btn" onclick="filterTechManual('ALL', this)">Todas (18)</button>
+            <button class="btn btn-secondary btn-sm filter-tech-btn" onclick="filterTechManual('SEVERIDAD', this)">🫀 Severidad IOCC</button>
+            <button class="btn btn-secondary btn-sm filter-tech-btn" onclick="filterTechManual('FUNCIONAL', this)">🚶 Funcionalidad (Z)</button>
+            <button class="btn btn-secondary btn-sm filter-tech-btn" onclick="filterTechManual('NUTRICION', this)">🥗 Nutrición (AL)</button>
+            <button class="btn btn-secondary btn-sm filter-tech-btn" onclick="filterTechManual('COGNITIVO', this)">🧠 Cognición (AF)</button>
+            <button class="btn btn-secondary btn-sm filter-tech-btn" onclick="filterTechManual('SOCIAL', this)">🤝 Social & Cuidador (AR)</button>
+            <button class="btn btn-secondary btn-sm filter-tech-btn" onclick="filterTechManual('RIESGO', this)">⚡ Suite de Riesgo</button>
+          </div>
+          <div style="min-width: 240px; flex: 1; max-width: 320px;">
+            <input type="text" id="tech-manual-search" oninput="searchTechManual(this.value)" placeholder="🔍 Buscar escala (ej: Barthel, CKD-EPI, Zarit...)" class="form-control" style="font-size: 12px; padding: 6px 10px;">
+          </div>
+        </div>
+
+        <!-- Contenedor de Fichas Técnicas -->
+        <div id="tech-manual-container" style="display: flex; flex-direction: column; gap: 20px;">
+
+          <!-- ======================================================== -->
+          <!-- BLOQUE 1: SEVERIDAD ORGÁNICA (CRITERIO PRIMARIO - EJE T) -->
+          <!-- ======================================================== -->
+
+          <!-- FICHA 1: NYHA -->
+          <div class="card-box tech-card" data-category="SEVERIDAD" data-keywords="nyha corazon cardiaca insuficiencia fevi disnea esfuerzo">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Dimensión Severidad (T) &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Clasificación Funcional NYHA (New York Heart Association)</h3>
+                <div style="font-size: 12px; color: #64748b;">Patología: <strong>Insuficiencia Cardíaca Crónica (IC)</strong> &bull; Responsable: Médico Tratante / Geriatra</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-med">Severidad Base</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Estratifica la limitación funcional provocada por la insuficiencia cardíaca y evalúa la capacidad de tolerancia al ejercicio físico y la severidad de la disnea.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Metodología de Aplicación:</div>
+                <p style="margin-bottom: 8px;">Interrogatorio clínico sobre el nivel de esfuerzo físico que desencadena fatiga, palpitaciones, disnea o angina de pecho.</p>
+                <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #1e40af;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • Clase I: $T = 0$ (Baja Severidad)<br>
+                  • Clase II: $T = 1$ (Severidad Moderada)<br>
+                  • Clase III - IV: $T = 2$ (Alta Severidad &bull; Prioridad New Care)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos de Corte e Interpretación:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">Clase</th><th style="padding: 4px 8px;">Síntomas Clínicos</th><th style="padding: 4px 8px;">Impacto</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Clase I</td><td style="padding: 4px 8px;">Sin limitación en actividad física ordinaria.</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">T = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Clase II</td><td style="padding: 4px 8px;">Ligera limitación. Confortable en reposo; disnea a esfuerzo moderado.</td><td style="padding: 4px 8px; color: #ca8a04; font-weight: 700;">T = 1</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Clase III</td><td style="padding: 4px 8px;">Limitación notable. Síntomas con esfuerzo menor al habitual (caminar 1 cuadra).</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">T = 2</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Clase IV</td><td style="padding: 4px 8px;">Incapacidad para cualquier actividad. Disnea presente en reposo.</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">T = 2</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En Clase III-IV, priorizar titulación farmacológica de los 4 pilares (ARNI/iECA/ARAII, Betabloqueador, ARM, iSGLT2), restricción hídrica y control de peso diario.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 2: GOLD EPOC -->
+          <div class="card-box tech-card" data-category="SEVERIDAD" data-keywords="gold epoc pulmon respiratoria disnea fev1 exacerbaciones mmrc">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Dimensión Severidad (T) &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Clasificación GOLD (Global Initiative for Chronic Obstructive Lung Disease)</h3>
+                <div style="font-size: 12px; color: #64748b;">Patología: <strong>EPOC (Enfermedad Pulmonar Obstructiva Crónica)</strong> &bull; Responsable: Médico Tratante</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-med">Severidad Base</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Evalúa la gravedad de la limitación al flujo aéreo (espirometría FEV1%) combinada con la carga de síntomas y el riesgo de exacerbaciones agudas.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Metodología de Aplicación:</div>
+                <p style="margin-bottom: 8px;">Cruce de espirometría posbroncodilatador con la escala de disnea mMRC y el conteo de agudizaciones que requirieron corticoides, antibióticos u hospitalización en los últimos 12 meses.</p>
+                <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #1e40af;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • GOLD A / I: $T = 0$<br>
+                  • GOLD B / II: $T = 1$<br>
+                  • GOLD C-D / III-IV: $T = 2$ (Alta Severidad)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Estratificación y Puntos de Corte:</div>
+                <ul style="margin: 0 0 8px 16px; font-size: 11.5px; line-height: 1.5;">
+                  <li><strong>GOLD A / Grado 1 (FEV1 &ge; 80%):</strong> Pocos síntomas (mMRC 0-1), 0-1 exacerbaciones sin hospitalización.</li>
+                  <li><strong>GOLD B / Grado 2 (FEV1 50-79%):</strong> Mayor carga de síntomas (mMRC &ge; 2), 0-1 agudizaciones anuales.</li>
+                  <li><strong>GOLD C / Grado 3 (FEV1 30-49%):</strong> Alto riesgo de exacerbación (&ge;2 ambulatorias o &ge;1 hospitalaria).</li>
+                  <li><strong>GOLD D / Grado 4 (FEV1 &lt; 30%):</strong> Muy grave, disnea severa en reposo, requerimiento de oxigenoterapia continua.</li>
+                </ul>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En GOLD C-D, protocolizar plan de acción ante agudizaciones, verificación técnica de técnica inhalatoria, vacunación (neumococo, influenza) y rehabilitación pulmonar.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 3: CHILD-PUGH -->
+          <div class="card-box tech-card" data-category="SEVERIDAD" data-keywords="child pugh higado cirrosis hepatica ascitis encefalopatia bilirrubina inr albumina">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Dimensión Severidad (T) &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Clasificación de Child-Turcotte-Pugh (Child-Pugh)</h3>
+                <div style="font-size: 12px; color: #64748b;">Patología: <strong>Hepatopatía Crónica / Cirrosis Hepática</strong> &bull; Responsable: Médico Tratante</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-med">Severidad Base</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Evalúa el pronóstico, la reserva funcional hepática y la supervivencia a 1 y 2 años en pacientes con cirrosis o insuficiencia hepática crónica.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Parámetros de la Escala (5 a 15 puntos):</div>
+                <p style="margin-bottom: 8px;">Puntúa de 1 a 3 cada variable: Bilirrubina total, Albúmina sérica, Tiempo de protrombina / INR, Presencia y grado de ascitis, y Grado de encefalopatía hepática.</p>
+                <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #1e40af;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • Grado A (5-6 pts): $T = 0$ (Compensada)<br>
+                  • Grado B (7-9 pts): $T = 1$ (Compromiso funcional significativo)<br>
+                  • Grado C (10-15 pts): $T = 2$ (Descompensada severa)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Supervivencia e Implicación:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">Clase</th><th style="padding: 4px 8px;">Puntaje</th><th style="padding: 4px 8px;">Sobrevida 1 año</th><th style="padding: 4px 8px;">Sobrevida 2 años</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Grado A</td><td style="padding: 4px 8px;">5 - 6 pts</td><td style="padding: 4px 8px;">100%</td><td style="padding: 4px 8px;">85%</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Grado B</td><td style="padding: 4px 8px;">7 - 9 pts</td><td style="padding: 4px 8px;">80%</td><td style="padding: 4px 8px;">60%</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">Grado C</td><td style="padding: 4px 8px;">10 - 15 pts</td><td style="padding: 4px 8px; color:#dc2626; font-weight: 700;">45%</td><td style="padding: 4px 8px; color:#dc2626; font-weight: 700;">35%</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En Grado B y C, vigilar estrechamente signos tempranos de peritonitis bacteriana espontánea, hemorragia por várices esofágicas y adherencia a lactulosa y diuréticos.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 4: KDIGO ERC -->
+          <div class="card-box tech-card" data-category="SEVERIDAD" data-keywords="erc kdigo renal riñon creatinina tfge filtracion dialisis proteinuria">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Dimensión Severidad (T) &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Estadificación KDIGO de Enfermedad Renal Crónica (ERC)</h3>
+                <div style="font-size: 12px; color: #64748b;">Patología: <strong>Enfermedad Renal Crónica Avanzada</strong> &bull; Responsable: Médico Tratante / Nefrólogo</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-med">Severidad Base</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Estratifica la pérdida progresiva e irreversible de la función renal mediante la Tasa de Filtración Glomerular estimada (TFGe en mL/min/1.73m²).</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Parámetros de Evaluación:</div>
+                <p style="margin-bottom: 8px;">Cálculo de TFGe por fórmula CKD-EPI 2021 + determinación de la relación Albúmina/Creatinina en orina (RAC: A1 &lt;30, A2 30-300, A3 &gt;300 mg/g).</p>
+                <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #1e40af;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • G1 (&ge;90) / G2 (60-89): $T = 0$<br>
+                  • G3a (45-59) / G3b (30-44): $T = 1$<br>
+                  • G4 (15-29) / G5 (&lt;15 o diálisis): $T = 2$ (Alta Severidad)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Estadios y Riesgo de Progresión:</div>
+                <ul style="margin: 0 0 8px 16px; font-size: 11.5px; line-height: 1.5;">
+                  <li><strong>Estadio G1 - G2:</strong> Daño renal con filtración normal o ligeramente disminuida. Manejo preventivo.</li>
+                  <li><strong>Estadio G3a - G3b:</strong> Descenso moderado. Inicio de complicaciones: anemia de origen renal, hiperparatiroidismo secundario, acidosis metabólica.</li>
+                  <li><strong>Estadio G4:</strong> Descenso severo (TFGe 15-29). Preparación para terapia de reemplazo renal o manejo médico conservador no dialítico.</li>
+                  <li><strong>Estadio G5:</strong> Falla renal terminal (TFGe &lt; 15). Requiere diálisis peritoneal, hemodiálisis o cuidado paliativo renal integral.</li>
+                </ul>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En G4-G5, ajuste riguroso de dosis farmacológicas por función renal, control estricto de potasio sérico, fósforo y fósforo sérico.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- BLOQUE 2: CAPACIDAD FUNCIONAL (ABVD / AIVD - EJE Z) -->
+          <!-- ======================================================== -->
+
+          <!-- FICHA 5: BARTHEL -->
+          <div class="card-box tech-card" data-category="FUNCIONAL" data-keywords="barthel funcionalidad abvd actividades basicas dependencia bipedestacion marcha">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-success" style="font-size: 10px;">Dimensión Funcional (Z) &bull; Enfermería EPA</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #0f766e; margin: 4px 0 2px 0;">Índice de Barthel (Actividades Básicas de la Vida Diaria - ABVD)</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Autonomía Física y Autocuidado</strong> &bull; Responsable: Enfermera(o) Jefe / EPA</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-enf">Promotor Complejidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Mide el nivel de independencia funcional del paciente respecto a 10 actividades físicas elementales de la vida diaria.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Los 10 Ítems Evaluados (0 a 100 puntos):</div>
+                <p style="margin-bottom: 8px;">Alimentación, Lavado (baño), Vestido, Arreglo personal, Deposición (continencia fecal), Micción (continencia urinaria), Uso del retrete, Traslado sillón-cama, Deambulación y Subir/bajar escaleras.</p>
+                <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #166534;">
+                  <strong>UMBRAL CRÍTICO NEW CARE (Z = 2):</strong><br>
+                  • Puntaje &le; 60 pts activa <strong>Alta Complejidad Funcional (Z = 2)</strong>.<br>
+                  • <em>Regla de Modalidad:</em> Si el paciente ingresa al programa y tiene Barthel &le; 60 pts, su atención se asigna obligatoriamente a <strong>Modalidad Domiciliaria</strong>.
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos de Corte e Interpretación:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">Puntaje</th><th style="padding: 4px 8px;">Grado de Dependencia</th><th style="padding: 4px 8px;">Eje Z</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">100 pts</td><td style="padding: 4px 8px;">Totalmente Independiente</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">Z = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">91 - 99 pts</td><td style="padding: 4px 8px;">Dependencia Escasa / Leve</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">Z = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">61 - 90 pts</td><td style="padding: 4px 8px;">Dependencia Moderada</td><td style="padding: 4px 8px; color: #ca8a04; font-weight: 700;">Z = 1</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">21 - 60 pts</td><td style="padding: 4px 8px; color:#dc2626; font-weight: 700;">Dependencia Severa</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Z = 2</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">0 - 20 pts</td><td style="padding: 4px 8px; color:#dc2626; font-weight: 700;">Dependencia Total</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Z = 2</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En puntajes &le; 60 pts, activar plan de entrenamiento de cuidadores en transferencias seguras, prevención de caídas y solicitud de ayudas técnicas (andador, silla de baño).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 6: LAWTON & BRODY -->
+          <div class="card-box tech-card" data-category="FUNCIONAL" data-keywords="lawton brody instrumentales aivd comunidad medicacion dinero telefono">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-success" style="font-size: 10px;">Dimensión Funcional (Z) &bull; Enfermería EPA</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #0f766e; margin: 4px 0 2px 0;">Índice de Lawton y Brody (Actividades Instrumentales - AIVD)</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Vida en la Comunidad y Manejo del Entorno</strong> &bull; Responsable: Enfermera(o) EPA / TS</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-enf">Promotor Complejidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Detecta precozmente el deterioro funcional y cognitivo incipiente analizando tareas complejas necesarias para vivir de forma autónoma en el hogar.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Los 8 Ítems Evaluados (0 a 8 puntos):</div>
+                <p style="margin-bottom: 8px;">Uso del teléfono, Realización de compras, Preparación de alimentos, Cuidado de la casa, Lavado de ropa, Uso de medios de transporte, Responsabilidad sobre su propia medicación y Manejo de asuntos económicos.</p>
+                <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #166534;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • 6 a 8 pts: $Z = 0$ (Autónomo o leve)<br>
+                  • 4 a 5 pts: $Z = 1$ (Dependencia moderada)<br>
+                  • &le; 3 pts: $Z = 2$ (Dependencia severa &bull; Alerta de claudicación)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos Clave de Interpretación:</div>
+                <p style="margin-bottom: 8px;">La pérdida de capacidad para gestionar la propia medicación o las finanzas suele ser el primer indicador de alarma de deterioro neurocognitivo o sobrecarga de tareas en el enfermo crónico complejo.</p>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> Si el paciente no puede administrar su medicación (ítem medicación = 0), implementar pastilleros semanales identificados por colores bajo supervisión directa del cuidador primario.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- BLOQUE 3: ESTADO NUTRICIONAL (EJE AL) -->
+          <!-- ======================================================== -->
+
+          <!-- FICHA 7: MNA-SF -->
+          <div class="card-box tech-card" data-category="NUTRICION" data-keywords="mna sf nutricion apetito peso imc desnutricion sarcopenia">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-warning" style="font-size: 10px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">Dimensión Nutricional (AL) &bull; Enfermería / Nutrición</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #b45309; margin: 4px 0 2px 0;">Mini Nutritional Assessment - Short Form (MNA-SF)</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Cribaje de Desnutrición y Riesgo Nutricional</strong> &bull; Responsable: Enfermera(o) EPA / Nutricionista</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-enf">Promotor Complejidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Identifica precozmente a pacientes ancianos o con falla crónica de órgano en riesgo de desnutrición o con malnutrición proteico-calórica ya establecida.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Los 6 Ítems del Cribaje (0 a 14 puntos):</div>
+                <p style="margin-bottom: 8px;">Disminución de ingesta en 3 meses, Pérdida de peso reciente, Movilidad (encamado vs sale a la calle), Enfermedad aguda o estrés psicológico, Problemas neuropsicológicos (demencia/depresión) e Índice de Masa Corporal (IMC o circunferencia de pantorrilla).</p>
+                <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #92400e;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • 12 a 14 pts: $AL = 0$ (Estado nutricional normal)<br>
+                  • 8 a 11 pts: $AL = 1$ (Riesgo de malnutrición)<br>
+                  • &lt; 8 pts: $AL = 2$ (Malnutrición manifiesta establecida)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos de Corte e Intervención:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">Puntaje</th><th style="padding: 4px 8px;">Clasificación</th><th style="padding: 4px 8px;">Eje AL</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">12 - 14 pts</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">Estado Nutricional Normal</td><td style="padding: 4px 8px;">AL = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">8 - 11 pts</td><td style="padding: 4px 8px; color: #ca8a04; font-weight: 700;">En Riesgo de Desnutrición</td><td style="padding: 4px 8px;">AL = 1</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">0 - 7 pts</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Desnutrición Establecida</td><td style="padding: 4px 8px; font-weight: 700; color: #dc2626;">AL = 2</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En puntaje &lt;12 pts, calcular requerimiento proteico (1.2 a 1.5 g/kg/día), fraccionar tomas a 5-6 comidas pequeñas y considerar fórmula de soporte nutricional hiperproteica adaptada a comorbilidades.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- BLOQUE 4: ESTADO COGNITIVO (EJE AF) -->
+          <!-- ======================================================== -->
+
+          <!-- FICHA 8: TEST DE PFEIFFER -->
+          <div class="card-box tech-card" data-category="COGNITIVO" data-keywords="pfeiffer spmsq cognitivo memoria demencia orientacion errores mental">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-purple" style="font-size: 10px; background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;">Dimensión Cognitiva (AF) &bull; Enfermería EPA</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #6d28d9; margin: 4px 0 2px 0;">Test de Pfeiffer (Short Portable Mental Status Questionnaire - SPMSQ)</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Cribado Rápido de Deterioro Cognitivo</strong> &bull; Responsable: Enfermera(o) EPA / Psicología</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-enf">Promotor Complejidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Cribaje neurocognitivo ultrarrápido (3-5 minutos) que evalúa orientación temporoespacial, memoria remota y reciente, concentración y cálculo aritmético.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Corrección por Nivel Educativo:</div>
+                <p style="margin-bottom: 8px;">
+                  • Estudios superiores (universitarios): Se resta 1 error permisible (criterio más estricto).<br>
+                  • Analfabeto o estudios primarios incompletos: Se suma 1 error permisible.
+                </p>
+                <div style="background: #faf5ff; border-left: 4px solid #7c3aed; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #6b21a8;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • 0 a 4 errores: $AF = 0$ (Normal / leve)<br>
+                  • &ge; 5 errores: $AF = 2$ (Deterioro cognitivo moderado a severo &bull; Promotor automático)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos de Corte (Total Errores / 10):</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">No. Errores</th><th style="padding: 4px 8px;">Interpretación Clínica</th><th style="padding: 4px 8px;">Eje AF</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">0 - 2 errores</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">Función Intelectual Intacta</td><td style="padding: 4px 8px;">AF = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">3 - 4 errores</td><td style="padding: 4px 8px; color: #ca8a04; font-weight: 700;">Deterioro Cognitivo Leve</td><td style="padding: 4px 8px;">AF = 0 o 1</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">5 - 7 errores</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Deterioro Cognitivo Moderado</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">AF = 2</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">8 - 10 errores</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Deterioro Cognitivo Severo</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">AF = 2</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> Con &ge;5 errores, la toma de decisiones clínicas y consentimiento de cuidados debe articularse estrechamente con el cuidador legal o apoderado, evitando instrucciones complejas al paciente.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- BLOQUE 5: SOCIOFAMILIAR Y CUIDADOR (EJE AR) -->
+          <!-- ======================================================== -->
+
+          <!-- FICHA 9: GIJON -->
+          <div class="card-box tech-card" data-category="SOCIAL" data-keywords="gijon social familia vivienda soledad red vulnerabilidad economico">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-purple" style="font-size: 10px; background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;">Dimensión Social (AR) &bull; Trabajo Social</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #6b21a8; margin: 4px 0 2px 0;">Escala Sociofamiliar de Gijón</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Evaluación del Entorno y Riesgo Social</strong> &bull; Responsable: Trabajador(a) Social</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-ts">Promotor Complejidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Detecta situaciones de riesgo o problemática social en pacientes crónicos o mayores para planificar soportes institucionales y comunitarios.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Las 5 Áreas Evaluadas (5 a 25 puntos):</div>
+                <p style="margin-bottom: 8px;">1. Situación familiar (convivencia y soledad), 2. Situación económica (ingresos vs gastos de salud), 3. Vivienda (barreras arquitectónicas, hacinamiento), 4. Relaciones sociales (aislamiento), 5. Apoyo de la red social (familiares que puedan relevar).</p>
+                <div style="background: #faf5ff; border-left: 4px solid #7c3aed; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #6b21a8;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • &le; 9 pts: $AR = 0$ (Buena / aceptable)<br>
+                  • 10 a 14 pts: $AR = 1$ (Riesgo social)<br>
+                  • &ge; 15 pts: $AR = 2$ (Problema social grave &bull; Promotor automático)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos de Corte e Interpretación:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">Puntaje</th><th style="padding: 4px 8px;">Diagnóstico Social</th><th style="padding: 4px 8px;">Eje AR</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">&lt; 10 pts</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">Situación Social Buena / Aceptable</td><td style="padding: 4px 8px;">AR = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">10 - 14 pts</td><td style="padding: 4px 8px; color: #ca8a04; font-weight: 700;">Riesgo Social (Vulnerabilidad)</td><td style="padding: 4px 8px;">AR = 1</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">&ge; 15 pts</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Problema Social Establecido</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">AR = 2</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> Con &ge;15 pts, Trabajo Social activa enlace con programas comunitarios de respiro, gestión de subsidios de cuidadores y adaptación del baño (retirar bañera, barras de agarre).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 10: ZARIT -->
+          <div class="card-box tech-card" data-category="SOCIAL" data-keywords="zarit cuidador sobrecarga burnout colapso claudicacion familia horas">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-purple" style="font-size: 10px; background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff;">Dimensión Cuidador (AR) &bull; Trabajo Social</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #6b21a8; margin: 4px 0 2px 0;">Escala de Sobrecarga del Cuidador de Zarit (22 Ítems)</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Salud Emocional y Claudicación del Cuidador</strong> &bull; Responsable: Trabajador(a) Social / Psicología</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-ts">Promotor Complejidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🎯 Objetivo Clínico:</div>
+                <p style="margin-bottom: 8px;">Cuantifica el grado de estrés subjetivo, sobrecarga física, emocional y económica que experimenta el cuidador principal de un paciente crónico complejo.</p>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📋 Metodología:</div>
+                <p style="margin-bottom: 8px;">Cuestionario autoaplicado de 22 preguntas con escala tipo Likert (0 = Nunca a 4 = Casi siempre). Mide el impacto en la vida privada, salud, relaciones y sentimientos de culpa.</p>
+                <div style="background: #faf5ff; border-left: 4px solid #7c3aed; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; color: #6b21a8;">
+                  <strong>Impacto Algoritmo New Care:</strong><br>
+                  • &le; 46 pts: $AR = 0$ (Sin sobrecarga)<br>
+                  • 47 a 55 pts: $AR = 1$ (Sobrecarga leve / moderada)<br>
+                  • &ge; 56 pts: $AR = 2$ (Sobrecarga intensa &bull; Claudicación inminente)
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">📊 Puntos de Corte y Alerta de Claudicación:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px;">
+                  <tr style="background: #f1f5f9;"><th style="padding: 4px 8px;">Puntaje</th><th style="padding: 4px 8px;">Grado de Sobrecarga</th><th style="padding: 4px 8px;">Eje AR</th></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">&le; 46 pts</td><td style="padding: 4px 8px; color: #16a34a; font-weight: 700;">Ausencia de Sobrecarga</td><td style="padding: 4px 8px;">AR = 0</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">47 - 55 pts</td><td style="padding: 4px 8px; color: #ca8a04; font-weight: 700;">Sobrecarga Ligera / Moderada</td><td style="padding: 4px 8px;">AR = 1</td></tr>
+                  <tr><td style="padding: 4px 8px; font-weight: 700;">&ge; 56 pts</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">Sobrecarga Intensa (Burnout)</td><td style="padding: 4px 8px; color: #dc2626; font-weight: 700;">AR = 2</td></tr>
+                </table>
+                <div style="font-size: 11.5px; color: #334155;">
+                  <strong>💡 Conducta en PAI:</strong> En &ge;56 pts, es prioritario prescribir "respiro al cuidador", apoyo psicológico individual, relevos de fin de semana y vincular a la red de voluntariado NewHealth.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================== -->
+          <!-- BLOQUE 6: SUITE DE RIESGO CLÍNICO Y CALCULADORAS -->
+          <!-- ======================================================== -->
+
+          <!-- FICHA 11: CKD-EPI 2021 -->
+          <div class="card-box tech-card" data-category="RIESGO" data-keywords="ckd epi 2021 tfge creatinina tasa filtracion glomerular formula renal">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Suite de Riesgo Clínico &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Calculadora CKD-EPI 2021 (TFGe Sin Sesgo Racial)</h3>
+                <div style="font-size: 12px; color: #64748b;">Parámetros: Creatinina Sérica (mg/dL), Edad (años), Sexo Biológico (M/F)</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge badge-primary">Calculadora Diagnóstica</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <p><strong>Ecuación de Referencia:</strong> Publicada por NKF-ASN en 2021, elimina el coeficiente racial para prevenir inequidades en el diagnóstico y acceso a trasplantes.</p>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 11px;">
+                  TFGe = 142 × min(Scr/κ, 1)^α × max(Scr/κ, 1)^-1.200 × 0.9938^Edad × (1.012 si Mujer)<br>
+                  (donde κ = 0.7 en mujeres, 0.9 en hombres; α = -0.241 en mujeres, -0.302 en hombres)
+                </div>
+              </div>
+              <div>
+                <p><strong>Utilidad en New Care:</strong> Ajusta de inmediato el estadio KDIGO y alerta de daño renal agudo sobreagregado en pacientes con falla cardíaca (Síndrome Cardiorrenal) o cirrosis (Síndrome Hepatorrenal).</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 12: MELD / MELD-Na -->
+          <div class="card-box tech-card" data-category="RIESGO" data-keywords="meld meld na cirrosis mortalidad 3 meses sodio bilirrubina inr trasplante">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Suite de Riesgo Clínico &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Score MELD / MELD-Na (Model for End-Stage Liver Disease)</h3>
+                <div style="font-size: 12px; color: #64748b;">Parámetros: Bilirrubina total, Creatinina sérica, INR, Sodio sérico (mEq/L)</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge badge-primary">Pronóstico Mortalidad</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <p><strong>Objetivo:</strong> Estima la probabilidad de mortalidad a 90 días en pacientes con cirrosis terminal y prioriza la necesidad de trasplante hepático o cuidados paliativos.</p>
+                <ul style="font-size: 11.5px; margin-left: 16px;">
+                  <li>MELD &lt; 9: Mortalidad a 3 meses ~1.9%</li>
+                  <li>MELD 10 - 19: Mortalidad a 3 meses ~6.0%</li>
+                  <li>MELD 20 - 29: Mortalidad a 3 meses ~19.6%</li>
+                  <li>MELD 30 - 39: Mortalidad a 3 meses ~52.6%</li>
+                  <li>MELD &ge; 40: Mortalidad a 3 meses &gt;71.3%</li>
+                </ul>
+              </div>
+              <div>
+                <p><strong>Importancia del Sodio (MELD-Na):</strong> La hiponatremia refleja vasodilatación esplácnica extrema e hipervolemia efectiva reducida; MELD-Na mejora la precisión pronóstica hasta en un 15% adicional.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 13: BODEX -->
+          <div class="card-box tech-card" data-category="RIESGO" data-keywords="bodex boded epoc imc fev1 mmrc disnea exacerbaciones mortalidad">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Suite de Riesgo Clínico &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Índice BODEx (Pronóstico Multidimensional en EPOC)</h3>
+                <div style="font-size: 12px; color: #64748b;">Parámetros: B (BMI/IMC), O (Obstrucción FEV1%), D (Disnea mMRC), Ex (Exacerbaciones graves anuales)</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge badge-primary">Pronóstico EPOC</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <p><strong>Adaptación de BODE:</strong> Sustituye la prueba de caminata de 6 minutos por el número de exacerbaciones hospitalarias, haciéndolo ideal para la consulta ambulatoria y domiciliaria.</p>
+              </div>
+              <div>
+                <p><strong>Estratificación (0 a 9 puntos):</strong><br>
+                • 0 a 4 puntos: Cuartil 1 (Riesgo bajo de mortalidad)<br>
+                • 5 a 6 puntos: Cuartil 2 (Riesgo moderado)<br>
+                • &ge; 7 puntos: Cuartil 3 (Alto riesgo de mortalidad a 3 años ~50%).</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 14: DOWNTON Y BRADEN -->
+          <div class="card-box tech-card" data-category="RIESGO" data-keywords="downton braden caidas ulceras presion upp piel heridas enfermeria">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-success" style="font-size: 10px;">Suite de Seguridad &bull; Enfermería</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #0f766e; margin: 4px 0 2px 0;">Escalas de Downton (Caídas) y Braden (Lesiones por Presión)</h3>
+                <div style="font-size: 12px; color: #64748b;">Área: <strong>Seguridad del Paciente en el Hogar</strong> &bull; Responsable: Enfermera(o) Jefe / EPA</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge-role badge-enf">Seguridad Asistencial</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🚶 Escala de Downton (Riesgo de Caídas):</div>
+                <p style="margin-bottom: 4px;">Evalúa 5 dimensiones: caídas previas, medicación sedante/diurética, déficits visuales/auditivos, estado mental y deambulación.</p>
+                <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 6px 10px; border-radius: 4px; font-size: 11.5px; color: #991b1b;">
+                  <strong>Punto de Corte:</strong> Puntaje <strong>&gt; 2 puntos = ALTO RIESGO DE CAÍDA</strong>. Requiere retiro de alfombras, calzado antideslizante y luz nocturna fija.
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">🛏️ Escala de Braden (Riesgo de UPP):</div>
+                <p style="margin-bottom: 4px;">6 subescalas (percepción sensorial, humedad, actividad, movilidad, nutrición, fricción). Puntaje total de 6 a 23 puntos.</p>
+                <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 6px 10px; border-radius: 4px; font-size: 11.5px; color: #991b1b;">
+                  <strong>Punto de Corte:</strong> Puntaje <strong>&le; 12 puntos = ALTO RIESGO DE UPP</strong>. Prescribir colchón viscoelástico/antiescaras y cambios posturales cada 2 horas.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FICHA 15: ÍNDICE LACE -->
+          <div class="card-box tech-card" data-category="RIESGO" data-keywords="lace reingreso hospital estancia urgencias charlson hospitalizacion">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div>
+                <span class="badge badge-primary" style="font-size: 10px;">Suite de Riesgo Clínico &bull; Médica</span>
+                <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin: 4px 0 2px 0;">Índice LACE (Riesgo de Reingreso Hospitalario a 30 Días)</h3>
+                <div style="font-size: 12px; color: #64748b;">Parámetros: L (Length of stay), A (Acuity), C (Comorbidity Charlson), E (Emergency visits 6 meses)</div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge badge-primary">Gestión del Reingreso</span>
+              </div>
+            </div>
+            <div class="grid-2" style="font-size: 12.5px; line-height: 1.6;">
+              <div>
+                <p><strong>Objetivo:</strong> Predice el riesgo de readmisión no programada o muerte dentro de los 30 días posteriores al alta médica de una hospitalización por insuficiencia cardíaca o EPOC.</p>
+              </div>
+              <div>
+                <p><strong>Puntos de Corte (0 a 19 puntos):</strong><br>
+                • 0 a 4 puntos: Riesgo bajo (~4% reingreso)<br>
+                • 5 a 9 puntos: Riesgo moderado (~10% reingreso)<br>
+                • &ge; 10 puntos: Riesgo alto (~25-45% reingreso &bull; Requiere visita médica domiciliaria dentro de las primeras 72 horas del egreso).</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
