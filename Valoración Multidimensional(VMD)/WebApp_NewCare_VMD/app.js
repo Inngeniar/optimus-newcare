@@ -1937,24 +1937,56 @@ function deleteProfessionalRecord(id) {
 // ============================================================================
 const SUPABASE_URL_KEY = "newcare_supabase_url";
 const SUPABASE_ANON_KEY = "newcare_supabase_anon_key";
+const DEFAULT_SUPABASE_URL = "https://anradajzsijjrolmfzepv.supabase.co";
+
 window.supabaseClient = null;
 
+function openSupabaseModal() {
+  const urlInput = document.getElementById("supabase-url-input");
+  const keyInput = document.getElementById("supabase-key-input");
+  const fb = document.getElementById("supabase-status-feedback");
+  if (fb) fb.style.display = "none";
+
+  if (urlInput) {
+    urlInput.value = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
+  }
+  if (keyInput) {
+    keyInput.value = localStorage.getItem(SUPABASE_ANON_KEY) || "";
+  }
+  openModal("modal-supabase");
+}
+
 function initSupabase() {
-  const url = localStorage.getItem(SUPABASE_URL_KEY);
+  const url = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
   const key = localStorage.getItem(SUPABASE_ANON_KEY);
 
-  if (url && key && window.supabase) {
-    try {
-      window.supabaseClient = window.supabase.createClient(url, key);
-      updateCloudStatusUI(true, "Supabase Nube Activa");
-      syncAllWithSupabase();
-    } catch (e) {
-      console.error("Error al inicializar cliente Supabase", e);
-      updateCloudStatusUI(false, "Error en credenciales Supabase");
-    }
-  } else {
+  if (!key) {
     updateCloudStatusUI(false, "Modo Local (Offline)");
+    return;
   }
+
+  // Esperar activamente al script del CDN si aún no ha terminado de parsear
+  let attempts = 0;
+  function attemptConnection() {
+    attempts++;
+    if (window.supabase) {
+      try {
+        window.supabaseClient = window.supabase.createClient(url, key);
+        updateCloudStatusUI(true, "Supabase Nube Activa");
+        syncAllWithSupabase();
+      } catch (e) {
+        console.error("Error al inicializar cliente Supabase", e);
+        updateCloudStatusUI(false, "Error en credenciales Supabase");
+      }
+    } else if (attempts < 30) {
+      setTimeout(attemptConnection, 150); // Reintenta cada 150ms hasta 4.5 segundos
+    } else {
+      console.warn("CDN de Supabase no respondió a tiempo");
+      updateCloudStatusUI(false, "Modo Local (Offline)");
+    }
+  }
+
+  attemptConnection();
 }
 
 function updateCloudStatusUI(connected, text) {
@@ -1965,15 +1997,15 @@ function updateCloudStatusUI(connected, text) {
 }
 
 async function testSupabaseConnectionUI() {
-  const url = document.getElementById("supabase-url-input").value.trim();
+  const url = document.getElementById("supabase-url-input").value.trim() || DEFAULT_SUPABASE_URL;
   const key = document.getElementById("supabase-key-input").value.trim();
   const fb = document.getElementById("supabase-status-feedback");
 
-  if (!url || !key) {
+  if (!key) {
     fb.style.display = "block";
     fb.style.background = "#fee2e2";
     fb.style.color = "#991b1b";
-    fb.textContent = "Por favor ingrese tanto el Project URL como la Anon Key.";
+    fb.textContent = "Por favor ingrese la Anon / Publishable Key.";
     return;
   }
 
@@ -1981,6 +2013,18 @@ async function testSupabaseConnectionUI() {
   fb.style.background = "#e0f2fe";
   fb.style.color = "#0369a1";
   fb.textContent = "Probando conexión con Supabase...";
+
+  // Si window.supabase no está listo, esperar un momento
+  if (!window.supabase) {
+    await new Promise(r => setTimeout(r, 600));
+  }
+
+  if (!window.supabase) {
+    fb.style.background = "#fee2e2";
+    fb.style.color = "#991b1b";
+    fb.textContent = "El cliente Supabase aún no se ha cargado en el navegador. Espere unos segundos y reintente.";
+    return;
+  }
 
   try {
     const testClient = window.supabase.createClient(url, key);
@@ -1990,9 +2034,16 @@ async function testSupabaseConnectionUI() {
       throw error;
     }
 
+    // AUTO-GUARDADO: Si la prueba fue exitosa, guardar inmediatamente en memoria persistente
+    localStorage.setItem(SUPABASE_URL_KEY, url);
+    localStorage.setItem(SUPABASE_ANON_KEY, key);
+    window.supabaseClient = testClient;
+    updateCloudStatusUI(true, "Supabase Nube Activa");
+    syncAllWithSupabase();
+
     fb.style.background = "#dcfce7";
     fb.style.color = "#15803d";
-    fb.innerHTML = "<strong>Conexión exitosa con Supabase!</strong> Las tablas responden correctamente.";
+    fb.innerHTML = "<strong>¡Conexión exitosa con Supabase!</strong> Guardado automáticamente. La nube está activa.";
   } catch (err) {
     console.error("Test connection failed", err);
     fb.style.background = "#fee2e2";
@@ -2002,11 +2053,11 @@ async function testSupabaseConnectionUI() {
 }
 
 async function saveSupabaseConfigUI() {
-  const url = document.getElementById("supabase-url-input").value.trim();
+  const url = document.getElementById("supabase-url-input").value.trim() || DEFAULT_SUPABASE_URL;
   const key = document.getElementById("supabase-key-input").value.trim();
 
-  if (!url || !key) {
-    alert("Por favor ingrese la URL y la Anon Key de Supabase.");
+  if (!key) {
+    alert("Por favor ingrese la Anon Key de Supabase.");
     return;
   }
 
@@ -2014,7 +2065,7 @@ async function saveSupabaseConfigUI() {
   localStorage.setItem(SUPABASE_ANON_KEY, key);
   initSupabase();
   closeModal("modal-supabase");
-  alert("Configuración de Supabase guardada. Sincronizando datos con la nube...");
+  alert("Configuración guardada exitosamente. Supabase Nube Activa.");
 }
 
 function disconnectSupabaseUI() {
