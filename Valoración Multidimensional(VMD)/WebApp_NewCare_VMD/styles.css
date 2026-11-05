@@ -394,3 +394,209 @@ body {
   font-weight: 600 !important;
   padding: 8px 12px !important;
 }
+
+
+/* ========================================================================== */
+/* OPTIMIZACIÓN RESPONSIVA MULTIDISPOSITIVO (MÓVIL, TABLET, MAC Y PC) */
+/* ========================================================================== */
+
+/* Suavizado de fuentes para pantallas Retina de Apple (MacBook, iMac, iPad, iPhone) */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Desplazamiento táctil suave e inercial para iOS / Safari */
+.nav-bar, .vmd-subtabs-bar, .table-responsive, .modal-body {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* 1. DISPOSITIVOS TABLET (iPads, Android Tablets de 768px a 1024px) */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 14px;
+    margin: 14px auto;
+  }
+  
+  .card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .grid-4, .grid-6 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* 2. DISPOSITIVOS MÓVILES (Smartphones: iPhone, Android de menos de 768px) */
+@media (max-width: 768px) {
+  /* Header compacto en móviles */
+  .app-header {
+    padding: 10px 14px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    position: static;
+  }
+
+  .app-header > div:first-child {
+    justify-content: flex-start;
+  }
+
+  .app-header > div:last-child {
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+
+  #active-evaluator-select {
+    max-width: 170px;
+    font-size: 12px !important;
+  }
+
+  /* Barra de Navegación Móvil (Scroll Horizontal Táctil con Indicador) */
+  .nav-bar {
+    padding: 0 8px;
+    gap: 4px;
+    border-bottom: 2px solid #e2e8f0;
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .nav-bar::-webkit-scrollbar {
+    display: none; /* Chrome / Safari */
+  }
+
+  .nav-tab {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    min-height: 44px; /* Estándar ergonómico táctil de Apple y Google */
+  }
+
+  /* Contenedores y Tarjetas */
+  .container {
+    padding: 0 8px;
+    margin: 10px auto;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+  }
+
+  .card-header > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .card-title {
+    font-size: 14.5px;
+    line-height: 1.3;
+  }
+
+  /* Formularios e Inputs Móviles (Font-size 16px para evitar auto-zoom molesto en Safari iOS) */
+  .form-control {
+    font-size: 16px !important; /* Vital para que iPhone / Safari no fuerce zoom al enfocar */
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .form-label {
+    font-size: 12.5px;
+    margin-bottom: 4px;
+  }
+
+  /* Rejillas: Todas a 1 columna en teléfonos */
+  .grid-2, .grid-3, .grid-4, .grid-6 {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  /* Botones Táctiles */
+  .btn {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 13px;
+    justify-content: center;
+  }
+
+  /* Modales en Pantalla Completa Ergonómica para Celulares */
+  .modal-container {
+    width: 96% !important;
+    max-height: 94vh !important;
+    border-radius: 10px !important;
+  }
+
+  .modal-header {
+    padding: 12px 14px;
+  }
+
+  .modal-title {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  .modal-body {
+    padding: 14px;
+  }
+
+  .modal-footer {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-footer > div {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  /* Opciones de Cuestionarios (Barthel, Lawton, Pfeiffer, MNA, Gijón, Zarit) */
+  .q-item {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .q-option {
+    padding: 10px 12px;
+    min-height: 46px; /* Área táctil amplia para el pulgar */
+    font-size: 13px;
+  }
+
+  .q-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Subpestañas VMD en teléfonos */
+  .vmd-subtabs-bar {
+    gap: 6px;
+  }
+  
+  .vmd-subtabs-bar .btn {
+    white-space: nowrap;
+    font-size: 11.5px;
+    padding: 6px 10px;
+  }
+
+  /* Tablas con scroll horizontal suave en celulares */
+  .data-table th, .data-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}

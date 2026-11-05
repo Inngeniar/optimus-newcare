@@ -2,7 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <!-- PWA & Apple iOS / macOS Safari Compatibility -->
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="New Care VMD">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>New Care VMD - Optimus Health & NewHealth Foundation</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Lucide Icons via unpkg -->
@@ -210,7 +217,7 @@
       </div>
 
       <!-- VMD Sub-Tabs by Role -->
-      <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;">
+      <div class="vmd-subtabs-bar" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin;">
         <button id="vmd-sub-1" class="btn btn-primary btn-sm" onclick="switchVmdSub(1)">
           <i data-lucide="id-card" style="width: 14px; height: 14px;"></i> 1. Datos Generales
         </button>
