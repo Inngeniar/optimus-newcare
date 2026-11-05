@@ -1298,36 +1298,258 @@
     <!-- ======================================================== -->
     <!-- TAB 6: GUÍA METODOLÓGICA NEWCARE -->
     <!-- ======================================================== -->
+        <!-- ======================================================== -->
+    <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
+    <!-- ======================================================== -->
     <section id="tab-guia" class="tab-content" style="display: none;">
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <i data-lucide="book-open" style="color: var(--primary);"></i> Lineamientos Metodológicos New Care (Recursos 2.1)
+        <div class="card-header" style="flex-wrap: wrap; gap: 12px; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px;">
+          <div class="card-title" style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 8px; background: #eff6ff; color: #1e3a8a; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              📘
+            </div>
+            <div>
+              <div style="font-size: 17px; font-weight: 800; color: #1e3a8a;">Manual de Usuario y Guía Metodológica Oficial</div>
+              <div style="font-size: 11px; color: #64748b; font-weight: 600;">Programa New Care &bull; Optimus Health IPS &bull; Fundación NewHealth</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="Manual_Usuario_VMD_NewCare_OptimusHealth.pdf" download="Manual_Usuario_VMD_NewCare_OptimusHealth.pdf" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 8px 16px; font-weight: 700;">
+              <i data-lucide="download" style="width: 15px; height: 15px;"></i> Descargar Manual en PDF
+            </a>
+            <button class="btn btn-secondary" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;">
+              <i data-lucide="printer" style="width: 15px; height: 15px;"></i> Imprimir Guía
+            </button>
           </div>
         </div>
-        <div style="font-size: 13px; color: #334155; line-height: 1.7;">
-          <h3 style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">1. Protocolo de Tiempos y Flujo de Atención</h3>
-          <p>
-            • <strong>Días 1 a 15:</strong> Recepción del caso remitido por la aseguradora y agendamiento prioritario de la Valoración Multidimensional.<br>
-            • <strong>Días 16 a 30:</strong> Valoración conjunta interdisciplinaria (Médico, Enfermera, TS). No debe superar 15 días tras el agendamiento.<br>
-            • <strong>Día 30:</strong> Consenso del equipo tratante, cálculo de complejidad y presentación en la Junta de Cronicidad Clínica / Aseguradora.
-          </p>
 
-          <h3 style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-top: 16px; margin-bottom: 8px;">2. Algoritmo Oficial de Asignación de Complejidad</h3>
-          <p>
-            1. <strong>Severidad Clínica (T):</strong> Máximo valor entre NYHA, GOLD, Child-Pugh y ERC (Valores 0, 1 o 2). La severidad es la base.<br>
-            2. <strong>Factor de Complejidad Asociada:</strong> Si cualquiera de las áreas de Funcionalidad (Z), Cognitividad (AF), Estado Nutricional (AL) o Situación Social (AR) tiene valor de <strong>Alta Complejidad (2)</strong>, la complejidad final aumenta un grado: <code>Valor Final = T + 1</code> (máximo 2).<br>
-            3. Si ninguna área asociada puntúa 2, la complejidad final es igual a la severidad clínica: <code>Valor Final = T</code>.<br>
-            4. <strong>Criterio de Ingreso:</strong> Todo paciente con Media o Alta Complejidad con IOCC es candidato elegible para ingresar al programa.
-          </p>
+        <div style="padding: 16px 4px; font-size: 13.5px; color: #334155; line-height: 1.7;">
+          
+          <!-- Banner Resumen -->
+          <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 18px; margin-bottom: 22px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span class="badge badge-primary" style="font-size: 11px;">Acreditación NewHealth</span>
+              <span class="badge badge-success" style="font-size: 11px;">Versión Oficial 1.0</span>
+              <span style="font-size: 12px; color: #64748b; margin-left: auto;">Noviembre 2026</span>
+            </div>
+            <p style="margin: 0; font-size: 13px; color: #1e3a8a; font-weight: 600;">
+              Guía estandarizada para el proceso de Valoración Multidimensional (VMD), estratificación de complejidad y generación del Plan de Atención Individualizado (PAI) para pacientes con Insuficiencias Orgánicas Crónicas Complejas (IOCC).
+            </p>
+          </div>
 
-          <h3 style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-top: 16px; margin-bottom: 8px;">3. Seguimiento PAI Mínimo</h3>
-          <p>
-            • <strong>Alta Complejidad Domiciliaria:</strong> Visita médica/enfermería/TS mensual en domicilio + llamada quincenal.<br>
-            • <strong>Alta Complejidad Ambulatoria:</strong> Consulta trimestral presencial + llamada mensual.<br>
-            • <strong>Media Complejidad:</strong> Consulta cada 4-6 meses + llamada cada 2-3 meses.<br>
-            • <strong>Reevaluación Periódica:</strong> Cada 6 meses en Alta Complejidad; anualmente en Media Complejidad; o tras alta hospitalaria / descompensación.
-          </p>
+          <!-- 1. PRESENTACIÓN GENERAL -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">1</span>
+              Presentación General y Canales de Acceso
+            </h3>
+            <p>
+              El <strong>Programa New Care</strong> está diseñado para brindar una atención integral, proactiva y centrada en la persona con patologías crónicas avanzadas de órgano (Falla Cardíaca, EPOC, Cirrosis Hepática y ERC). La suite ofrece 3 modalidades de acceso:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 10px;">
+              <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff;">
+                <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 4px;">🌐 Acceso Centralizado Hub</div>
+                <div style="font-size: 12px; color: #64748b;">A través de <a href="https://inngeniar-hub.vercel.app" target="_blank" style="color: #2563eb; font-weight: 600;">inngeniar-hub.vercel.app</a> en la tarjeta de Optimus Health IPS.</div>
+              </div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff;">
+                <div style="font-weight: 700; color: #0d9488; margin-bottom: 4px;">📱 WebApp Cloud en Vivo</div>
+                <div style="font-size: 12px; color: #64748b;">Directo en <a href="https://optimus-newcare-vmd.vercel.app" target="_blank" style="color: #0d9488; font-weight: 600;">optimus-newcare-vmd.vercel.app</a> en PC, tablets y smartphones.</div>
+              </div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff;">
+                <div style="font-weight: 700; color: #7c3aed; margin-bottom: 4px;">📊 Libro Autónomo en Excel</div>
+                <div style="font-size: 12px; color: #64748b;">Archivo <code>Herramienta_VMD_NewCare_OptimusHealth.xlsx</code> para operación sin internet o contingencia.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. REGLA DE LOS 30 DÍAS -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">2</span>
+              Protocolo de Tiempos y Regla de los 30 Días
+            </h3>
+            <p>
+              El flujo de incorporación y toma de decisiones clínicas se ejecuta en un ciclo máximo de 30 días calendario:
+            </p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
+              <div style="flex: 1; min-width: 220px; border-left: 4px solid #3b82f6; background: #f8fafc; padding: 10px 14px; border-radius: 0 6px 6px 0;">
+                <div style="font-weight: 800; color: #1e3a8a; font-size: 13px;">Días 1 a 15: Recepción & Agendamiento</div>
+                <div style="font-size: 12px; color: #64748b;">Carga del censo remitido por la aseguradora y contacto telefónico para agendar la VMD.</div>
+              </div>
+              <div style="flex: 1; min-width: 220px; border-left: 4px solid #10b981; background: #f8fafc; padding: 10px 14px; border-radius: 0 6px 6px 0;">
+                <div style="font-weight: 800; color: #166534; font-size: 13px;">Días 16 a 29: Valoración en Terreno / Consulta</div>
+                <div style="font-size: 12px; color: #64748b;">Aplicación de escalas por Médico, Enfermera y TS (no superar 15 días tras agendamiento).</div>
+              </div>
+              <div style="flex: 1; min-width: 220px; border-left: 4px solid #7c3aed; background: #f8fafc; padding: 10px 14px; border-radius: 0 6px 6px 0;">
+                <div style="font-weight: 800; color: #6b21a8; font-size: 13px;">Día 30: Consenso, Algoritmo & PAI</div>
+                <div style="font-size: 12px; color: #64748b;">Cálculo de complejidad, dictamen oficial y presentación ante la Junta de Cronicidad de la EPS.</div>
+              </div>
+            </div>
+            <div style="background: #fffbeb; border: 1px solid #fef08a; padding: 10px 14px; border-radius: 6px; margin-top: 12px; font-size: 12px; color: #854d0e;">
+              <strong>Cadencias de Reevaluación:</strong> Alta Complejidad: cada 6 meses &bull; Media Complejidad: anualmente &bull; Extraordinaria: tras egreso hospitalario por descompensación.
+            </div>
+          </div>
+
+          <!-- 3. ROLES INTERDISCIPLINARIOS Y SELLOS -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">3</span>
+              Roles Asistenciales y Sellos de Auditoría
+            </h3>
+            <div style="overflow-x: auto;">
+              <table class="data-table" style="font-size: 12px;">
+                <thead>
+                  <tr>
+                    <th>Perfil Profesional</th>
+                    <th>Responsabilidad Primaria</th>
+                    <th>Escalas a Cargo</th>
+                    <th>Sello de Auditoría</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>🩺 Médico Internista / General</strong></td>
+                    <td>Severidad clínica de la falla de órgano, calculadoras diagnósticas y validación del PAI.</td>
+                    <td>NYHA, GOLD, Child-Pugh, ERC, CKD-EPI, MELD-Na, BODEx, LACE.</td>
+                    <td><span class="badge-role badge-med">Sello Médico</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>👩‍⚕️ Enfermera(o) EPA / Jefe</strong></td>
+                    <td>Capacidad funcional, estado nutricional, cribado cognitivo y riesgo cutáneo/caídas.</td>
+                    <td>Índice de Barthel, Lawton & Brody, Pfeiffer, MNA-SF, Downton, Braden.</td>
+                    <td><span class="badge-role badge-enf">Sello Enfermería</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>🤝 Trabajador(a) Social</strong></td>
+                    <td>Evaluación sociofamiliar, genograma, red de cuidados y sobrecarga del cuidador.</td>
+                    <td>Escala de Gijón, Escala de Zarit (22 ítems), Mapa Concéntrico.</td>
+                    <td><span class="badge-role badge-ts">Sello Trabajo Social</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>⚖️ Coordinador / Junta de Cronicidad</strong></td>
+                    <td>Consolidación, cálculo automático de complejidad, asignación de cupo y firma oficial.</td>
+                    <td>Algoritmo New Care, Dictamen de Ingreso y Modalidad Asistencial.</td>
+                    <td><span class="badge-role badge-coord">Sello Junta</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4. CARGA MASIVA EN DOS ETAPAS -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">4</span>
+              Flujo de Carga Masiva (Excel / CSV en Dos Etapas)
+            </h3>
+            <p>
+              Para facilitar la incorporación de cientos de pacientes entregados por las aseguradoras sin sobrecargar al equipo asistencial:
+            </p>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px; margin-top: 8px;">
+              <div style="font-weight: 800; color: #166534; font-size: 13.5px; margin-bottom: 6px;">Etapa 1: Carga Administrativa Ágil (Columnas A a H)</div>
+              <p style="margin: 0; font-size: 12.5px; color: #15803d;">
+                El área de admisiones descarga la plantilla con <strong><code>📄 Plantilla Excel</code></strong> y llena únicamente las 8 columnas básicas:<br>
+                <code>Col A: Documento</code> &bull; <code>Col B: Nombre_Completo</code> &bull; <code>Col C: Edad</code> &bull; <code>Col D: Sexo</code> &bull; <code>Col E: EPS</code> &bull; <code>Col F: Telefono</code> &bull; <code>Col G: Direccion</code> &bull; <code>Col H: Criterio_Primario</code>.<br>
+                <strong>Las columnas I a S (escalas clínicas) se dejan vacías.</strong> Al cargar el archivo con <strong><code>📥 Importar Excel / CSV</code></strong>, los pacientes quedan en la base de datos con el distintivo <span class="badge badge-warning">🟡 Por Valorar</span>.
+              </p>
+            </div>
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px; margin-top: 10px;">
+              <div style="font-weight: 800; color: #1e40af; font-size: 13.5px; margin-bottom: 6px;">Etapa 2: Diligenciamiento Clínico en Terreno (En la WebApp)</div>
+              <p style="margin: 0; font-size: 12.5px; color: #1e3a8a;">
+                El médico, enfermera y trabajadora social abren la ficha del paciente desde el padrón y completan los cuestionarios interactivos. Al presionar <strong>"Guardar Valoración VMD"</strong>, el paciente pasa a evaluado y el sistema emite el PAI.
+              </p>
+            </div>
+          </div>
+
+          <!-- 5. ALGORITMO OFICIAL NEW CARE -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">5</span>
+              Algoritmo Matemático Oficial New Care
+            </h3>
+            <p>
+              La fórmula matemática de asignación de complejidad y elegibilidad de ingreso al programa es:
+            </p>
+            <div style="background: #0f172a; color: #38bdf8; padding: 12px 18px; border-radius: 6px; font-family: monospace; font-size: 14px; text-align: center; margin: 10px 0;">
+              Valor Final = (Z = 2 ó AF = 2 ó AL = 2 ó AR = 2) ? min(2, T + 1) : T
+            </div>
+            <ul style="margin-top: 10px; padding-left: 20px;">
+              <li><strong>T (Severidad Clínica):</strong> Máximo entre NYHA, GOLD, Child-Pugh y ERC (Valores 0, 1 o 2). Constituye el eje base.</li>
+              <li><strong>Z (Funcionalidad):</strong> Alta Complejidad (2) si Barthel &le; 60 pts o Lawton &le; 3 pts.</li>
+              <li><strong>AF (Cognitivo):</strong> Alta Complejidad (2) si Test de Pfeiffer presenta &ge; 5 errores.</li>
+              <li><strong>AL (Nutricional):</strong> Alta Complejidad (2) si MNA-SF &lt; 8 puntos (malnutrición manifiesta).</li>
+              <li><strong>AR (Social / Cuidador):</strong> Alta Complejidad (2) si Gijón &ge; 15 pts o Zarit &ge; 56 pts (sobrecarga intensa).</li>
+            </ul>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+              <div style="flex: 1; border: 1px solid #fecaca; background: #fff5f5; padding: 10px; border-radius: 6px;">
+                <div style="font-weight: 800; color: #b91c1c;">Valor Final = 2 (Alta Complejidad)</div>
+                <div style="font-size: 12px; color: #991b1b;"><strong>Ingresa al Programa:</strong> Modalidad Domiciliaria (si Barthel &le; 60) o Ambulatoria Especializada.</div>
+              </div>
+              <div style="flex: 1; border: 1px solid #fef08a; background: #fefce8; padding: 10px; border-radius: 6px;">
+                <div style="font-weight: 800; color: #a16207;">Valor Final = 1 (Media Complejidad)</div>
+                <div style="font-size: 12px; color: #854d0e;"><strong>Ingresa al Programa:</strong> Modalidad Ambulatoria con seguimiento semestral.</div>
+              </div>
+              <div style="flex: 1; border: 1px solid #bbf7d0; background: #f0fdf4; padding: 10px; border-radius: 6px;">
+                <div style="font-weight: 800; color: #15803d;">Valor Final = 0 (Baja Complejidad)</div>
+                <div style="font-size: 12px; color: #166534;"><strong>No ingresa:</strong> Continuidad preventiva en Atención Primaria de la EPS.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. SUITE DE RIESGO CLÍNICO Y CALCULADORAS -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">6</span>
+              Suite de Riesgo Clínico y Calculadoras Médicas
+            </h3>
+            <p>
+              La herramienta incluye calculadoras clínicas automatizadas con algoritmos internacionales:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin-top: 8px;">
+              <div style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <div style="font-weight: 700; color: #1e3a8a;">🧪 CKD-EPI 2021 (Función Renal)</div>
+                <div style="font-size: 11.5px; color: #64748b;">TFG estimada sin sesgo racial; alerta automática de estadio KDIGO (G1 a G5).</div>
+              </div>
+              <div style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <div style="font-weight: 700; color: #1e3a8a;">🩺 MELD / MELD-Na (Cirrosis)</div>
+                <div style="font-size: 11.5px; color: #64748b;">Mortalidad a 3 meses a partir de Bilirrubina, Creatinina, INR y Sodio.</div>
+              </div>
+              <div style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <div style="font-weight: 700; color: #1e3a8a;">🫁 Índice BODEx (EPOC)</div>
+                <div style="font-size: 11.5px; color: #64748b;">Integra IMC, FEV1%, disnea mMRC y exacerbaciones en los últimos 12 meses.</div>
+              </div>
+              <div style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <div style="font-weight: 700; color: #1e3a8a;">⚠️ Downton & Braden</div>
+                <div style="font-size: 11.5px; color: #64748b;">Riesgo de caídas (&gt;2 activa protocolo) y riesgo de úlceras por presión (&le;12 alta).</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. RED DE CUIDADOS Y PAI -->
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">7</span>
+              Red de Cuidados, PAI e Impresión de Historia Clínica
+            </h3>
+            <p>
+              &bull; <strong>Mapa Concéntrico:</strong> Monitorea los 3 niveles de apoyo (Círculo Interno familiar, Círculo Externo vecinal y Círculo Comunitario formal) para prevenir el agotamiento (<em>burnout</em>) del cuidador principal identificado.<br>
+              &bull; <strong>Plan de Atención Individualizado (PAI):</strong> Articula metas asistenciales en 4 líneas: Médica/Sanitaria, Nutricional, Psicológica/Cognitiva y Social.<br>
+              &bull; <strong>Impresión Oficial:</strong> El botón <strong><code>🖨️ Imprimir Dictamen / PAI</code></strong> genera el reporte médico de alta fidelidad con membrete, tabla de puntajes y firmas del equipo para adjuntar a la Historia Clínica.
+            </p>
+          </div>
+
+          <!-- 8. SEGURIDAD Y COPIAS DE SEGURIDAD -->
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="background: #1e3a8a; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px;">8</span>
+              Copias de Seguridad y Soberanía de Datos
+            </h3>
+            <p>
+              &bull; <strong>Backup y Restaurar JSON:</strong> Descargue o restaure una instantánea completa de la base de datos en un solo clic.<br>
+              &bull; <strong>Exportar Excel (51 Columnas):</strong> Genera la matriz reglamentaria oficial requerida por la aseguradora para liquidación de actividades y auditoría de cronicidad.
+            </p>
+          </div>
+
         </div>
       </div>
     </section>
