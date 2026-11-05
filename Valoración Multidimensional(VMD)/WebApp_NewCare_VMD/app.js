@@ -1937,7 +1937,8 @@ function deleteProfessionalRecord(id) {
 // ============================================================================
 const SUPABASE_URL_KEY = "newcare_supabase_url";
 const SUPABASE_ANON_KEY = "newcare_supabase_anon_key";
-const DEFAULT_SUPABASE_URL = "https://anradajzsijjrolmfzepv.supabase.co";
+const DEFAULT_SUPABASE_URL = "https://anradajzsjjrolmfzepv.supabase.co";
+const DEFAULT_SUPABASE_KEY = "sb_publishable_2A-62cNjZl9ktbJSW90pVw_kjoxWPO_";
 
 window.supabaseClient = null;
 
@@ -1951,14 +1952,15 @@ function openSupabaseModal() {
     urlInput.value = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
   }
   if (keyInput) {
-    keyInput.value = localStorage.getItem(SUPABASE_ANON_KEY) || "";
+    keyInput.value = localStorage.getItem(SUPABASE_ANON_KEY) || DEFAULT_SUPABASE_KEY;
   }
   openModal("modal-supabase");
 }
 
 function initSupabase() {
-  const url = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
-  const key = localStorage.getItem(SUPABASE_ANON_KEY);
+  let url = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
+  if (url.includes("sijj")) { url = DEFAULT_SUPABASE_URL; localStorage.setItem(SUPABASE_URL_KEY, url); }
+  const key = localStorage.getItem(SUPABASE_ANON_KEY) || DEFAULT_SUPABASE_KEY;
 
   if (!key) {
     updateCloudStatusUI(false, "Modo Local (Offline)");
@@ -1998,7 +2000,7 @@ function updateCloudStatusUI(connected, text) {
 
 async function testSupabaseConnectionUI() {
   const url = document.getElementById("supabase-url-input").value.trim() || DEFAULT_SUPABASE_URL;
-  const key = document.getElementById("supabase-key-input").value.trim();
+  const key = document.getElementById("supabase-key-input").value.trim() || DEFAULT_SUPABASE_KEY;
   const fb = document.getElementById("supabase-status-feedback");
 
   if (!key) {
@@ -2054,7 +2056,7 @@ async function testSupabaseConnectionUI() {
 
 async function saveSupabaseConfigUI() {
   const url = document.getElementById("supabase-url-input").value.trim() || DEFAULT_SUPABASE_URL;
-  const key = document.getElementById("supabase-key-input").value.trim();
+  const key = document.getElementById("supabase-key-input").value.trim() || DEFAULT_SUPABASE_KEY;
 
   if (!key) {
     alert("Por favor ingrese la Anon Key de Supabase.");
