@@ -180,5 +180,46 @@ La herramienta cuenta con una triple salvaguarda de datos:
 3. **Libro Autónomo en Excel (`Herramienta_VMD_NewCare_OptimusHealth.xlsx`):** Cuaderno con fórmulas y calculadoras nativas que opera de forma vitalicia y sin necesidad de internet en cualquier equipo con Microsoft Office.
 
 ---
+
+## 12. MARCO DE EVIDENCIA CIENTÍFICA Y FUENTES PRIMARIAS VERIFICABLES
+
+Todos los instrumentos psicométricos, escalas clínicas y calculadoras de riesgo implementados provienen estrictamente de literatura científica indexada y guías de consenso internacional:
+
+1. **Metodología y Baremos New Care:**  
+   Fundación NewHealth. *Modelo New Care: Guía Metodológica de Baremación y Selección de Pacientes Crónicos Complejos e Insuficiencias Orgánicas Crónicas Avanzadas (Recursos 2.1)*. Sevilla / Bogotá: NewHealth Foundation; 2021-2023.
+2. **Insuficiencia Cardíaca (NYHA):**  
+   The Criteria Committee of the New York Heart Association. *Nomenclature and Criteria for Diagnosis of Diseases of the Heart and Great Vessels*. 9th ed. Boston: Little, Brown & Co; 1994:253-256. | Heidenreich PA, Bozkurt B, Aguilar D, et al. 2022 AHA/ACC/HFSA Guideline for the Management of Heart Failure. *Circulation*. 2022;145(18):e895–e1032. doi:10.1161/CIR.0000000000001063.
+3. **EPOC (GOLD 2023-2024):**  
+   Global Initiative for Chronic Obstructive Lung Disease (GOLD). Global Strategy for the Diagnosis, Management, and Prevention of Chronic Obstructive Pulmonary Disease (2023-2024 Report). *Eur Respir J*. 2023;61(4):2300239. doi:10.1183/13993003.00239-2023.
+4. **Hepatopatía Crónica y Cirrosis (Child-Turcotte-Pugh):**  
+   Child CG, Turcotte JG. Surgery and portal hypertension. In: *The Liver and Portal Hypertension*. Philadelphia: W.B. Saunders Co; 1964:50-64. | Pugh RN, Murray-Lyon IM, Dawson JL, et al. Transection of the oesophagus for bleeding oesophageal varices. *Br J Surg*. 1973;60(8):646-649. doi:10.1002/bjs.1800600817.
+5. **Enfermedad Renal Crónica (KDIGO):**  
+   Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. *Kidney Int*. 2024;105(4S):S117-S314. doi:10.1016/j.kint.2023.10.018.
+6. **Actividades Básicas de la Vida Diaria (Índice de Barthel):**  
+   Mahoney FI, Barthel DW. Functional Evaluation: The Barthel Index. *Md State Med J*. 1965;14:61-65. | Collin C, Wade DT, Davies S, Horne V. The Barthel ADL Index: a reliability study. *Int Disabil Stud*. 1988;10(2):61-63. | Baztán JJ, Pérez del Molino J, Alarcón T, et al. *Rev Esp Geriatr Gerontol*. 1993;28(1):32-40.
+7. **Actividades Instrumentales de la Vida Diaria (Índice de Lawton y Brody):**  
+   Lawton MP, Brody EM. Assessment of older people: self-maintaining and instrumental activities of daily living. *Gerontologist*. 1969;9(3):179-186. doi:10.1093/geront/9.3_part_1.179.
+8. **Cribaje Nutricional Geriátrico y Crónico (MNA-SF):**  
+   Rubenstein LZ, Harker JO, Salva A, Guigoz Y, Vellas B. Screening for undernutrition in geriatric practice: developing the short-form mini-nutritional assessment (MNA-SF). *J Gerontol A Biol Sci Med Sci*. 2001;56(6):M366-M372. | Kaiser MJ, Bauer JM, Ramsch C, et al. *J Nutr Health Aging*. 2009;13(9):782-788. doi:10.1007/s12603-009-0214-7.
+9. **Cribado Neurocognitivo Breve (Test de Pfeiffer - SPMSQ):**  
+   Pfeiffer E. A short portable mental status questionnaire for the assessment of organic brain deficit in elderly patients. *J Am Geriatr Soc*. 1975;23(10):433-441. | Martínez de la Iglesia J, Dueñas Herrero R, Onís Vilches MC, et al. *Med Clin (Barc)*. 2001;117(4):129-134. doi:10.1016/S0025-7753(01)72040-4.
+10. **Valoración Sociofamiliar (Escala de Gijón):**  
+    Díaz Palacios MÁ, Domínguez O, Toyos G. Resultados de la aplicación de una escala de valoración socio-familiar en atención primaria. *Rev Esp Geriatr Gerontol*. 1994;29(4):239-245. | Alarcón MT, González-Montalvo JI. *Rev Esp Geriatr Gerontol*. 2000;35(4):195-202.
+11. **Sobrecarga del Cuidador (Escala de Zarit):**  
+    Zarit SH, Reever KE, Bach-Peterson J. Relatives of the impaired elderly: correlates of feelings of burden. *Gerontologist*. 1980;20(6):649-655. | Martín M, Salvadó I, Nadal S, et al. *Rev Esp Geriatr Gerontol*. 1996;31(5):251-258.
+12. **Tasa de Filtración Glomerular Sin Sesgo Racial (CKD-EPI 2021):**  
+    Inker LA, Eneanya ND, Coresh J, et al. New Creatinine- and Cystatin C–Based Equations to Estimate GFR without Race. *N Engl J Med*. 2021;385(19):1737-1749. doi:10.1056/NEJMoa2102953.
+13. **Mortalidad en Hepatopatía a 90 Días (MELD-Na):**  
+    Kamath PS, Wiesner RH, Malinchoc M, et al. A model to predict survival in patients with end-stage liver disease. *Hepatology*. 2001;33(2):464-470. | Kim WR, Biggins SW, Kremers WK, et al. *N Engl J Med*. 2008;359(10):1018-1026. doi:10.1056/NEJMoa0801209.
+14. **Pronóstico Multidimensional en EPOC (Índice BODEx):**  
+    Celli BR, Cote CG, Marin JM, et al. *N Engl J Med*. 2004;350(10):1005-1012. | Soler-Cataluña JJ, Martínez-García MA, Sánchez L, et al. *Eur Respir J*. 2009;34(3):655-661. doi:10.1183/09031936.00160208.
+15. **Riesgo de Caídas en el Domicilio (Escala de Downton):**  
+    Downton JH. *Falls in the Elderly*. London: Edward Arnold; 1993:128-130. | Rosendahl E, Lundin-Olsson L, Kallin K, et al. *Aging Clin Exp Res*. 2003;15(2):142-147. doi:10.1007/BF03324492.
+16. **Riesgo de Lesiones por Presión (Escala de Braden):**  
+    Bergstrom N, Braden BJ, Laguzza A, Holman V. The Braden Scale for Predicting Pressure Sore Risk. *Nurs Res*. 1987;36(4):205-210. | Moreno-Pina JP, Richart-Martínez M, et al. *Aten Primaria*. 2007;39(10):509-514. doi:10.1157/13110940.
+17. **Riesgo de Reingreso Hospitalario a 30 Días (Índice LACE):**  
+    van Walraven C, Dhalla IA, Bell C, et al. Derivation and validation of an index to predict early death or unplanned readmission after discharge from hospital to the community. *CMAJ*. 2010;182(6):551-557. doi:10.1503/cmaj.091117.
+
+---
 *Manual elaborado por Inngeniar Health Suite para Optimus Health IPS.*  
 *Versión 1.0 — Noviembre 2026.*
