@@ -1,107 +1,184 @@
-# Manual de Usuario y Guía Metodológica: Herramienta de Valoración Multidimensional (VMD) - Programa New Care
-**Optimus Health IPS & Fundación NewHealth**  
-*Modelo de Gestión para Pacientes con Insuficiencias Orgánicas Crónicas Complejas (IOCC)*
+# MANUAL DE USUARIO Y GUÍA METODOLÓGICA OFICIAL
+## Herramienta de Valoración Multidimensional (VMD) • Programa New Care
+**Optimus Health IPS & Inngeniar Health Suite**  
+*En alianza metodológica con Fundación NewHealth*  
+*Modelo de Gestión y Cuidados para Pacientes con Insuficiencias Orgánicas Crónicas Complejas (IOCC)*
 
 ---
 
-## 1. Presentación General
-La presente solución ha sido desarrollada para estandarizar, agilizar y automatizar el proceso de **Valoración Multidimensional (VMD)** interdisciplinaria y toma de decisiones clínicas para el ingreso de pacientes al **Programa New Care**.
+## 1. PRESENTACIÓN GENERAL Y OBJETIVOS
 
-La herramienta se entrega en dos versiones totalmente articuladas y complementarias:
-1. **Versión WebApp Interactiva (`WebApp_NewCare_VMD/`)**: Aplicación web moderna de nivel hospitalario, con control de acceso por rol profesional, cuestionarios asistidos ítem por ítem para cada escala, suite completa de cálculo de riesgo clínico, base de datos local persistente, exportación/importación y generación de informes oficiales de Plan de Atención Individualizado (PAI) listos para impresión/PDF.
-2. **Versión Excel Automatizada (`Herramienta_VMD_NewCare_OptimusHealth.xlsx`)**: Cuaderno de cálculo profesional con fórmulas nativas en tiempo real, listas desplegables validadas, hojas interactivas por profesional, suite de calculadoras de riesgo, base de datos de 51 columnas compatible con la aseguradora y hoja de Red de Cuidados.
+La presente herramienta ha sido diseñada para estandarizar, sistematizar y automatizar el proceso de **Valoración Multidimensional (VMD)** interdisciplinaria y toma de decisiones clínicas para el ingreso de pacientes al **Programa New Care**.
 
----
-
-## 2. Flujo de Atención y Tiempos Normativos (Regla de los 30 Días)
-De acuerdo con las directrices oficiales de New Care:
-- **Días 1 a 15 (Recepción y Agendamiento):** La aseguradora remite los datos del paciente sospechoso con IOCC. El prestador tiene máximo 15 días calendario para citar y agendar la VMD.
-- **Días 16 a 30 (Valoración Interdisciplinaria Conjunta):** El equipo tratante (Médico Internista/Geriatra, Enfermera Jefe y Trabajadora Social) realiza la valoración multidimensional de manera preferiblemente conjunta (máximo 15 días tras el agendamiento).
-- **Día 30 (Consenso y Dictamen):** Reunión de equipo, aplicación del algoritmo oficial New Care, consenso de complejidad (Baja, Media, Alta), elaboración del PAI inicial y remisión del caso a la **Junta de Cronicidad Clínica / Aseguradora** para su validación final y formalización de ingreso.
-- **Reevaluación de Seguimiento:**
-  - Pacientes en **Alta Complejidad:** Reevaluación multidimensional obligatoria como mínimo cada 6 meses.
-  - Pacientes en **Media Complejidad:** Reevaluación multidimensional como mínimo cada 12 meses.
-  - Reevaluaciones extraordinarias: Tras cualquier alta hospitalaria, o ante descompensaciones clínicas o sociales significativas.
+### Canales de Acceso Oficiales
+1. **Acceso Centralizado desde Inngeniar Hub:**  
+   [https://inngeniar-hub.vercel.app](https://inngeniar-hub.vercel.app) $\rightarrow$ Tarjeta *Optimus Health IPS* $\rightarrow$ **`🚀 Abrir WebApp VMD`**.
+2. **Acceso Directo WebApp en Producción:**  
+   [https://optimus-newcare-vmd.vercel.app](https://optimus-newcare-vmd.vercel.app)  
+   *(Compatible con computadores de escritorio, portátiles, tablets Android/iPad y smartphones sin necesidad de instalar software local).*
+3. **Herramienta Local de Contingencia (Microsoft Excel):**  
+   Archivo `Herramienta_VMD_NewCare_OptimusHealth.xlsx` con fórmulas automatizadas y consolidado de 51 columnas para operación desconectada.
 
 ---
 
-## 3. Roles Profesionales y Responsabilidades en la Herramienta
+## 2. FLUJO DE ATENCIÓN Y REGLA NORMATIVA DE LOS 30 DÍAS
 
-| Perfil Profesional | Responsabilidad Primaria en VMD | Escalas y Calculadoras a Cargo |
-| :--- | :--- | :--- |
-| 🩺 **Médico Internista / Geriatra** | Severidad Clínica de IOCC, revisión diagnóstica, suite de riesgo clínico, supervisión médica del PAI y sustentación en Junta de Cronicidad. | NYHA (Cardíaca), GOLD (EPOC), Child-Pugh (Hepática), ERC (Renal), CKD-EPI 2021, MELD-Na, BODEx, LACE. |
-| 👩‍⚕️ **Enfermera(o) Jefe** | Valoración Funcional, Estado Nutricional, detección de fragilidad y riesgo cutáneo, signos vitales y educación al paciente/familia. | Índice de Barthel (ABVD), Lawton & Brody (AIVD), MNA-SF (Cribaje), MNA Completo, Escala Downton (Caídas), Escala Braden (UPP). |
-| 🤝 **Trabajador(a) Social** | Valoración Sociofamiliar, Sobrecarga del Cuidador, Genograma familiar de 3 generaciones y Círculo de la Red de Cuidados. | Escala de Gijón (Sociofamiliar), Escala de Zarit (Sobrecarga Cuidador), Círculo de Red Interna, Externa y Comunitaria. |
-| ⚖️ **Coordinador / Junta de Cronicidad** | Consolidación de las 5 dimensiones, ejecución del algoritmo de complejidad, dictamen de admisión y firma del PAI oficial. | Algoritmo New Care, Asignación de Ámbito (Domiciliario / Ambulatorio), Cadencia de Visitas y Llamadas. |
+De acuerdo con los lineamientos de acreditación de la Fundación NewHealth:
+
+```mermaid
+flowchart LR
+    A["Días 1 a 15<br/>Recepción Censo & Agendamiento"] --> B["Días 16 a 29<br/>Valoración Interdisciplinaria (VMD)"]
+    B --> C["Día 30<br/>Consenso, Algoritmo & Emisión PAI"]
+    C --> D{"Dictamen New Care"}
+    D -->|Valor Final ≥ 1| E["Admisión al Programa<br/>(Domiciliario / Ambulatorio)"]
+    D -->|Valor Final = 0| F["Manejo Continuo en<br/>Atención Primaria"]
+```
+
+* **Días 1 a 15 (Recepción y Agendamiento):** La EPS o red remitente envía el censo de pacientes candidatos con IOCC. El prestador agenda la cita de valoración interdisciplinaria.
+* **Días 16 a 29 (Valoración Conjunta en Terreno / Consulta):** El equipo de salud (Médico, Enfermera y Trabajadora Social) aplica las escalas clínicas de severidad, funcionalidad, cognición, nutrición y riesgo sociofamiliar.
+* **Día 30 (Consenso Clínico y Formalización del PAI):** Ejecución del algoritmo New Care, consenso de complejidad, asignación de modalidad asistencial y emisión del dictamen formal para presentación ante la Junta de Cronicidad de la EPS.
+* **Cadencia de Reevaluación de Seguimiento:**
+  * **Alta Complejidad:** Reevaluación multidimensional cada 6 meses.
+  * **Media Complejidad:** Reevaluación multidimensional cada 12 meses.
+  * **Extraordinaria:** Tras egreso hospitalario por descompensación aguda.
 
 ---
 
-## 4. Algoritmo Oficial de Asignación de Complejidad New Care
-El modelo matemático y clínico oficial opera bajo la siguiente lógica:
+## 3. ROLES INTERDISCIPLINARIOS Y SELLOS DE AUDITORÍA
+
+La herramienta implementa el principio de **corresponsabilidad clínica** mediante sellos digitales independientes por profesión:
+
+| Perfil Profesional | Responsabilidad Primaria en VMD | Escalas y Calculadoras a Cargo | Sello de Auditoría |
+| :--- | :--- | :--- | :---: |
+| 🩺 **Médico Internista / Geriatra / General** | Severidad de IOCC, revisión diagnóstica, suite de riesgo clínico y supervisión del PAI. | NYHA (Cardíaca), GOLD (EPOC), Child-Pugh (Cirrosis), ERC (Renal), CKD-EPI 2021, MELD-Na, BODEx, LACE. | `Sello Médico`<br/>(Nombre, Registro Médico, Fecha) |
+| 👩‍⚕️ **Enfermera(o) de Práctica Avanzada (EPA)** | Valoración Funcional, Estado Nutricional, Detección de Fragilidad y Riesgo Cutáneo/Caídas. | Índice de Barthel (ABVD), Lawton & Brody (AIVD), Pfeiffer (Cognición), MNA-SF (Nutrición), Downton (Caídas), Braden (UPP). | `Sello Enfermería`<br/>(Nombre, Tarjeta Prof., Fecha) |
+| 🤝 **Trabajador(a) Social** | Valoración Sociofamiliar, Sobrecarga del Cuidador, Genograma y Red de Apoyo. | Escala de Gijón (Sociofamiliar), Escala de Zarit (Sobrecarga Cuidador), Mapa concéntrico de Red de Cuidados. | `Sello Trabajo Social`<br/>(Nombre, Registro TS, Fecha) |
+| ⚖️ **Coordinador / Junta de Cronicidad** | Consolidación de dimensiones, aplicación del algoritmo, dictamen de admisión y firma de PAI. | Algoritmo New Care ($T, Z, AF, AL, AR$), Asignación de Ámbito (Domiciliario / Ambulatorio) y Cadencia de Visitas. | `Sello Coordinación`<br/>(Dictamen Oficial) |
+
+---
+
+## 4. BASE DE DATOS EN LA NUBE Y SINCRONIZACIÓN (SUPABASE)
+
+La WebApp está conectada en tiempo real a una base de datos relacional **PostgreSQL** alojada en **Supabase** (`newcare-vmd`), con cifrado TLS/HTTPS en tránsito y en reposo:
+
+* **Sincronización Multiusuario en Vivo:** Cuando la enfermera diligencia Barthel o Pfeiffer en una tablet durante una visita domiciliaria, el médico internista ve el puntaje reflejado de inmediato en su pantalla en la sede principal sin recargar la página.
+* **Indicador de Conexión en el Encabezado:**
+  * 🟢 **`Supabase Nube Activa`:** Conexión en vivo con guardado continuo.
+  * 🔵 **`Modo Local (Offline)`:** Modo de contingencia sin conexión; los datos se guardan en el navegador y se sincronizan apenas se restablece internet.
+* **Credenciales Integradas:** La aplicación incluye la URL institucional y la *Publishable Key* por defecto, garantizando que cualquier usuario que ingrese desde el Hub quede conectado en verde desde el primer segundo.
+
+---
+
+## 5. GESTIÓN DEL EQUIPO DE SALUD
+
+En la pestaña **"Directorio Equipo de Salud"**:
+1. **Consultar Personal Acreditado:** Tabla activa con nombres, roles, registros médicos o de enfermería, especialidad y contactos.
+2. **Registrar Nuevos Profesionales:** Clic en **`+ Registrar Nuevo Profesional`** para matricular médicos, enfermeras, trabajadoras sociales, nutricionistas o gestores de caso.
+3. **Selección del Evaluador Activo:** En la barra superior, el selector desplegable permite alternar en 1 segundo quién está firmando la valoración, aplicando un fondo oscuro de alto contraste y letras blancas nítidas.
+
+---
+
+## 6. GESTIÓN DE PACIENTES Y CARGA MASIVA (EXCEL / CSV)
+
+El sistema soporta tanto la creación individual como el **enrolamiento masivo de censos poblacionales** entregados por las aseguradoras.
+
+### El Flujo en Dos Etapas (Recomendado):
+
+#### Etapa 1: Carga Masiva Administrativa (Columnas A hasta H)
+El personal de admisiones o gestión del riesgo descarga la plantilla haciendo clic en **`📄 Plantilla Excel`** y diligencia únicamente las 8 columnas obligatorias:
+* **Col A:** `Documento` (Cédula del paciente - Clave primaria).
+* **Col B:** `Nombre_Completo` (Nombres y apellidos).
+* **Col C:** `Edad` (Años cumplidos).
+* **Col D:** `Sexo` (`M` o `F`).
+* **Col E:** `EPS` (Asegurador).
+* **Col F:** `Telefono` (Contacto).
+* **Col G:** `Direccion` (Residencia).
+* **Col H:** `Criterio_Primario` (`IC`, `EPOC`, `CIRROSIS` o `ERC`).
+
+> **Las columnas de la I a la S (escalas de valoración) se dejan vacías.**  
+> Al subir el archivo con el botón verde **`📥 Importar Excel / CSV`**, el sistema da de alta a todos los pacientes, los sube a Supabase y les asigna el distintivo **`🟡 Por Valorar`** con estado **`Pendiente de Valoración VMD`**.
+
+#### Etapa 2: Valoración Clínica en Terreno (En la WebApp)
+El equipo asistencial abre al paciente desde el padrón y realiza la valoración en la app:
+* **Médico:** Clasifica severidad clínica y calcula riesgo.
+* **Enfermera:** Aplica Barthel, Lawton, Pfeiffer y MNA-SF con los cuestionarios asistidos.
+* **Trabajo Social:** Aplica Gijón y Zarit.
+* Al presionar **"Guardar Valoración VMD"**, el estado cambia automáticamente a evaluado y se genera el PAI.
+
+---
+
+## 7. EL ALGORITMO MATEMÁTICO NEW CARE
+
+La estratificación de complejidad opera bajo la siguiente formulación oficial:
 
 $$\text{Valor Final} = \begin{cases} \min(2, T + 1) & \text{si } Z = 2 \lor AF = 2 \lor AL = 2 \lor AR = 2 \\ T & \text{en caso contrario} \end{cases}$$
 
-Donde:
-- **$T$ (Severidad Clínica):** Base $= \max(\text{NYHA}, \text{GOLD}, \text{Child-Pugh}, \text{ERC})$. Valores: $0$ (Baja), $1$ (Media), $2$ (Alta). *La severidad clínica es el eje preponderante de la complejidad.*
-- **$Z$ (Funcionalidad):** $\max(\text{Barthel}, \text{Lawton \& Brody})$. Valores: $0, 1, 2$.
-- **$AL$ (Nutricional):** $\max(\text{MNA-SF}, \text{MNA Completo})$. Valores: $0, 1, 2$.
-- **$AF$ (Cognitivo):** $\max(\text{Pfeiffer}, \text{Minimental MMSE})$. Valores: $0, 1, 2$.
-- **$AR$ (Social):** $\max(\text{Gijón}, \text{Zarit})$. Valores: $0, 1, 2$.
+### Desglose de Dimensiones:
+1. **$T$ (Severidad Orgánica - Eje Preponderante):** Base $= \max(\text{NYHA}, \text{GOLD}, \text{Child-Pugh}, \text{ERC})$.
+   * $0 =$ Baja severidad (NYHA I, GOLD A, Child-Pugh A, ERC G1-G2).
+   * $1 =$ Severidad moderada (NYHA II, GOLD B, Child-Pugh B, ERC G3a-G3b).
+   * $2 =$ Severidad alta (NYHA III-IV, GOLD C-D, Child-Pugh C, ERC G4-G5).
+2. **$Z$ (Funcionalidad):** $\max(\text{Barthel}, \text{Lawton \& Brody})$. $Z=2$ si Barthel $\le 60$ o Lawton $\le 3$.
+3. **$AF$ (Cognitivo):** Test de Pfeiffer. $AF=2$ si presenta $\ge 5$ errores (deterioro moderado a severo).
+4. **$AL$ (Nutricional):** MNA-SF. $AL=2$ si puntaje $<8$ puntos (malnutrición establecida).
+5. **$AR$ (Social):** $\max(\text{Gijón}, \text{Zarit})$. $AR=2$ si Gijón $\ge 15$ puntos o Zarit $\ge 56$ (sobrecarga intensa del cuidador).
 
 ### Criterio de Ingreso al Programa New Care:
-- **Alta Complejidad (Valor Final = 2):** **INGRESA AL PROGRAMA NEW CARE**.
-  - Si el paciente presenta dependencia funcional severa (Barthel $\le 60$ o $Z=2$): Se asigna **Modalidad Domiciliaria** (visita mensual médica, enfermería y TS + llamada de control quincenal).
-  - Si el paciente conserva movilidad: Se asigna **Modalidad Ambulatoria** (consulta médica trimestral + llamada mensual).
-- **Media Complejidad (Valor Final = 1):** **INGRESA AL PROGRAMA NEW CARE**.
-  - Modalidad Ambulatoria: Consulta cada 4 a 6 meses + llamada cada 2 a 3 meses.
-- **Baja Complejidad (Valor Final = 0):** **NO CUMPLE CRITERIOS DE INGRESO**.
-  - Manejo preventivo continuo en Atención Primaria con control anual.
+* **Valor Final = 2 (Alta Complejidad):** **INGRESA AL PROGRAMA**.  
+  * *Si Barthel $\le 60$ o $Z=2$:* **Modalidad Domiciliaria** (visita presencial médica, enfermería y TS mensual + llamada quincenal).  
+  * *Si conserva funcionalidad:* **Modalidad Ambulatoria** (consulta médica trimestral + llamada mensual).
+* **Valor Final = 1 (Media Complejidad):** **INGRESA AL PROGRAMA**.  
+  * **Modalidad Ambulatoria** (consulta médica cada 4-6 meses + llamada cada 2-3 meses).
+* **Valor Final = 0 (Baja Complejidad):** **NO CUMPLE CRITERIOS DE INGRESO**.  
+  * Manejo preventivo continuo en Atención Primaria con control anual.
 
 ---
 
-## 5. Suite Integrada de Calculadoras de Riesgo Clínico
+## 8. SUITE DE RIESGO CLÍNICO Y CALCULADORAS MÉDICAS
 
-La herramienta incorpora calculadoras clínicas de referencia internacional para guiar las decisiones del PAI:
-1. **Riesgo Renal (CKD-EPI 2021 sin raza):**
-   - Calcula automáticamente la TFG estimada ($ml/min/1.73m^2$) a partir de Creatinina sérica, Edad y Sexo biológico.
-   - Vincula automáticamente el estadio ERC ($G1$ a $G5$) y alerta sobre ajustes de fármacos nefroprotectores.
-2. **Riesgo Hepático (Score MELD / MELD-Na):**
-   - Utiliza Bilirrubina, Creatinina, INR y Sodio sérico.
-   - Estima el riesgo de mortalidad a 3 meses en cirrosis hepática ($<10$ ptos: Bajo $\sim 1.9\%$; $10-19$ ptos: Moderado $\sim 6.0\%$; $20-29$ ptos: Alto $\sim 19.6\%$; $\ge 30$ ptos: Muy Severo $>50\%$).
-3. **Riesgo Respiratorio en EPOC (Índice BODEx):**
-   - Integra B (IMC), O (FEV1%), D (Disnea mMRC 0-4) y Ex (Exacerbaciones graves al año).
-   - Clasifica en cuartiles de riesgo de mortalidad a 4 años ($Q1$ a $Q4$).
-4. **Riesgo de Caídas en Adulto Mayor (Escala de Downton):**
-   - Evalúa 5 factores críticos: caídas previas, fármacos de riesgo (sedantes, diuréticos), déficit sensorial, estado mental y marcha.
-   - $>2$ puntos: Alerta de **Alto Riesgo de Caídas** $\rightarrow$ Activa protocolo preventivo en el PAI.
-5. **Riesgo de Lesiones por Presión (Escala de Braden):**
-   - Evalúa percepción sensorial, humedad, actividad, movilidad, nutrición y fricción (rango 6 a 23).
-   - $\le 12$ puntos: **Alto Riesgo** $\rightarrow$ Pauta colchón antiescaras y cambios posturales programados cada 2-3 horas.
-6. **Riesgo de Reingreso Hospitalario a 30 Días (Índice LACE):**
-   - Integra Días de estancia ($L$), Ingreso agudo ($A$), Comorbilidades de Charlson ($C$) y Visitas a urgencias en 6 meses ($E$).
-   - $\ge 10$ puntos: **Alto Riesgo de Reingreso** $\rightarrow$ Activa llamada de seguimiento temprano antes de 48-72 horas post-alta.
+En la pestaña **"Suite de Riesgo Clínico"**:
+* **CKD-EPI 2021 (Función Renal):** TFG calculada automáticamente sin sesgo racial a partir de creatinina, edad y sexo. Alerta de estadio ERC.
+* **MELD / MELD-Na (Cirrosis Hepática):** Mortalidad a 3 meses a partir de Bilirrubina, Creatinina, INR y Sodio.
+* **Índice BODEx (EPOC):** Integración de IMC, FEV1%, escala de disnea mMRC y exacerbaciones anuales.
+* **Escala de Downton (Riesgo de Caídas):** Puntaje $>2$ activa protocolo de caídas y adaptaciones en el hogar.
+* **Escala de Braden (Lesiones por Presión):** Puntaje $\le 12$ activa medidas preventivas y colchón antiescaras.
+* **Índice LACE (Reingreso a 30 Días):** Cuantifica riesgo de hospitalización no programada pos-alta.
 
 ---
 
-## 6. Instrucciones de Uso de las Herramientas
+## 9. RED DE CUIDADOS Y GENOGRAMA FAMILIAR
 
-### A. Para Utilizar la WebApp:
-1. Ingrese a la carpeta `WebApp_NewCare_VMD/`.
-2. Haga doble clic en el archivo **`iniciar_webapp.bat`** (iniciará el servidor local y abrirá su navegador predeterminado automáticamente).
-   *(Alternativa directa: Puede abrir directamente el archivo `index.html` en Chrome, Edge o Firefox).*
-3. En la barra superior, seleccione o configure su **Nombre** y **Rol Profesional** (Médico, Enfermera, TS, Coordinador).
-4. En la pestaña **Padrón de Pacientes**, puede consultar los casos de prueba precargados, buscar por cédula/nombre, filtrar por complejidad o crear una **Nueva Valoración**.
-5. En la pestaña **Ficha de Valoración VMD**, complete cada sección. Puede usar los botones de **"Abrir Cuestionario"** para que la herramienta sume los ítems automáticamente.
-6. En la pestaña **Suite de Riesgo Clínico**, ingrese los datos de laboratorio para obtener las estimaciones de riesgo en tiempo real.
-7. En la pestaña **Plan de Atención (PAI) & Dictamen**, revise el informe clínico consolidado con el algoritmo oficial y haga clic en **"Imprimir / Guardar en PDF"**.
+En la pestaña **"Red de Cuidados"**:
+* **Mapa Concéntrico Interactivo:** Cuantifica la red de apoyo en 3 niveles:
+  1. *Círculo Interno:* Familia conviviente y cuidadores primarios (hijos, cónyuge, nietos).
+  2. *Círculo Externo:* Familia no conviviente, vecinos, amigos cercanos, farmacia de barrio.
+  3. *Círculo Comunitario:* Centros de día, voluntariados, parroquias, grupos de apoyo.
+* **Identificación del Cuidador Principal:** Registra nombres, edad, parentesco y horas de cuidado diario para cruzar con el Índice de Zarit y prevenir el síndrome del cuidador quemado (*burnout*).
 
-### B. Para Utilizar el Archivo Excel:
-1. Abra el archivo **`Herramienta_VMD_NewCare_OptimusHealth.xlsx`** en Microsoft Excel.
-2. Navegue por las hojas diseñadas:
-   - **`Inicio & Guía NewCare`**: Resumen metodológico y lineamientos.
-   - **`Ficha VMD Individual`**: Formulario interactivo del paciente actual con listas desplegables y fórmulas automáticas de complejidad y admisión.
-   - **`Calculadoras de Riesgo`**: Hojas activas con fórmulas automáticas para CKD-EPI 2021, MELD-Na, BODEx, Downton, Braden y LACE.
-   - **`Calculadoras de Escalas`**: Desglose de ítems de Barthel, Lawton, MNA-SF, Pfeiffer, Gijón y Child-Pugh.
-   - **`Consolidado Pacientes VMD`**: Base de datos de 51 columnas con fórmulas de severidad, funcionalidad, cognición, nutrición, social, complejidad y observaciones.
-   - **`Red Cuidados`**: Registro del círculo de apoyo interno, externo y comunitario.
-   - **`Tabla auxiliar`**: Matrices maestras de referencia del programa.
+---
+
+## 10. EMISIÓN DEL PLAN DE ATENCIÓN INDIVIDUALIZADO (PAI)
+
+En la pestaña **"Plan de Atención (PAI) & Dictamen"**:
+1. **Generación Automática del Dictamen:** Resume el puntaje de cada dimensión, la clasificación de complejidad y la modalidad sugerida (Domiciliaria o Ambulatoria).
+2. **Líneas de Intervención Personalizadas:** Redacción estructurada de metas en 4 ejes:
+   * *Sanitarias / Médicas:* Control de síntomas, optimización farmacológica y metas de tensión/glucemia.
+   * *Nutricionales:* Dieta terapéutica, requerimientos proteicos y suplementación.
+   * *Psicológicas / Cognitivas:* Estimulación cognitiva y apoyo emocional familiar.
+   * *Sociales:* Articulación con redes comunitarias, subsidios y respiro al cuidador.
+3. **Formato Oficial Listo para Impresión / PDF:**  
+   Al presionar el botón **`🖨️ Imprimir Dictamen / PAI`**, se activa la hoja de estilo médica oficial con encabezados institucionales, tablas de puntajes y espacios para las firmas del equipo tratante para archivar en la Historia Clínica.
+
+---
+
+## 11. COPIAS DE SEGURIDAD Y PLAN DE CONTINGENCIA
+
+La herramienta cuenta con una triple salvaguarda de datos:
+
+1. **`Backup JSON` y `Restaurar JSON`:** Permite descargar o restaurar en 2 segundos una fotografía idéntica de la base de datos completa con todos sus cuestionarios y micro-datos.
+2. **`Exportar Excel (51 cols)`:** Genera el archivo plano oficial de 51 columnas reglamentarias de New Care para auditorías de calidad o presentación de informes a la gerencia de la EPS.
+3. **Libro Autónomo en Excel (`Herramienta_VMD_NewCare_OptimusHealth.xlsx`):** Cuaderno con fórmulas y calculadoras nativas que opera de forma vitalicia y sin necesidad de internet en cualquier equipo con Microsoft Office.
+
+---
+*Manual elaborado por Inngeniar Health Suite para Optimus Health IPS.*  
+*Versión 1.0 — Noviembre 2026.*
