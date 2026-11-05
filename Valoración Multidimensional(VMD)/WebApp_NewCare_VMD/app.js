@@ -2194,6 +2194,8 @@ function downloadImportTemplate() {
   }
 
   // Estructura de Campos Clave para Importación Masiva
+  // NOTA: Para enrolar pacientes basta con diligenciar hasta la Columna H (Criterio_Primario).
+  // Los campos de escalas VMD (I a S) se pueden dejar en blanco para ser evaluados en la WebApp.
   const templateData = [
     {
       "Documento": "1020304050",
@@ -2204,17 +2206,17 @@ function downloadImportTemplate() {
       "Telefono": "3104567890",
       "Direccion": "Calle 45 # 23-10 Sincelejo",
       "Criterio_Primario": "IC",
-      "NYHA": "Clase III",
+      "NYHA": "",
       "GOLD": "",
       "Child_Pugh": "",
       "Estadio_ERC": "",
-      "Barthel": 65,
-      "Lawton_Brody": 4,
-      "Pfeiffer": 2,
-      "MNA_SF": 9,
-      "Gijon": 12,
-      "Zarit": 35,
-      "Observaciones": "Paciente con hospitalizaciones frecuentes por falla cardíaca"
+      "Barthel": "",
+      "Lawton_Brody": "",
+      "Pfeiffer": "",
+      "MNA_SF": "",
+      "Gijon": "",
+      "Zarit": "",
+      "Observaciones": "Enrolamiento masivo inicial. Pendiente valoración VMD por equipo."
     },
     {
       "Documento": "43567891",
@@ -2226,16 +2228,16 @@ function downloadImportTemplate() {
       "Direccion": "Cra 18 # 12-40 Corozal",
       "Criterio_Primario": "EPOC",
       "NYHA": "",
-      "GOLD": "Grupo D",
+      "GOLD": "",
       "Child_Pugh": "",
       "Estadio_ERC": "",
-      "Barthel": 50,
-      "Lawton_Brody": 3,
-      "Pfeiffer": 4,
-      "MNA_SF": 7,
-      "Gijon": 16,
-      "Zarit": 48,
-      "Observaciones": "Oxigenorrequiriente, cuidador con sobrecarga intensa"
+      "Barthel": "",
+      "Lawton_Brody": "",
+      "Pfeiffer": "",
+      "MNA_SF": "",
+      "Gijon": "",
+      "Zarit": "",
+      "Observaciones": "Paciente candidato a programa New Care."
     },
     {
       "Documento": "98765432",
@@ -2256,7 +2258,7 @@ function downloadImportTemplate() {
       "MNA_SF": 11,
       "Gijon": 9,
       "Zarit": 25,
-      "Observaciones": "Cirrosis hepática compensada sin ascitis refractaria"
+      "Observaciones": "Ejemplo de paciente que ya traía valoración previa completa."
     }
   ];
 
@@ -2349,16 +2351,53 @@ function handleImportExcelCSV(e) {
         const cp = normalized["child_pugh"] || normalized["childpugh"] || "Grado B";
         const erc = normalized["estadio_erc"] || normalized["erc"] || "Estadio 3a";
 
-        // Escalas
-        const barthel = normalized["barthel"] !== "" ? parseInt(normalized["barthel"]) : 75;
-        const lawton = normalized["lawton_brody"] !== "" ? parseInt(normalized["lawton_brody"]) : 5;
-        const pfeiffer = normalized["pfeiffer"] !== "" ? parseInt(normalized["pfeiffer"]) : 1;
-        const mna = normalized["mna_sf"] !== "" ? parseInt(normalized["mna_sf"]) : 11;
-        const gijon = normalized["gijon"] !== "" ? parseInt(normalized["gijon"]) : 10;
-        const zarit = normalized["zarit"] !== "" ? parseInt(normalized["zarit"]) : 28;
+        // Verificar si el archivo trae escalas diligenciadas (Col I en adelante)
+        // o si es una carga masiva basal (solo hasta Columna H: Criterio Primario)
+        const hasScales = Boolean(
+          normalized["barthel"] || normalized["pfeiffer"] || normalized["mna_sf"] ||
+          normalized["gijon"] || normalized["zarit"] || normalized["nyha"] ||
+          normalized["gold"] || normalized["child_pugh"] || normalized["estadio_erc"]
+        );
 
-        // Calcular Score New Care
-        const scores = calculateImportedScores(crit, nyha, gold, cp, erc, barthel, lawton, pfeiffer, mna, gijon, zarit);
+        let barthel = normalized["barthel"] !== "" ? parseInt(normalized["barthel"]) : 100;
+        let lawton = normalized["lawton_brody"] !== "" ? parseInt(normalized["lawton_brody"]) : 8;
+        let pfeiffer = normalized["pfeiffer"] !== "" ? parseInt(normalized["pfeiffer"]) : 0;
+        let mna = normalized["mna_sf"] !== "" ? parseInt(normalized["mna_sf"]) : 14;
+        let gijon = normalized["gijon"] !== "" ? parseInt(normalized["gijon"]) : 5;
+        let zarit = normalized["zarit"] !== "" ? parseInt(normalized["zarit"]) : 22;
+
+        let scores;
+        let vmdDate = "";
+        let paiPlan = {};
+
+        if (hasScales) {
+          scores = calculateImportedScores(crit, nyha, gold, cp, erc, barthel, lawton, pfeiffer, mna, gijon, zarit);
+          vmdDate = new Date().toISOString().split("T")[0];
+          paiPlan = {
+            sanitarias: scores.admitsProgram ? "Ingreso a Programa New Care. Visitas clínicas interdisciplinarias y control de polimedicación." : "Control en Atención Primaria.",
+            nutricionales: mna < 11 ? "Evaluación por Nutrición Clínica. Dieta hiperproteica y suplementación calórica." : "Mantenimiento nutricional preventivo.",
+            psicologicas: pfeiffer >= 3 ? "Taller de estimulación neurocognitiva y apoyo al cuidador principal." : "Acompañamiento básico.",
+            sociales: zarit >= 47 ? "Intervención urgente de Trabajo Social por sobrecarga del cuidador. Respiro familiar." : "Monitoreo de red de apoyo comunitaria."
+          };
+        } else {
+          // CARGA HASTA COLUMNA H: Paciente enrolado listo para valoración VMD en la app
+          scores = {
+            T: 0, Z: 0, AF: 0, AL: 0, AR: 0,
+            finalScore: 0,
+            complexityText: "Pendiente de Valoración VMD",
+            admitsProgram: false,
+            isPending: true,
+            sNyha: 0, sGold: 0, sCp: 0, sErc: 0,
+            sBarthel: 0, sLawton: 0, sPfeiffer: 0, sMnaSf: 0, sGijon: 0, sZarit: 0
+          };
+          vmdDate = ""; // Sin fecha de VMD aún
+          paiPlan = {
+            sanitarias: "Paciente pendiente de realización de Valoración Multidimensional (VMD) por equipo interdisciplinario.",
+            nutricionales: "Pendiente de valoración MNA.",
+            psicologicas: "Pendiente de evaluación cognitiva.",
+            sociales: "Pendiente de valoración de riesgo social (Gijón/Zarit)."
+          };
+        }
 
         const newPat = {
           id: doc,
@@ -2370,10 +2409,10 @@ function handleImportExcelCSV(e) {
           tel: telefono,
           dir: direccion,
           crit: crit,
-          nyha: nyha,
-          gold: gold,
-          childPugh: cp,
-          ercStage: erc,
+          nyha: hasScales ? nyha : "CLASE I",
+          gold: hasScales ? gold : "No aplica",
+          childPugh: hasScales ? cp : "No aplica",
+          ercStage: hasScales ? erc : "G1",
           barthel: barthel,
           lawton: lawton,
           pfeiffer: pfeiffer,
@@ -2381,13 +2420,9 @@ function handleImportExcelCSV(e) {
           gijon: gijon,
           zarit: zarit,
           res: scores,
-          vmdDate: new Date().toISOString().split("T")[0],
-          pai: {
-            sanitarias: scores.admitsProgram ? "Ingreso a Programa New Care. Visitas clínicas interdisciplinarias y control de polimedicación." : "Control en Atención Primaria.",
-            nutricionales: mna < 11 ? "Evaluación por Nutrición Clínica. Dieta hiperproteica y suplementación calórica." : "Mantenimiento nutricional preventivo.",
-            psicologicas: pfeiffer >= 3 ? "Taller de estimulación neurocognitiva y apoyo al cuidador principal." : "Acompañamiento básico.",
-            sociales: zarit >= 47 ? "Intervención urgente de Trabajo Social por sobrecarga del cuidador. Respiro familiar." : "Monitoreo de red de apoyo comunitaria."
-          },
+          isPending: !hasScales,
+          vmdDate: vmdDate,
+          pai: paiPlan,
           observaciones: obs
         };
 
