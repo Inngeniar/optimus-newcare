@@ -1301,6 +1301,9 @@
         <!-- ======================================================== -->
     <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
     <!-- ======================================================== -->
+        <!-- ======================================================== -->
+    <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
+    <!-- ======================================================== -->
     <section id="tab-guia" class="tab-content" style="display: none;">
       <div class="card">
         <div class="card-header" style="flex-wrap: wrap; gap: 12px; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px;">
@@ -1564,9 +1567,14 @@
           <div class="card-title">
             <i data-lucide="users-2" style="color: var(--primary);"></i> Directorio de Miembros del Equipo de Salud Tratante
           </div>
-          <button class="btn btn-primary" onclick="openNewProfessionalModal()">
-            <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> Registrar Nuevo Profesional
-          </button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="openRolesManagementModal()">
+              <i data-lucide="settings-2" style="width: 14px; height: 14px;"></i> Gestionar Roles del Equipo
+            </button>
+            <button class="btn btn-primary" onclick="openNewProfessionalModal()">
+              <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> Registrar Nuevo Profesional
+            </button>
+          </div>
         </div>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
           Todos los profesionales matriculados quedan disponibles en el sistema para firmar y registrar sus evaluaciones clínicas. Los datos se almacenan de forma permanente y compartida en el servidor central.
@@ -1613,13 +1621,32 @@
             <input type="text" id="edit-prof-name" class="form-control" placeholder="Ej: Dr. Fernando Castro">
           </div>
           <div class="form-group">
-            <label class="form-label">Rol en el Programa New Care</label>
-            <select id="edit-prof-role" class="form-control" onchange="updateRoleDefaults()">
-              <option value="MED">Médico Internista / Geriatra</option>
-              <option value="ENF">Enfermera(o) Jefe</option>
-              <option value="TS">Trabajador(a) Social</option>
-              <option value="COORD">Coordinador(a) / Junta de Cronicidad</option>
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Rol en el Programa New Care</span>
+              <a href="javascript:void(0)" onclick="openRolesManagementModal()" style="font-size: 11px; color: #2563eb; text-decoration: none; font-weight: 600;">
+                ⚙️ Configurar Roles
+              </a>
+            </label>
+            <select id="edit-prof-role" class="form-control" onchange="onModalRoleChange(this.value)">
+              <!-- Poblado dinámicamente por JS desde stateRoles -->
             </select>
+          </div>
+          <div id="inline-custom-role-box" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px; margin-bottom: 12px;">
+            <div style="font-weight: 700; font-size: 12px; color: #1e40af; margin-bottom: 4px;">Definir Nuevo Rol Personalizado</div>
+            <div class="form-group" style="margin-bottom: 6px;">
+              <input type="text" id="inline-custom-role-name" class="form-control" placeholder="Ej: Nutricionista Clínico(a), Médico Paliativista, Psicólogo(a)..." style="font-size: 12px;">
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <select id="inline-custom-role-cat" class="form-control" style="font-size: 12px;">
+                <option value="MED">Categoría: Médica</option>
+                <option value="ENF">Categoría: Enfermería</option>
+                <option value="TS">Categoría: Social</option>
+                <option value="NUT">Categoría: Nutrición</option>
+                <option value="PSI">Categoría: Psicología</option>
+                <option value="TERAP">Categoría: Terapia</option>
+                <option value="COORD">Categoría: Coordinación / Junta</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">No. Cédula de Ciudadanía</label>
@@ -1948,6 +1975,70 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('modal-supabase')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: GESTIÓN Y CATÁLOGO DE ROLES DEL EQUIPO -->
+  <!-- ======================================================== -->
+  <div id="modal-manage-roles" class="modal-overlay">
+    <div class="modal-container" style="max-width: 650px;">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="settings-2" style="color: var(--primary);"></i> Catálogo y Gestión de Roles del Equipo
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-manage-roles')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12.5px; color: #475569; margin-bottom: 14px;">
+          Personalice la denominación de los roles, modifique los existentes o agregue nuevas disciplinas (Nutrición, Psicología, Fisioterapia, etc.) para adaptarlos al modelo de atención de Optimus Health.
+        </p>
+
+        <!-- Formulario para agregar / editar rol -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+          <input type="hidden" id="manage-role-edit-id" value="">
+          <div style="font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 8px;" id="manage-role-form-title">
+            + Agregar Nuevo Rol al Catálogo
+          </div>
+          <div class="grid-2">
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label class="form-label">Nombre del Rol</label>
+              <input type="text" id="manage-role-name" class="form-control" placeholder="Ej: Médico Internista / Geriatra">
+            </div>
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label class="form-label">Disciplina / Categoría</label>
+              <select id="manage-role-cat" class="form-control">
+                <option value="MED">Médica (Médicos Internistas, Geriatras, Generales)</option>
+                <option value="ENF">Enfermería (EPA, Jefes, Cuidados Paliativos)</option>
+                <option value="TS">Trabajo Social / Gestión Sociosanitaria</option>
+                <option value="NUT">Nutrición y Dietética Clínica</option>
+                <option value="PSI">Psicología y Acompañamiento</option>
+                <option value="TERAP">Terapias (Fisioterapia, Respiratoria, Ocupacional)</option>
+                <option value="COORD">Coordinación, Junta y Dirección Médica</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-edit-role" onclick="resetRoleForm()" style="display: none;">Cancelar Edición</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveRoleFromManager()">
+              <i data-lucide="save" style="width: 14px; height: 14px;"></i> Guardar Rol
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista de roles -->
+        <div style="font-weight: 700; font-size: 13px; color: #0f172a; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Roles Registrados</span>
+          <span id="roles-count-label" class="badge badge-primary" style="font-size: 11px;">0 roles</span>
+        </div>
+        <div id="roles-manager-list" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <!-- Poblado por JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('modal-manage-roles')">Listo / Finalizar</button>
       </div>
     </div>
   </div>

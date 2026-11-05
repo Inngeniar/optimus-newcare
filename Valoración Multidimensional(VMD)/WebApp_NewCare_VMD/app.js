@@ -1636,16 +1636,67 @@ function exportDataCSV() {
 // Global bootstrap
 
 // ============================================================================
-// MODULO: EQUIPO DE SALUD INTERDISCIPLINARIO & GESTION DE EVALUADORES
+// MODULO: EQUIPO DE SALUD INTERDISCIPLINARIO & GESTION DE ROLES DINÁMICOS
 // ============================================================================
 const STORAGE_PROF_KEY = "newcare_vmd_profesionales_v1";
+const STORAGE_ROLES_KEY = "newcare_vmd_roles_v2";
+
+// Catálogo Base de Roles Oficiales New Care (Personalizable y Extensible)
+const defaultRoles = [
+  { id: "ROLE-001", name: "Médico Internista / Geriatra", category: "MED" },
+  { id: "ROLE-002", name: "Médico General de Cronicidad", category: "MED" },
+  { id: "ROLE-003", name: "Enfermera(o) de Práctica Avanzada (EPA)", category: "ENF" },
+  { id: "ROLE-004", name: "Enfermera(o) Jefe de Cronicidad", category: "ENF" },
+  { id: "ROLE-005", name: "Trabajador(a) Social Sociosanitaria", category: "TS" },
+  { id: "ROLE-006", name: "Nutricionista Clínico(a)", category: "NUT" },
+  { id: "ROLE-007", name: "Psicólogo(a) Clínico(a)", category: "PSI" },
+  { id: "ROLE-008", name: "Fisioterapeuta / Terapia Respiratoria", category: "TERAP" },
+  { id: "ROLE-009", name: "Coordinador(a) / Junta de Cronicidad", category: "COORD" }
+];
+
+let stateRoles = [];
+
+function loadRoles() {
+  try {
+    const raw = localStorage.getItem(STORAGE_ROLES_KEY);
+    if (raw) {
+      stateRoles = JSON.parse(raw);
+    } else {
+      stateRoles = JSON.parse(JSON.stringify(defaultRoles));
+      saveRoles();
+    }
+  } catch (e) {
+    console.error("Error loading roles", e);
+    stateRoles = JSON.parse(JSON.stringify(defaultRoles));
+  }
+}
+
+function saveRoles() {
+  try {
+    localStorage.setItem(STORAGE_ROLES_KEY, JSON.stringify(stateRoles));
+  } catch (e) {
+    console.error("Error saving roles", e);
+  }
+}
+
+function getRoleBadgeClass(categoryOrName) {
+  const cat = (categoryOrName || "").toUpperCase();
+  if (cat.includes("MED")) return "badge-med";
+  if (cat.includes("ENF")) return "badge-enf";
+  if (cat.includes("TS") || cat.includes("SOC")) return "badge-ts";
+  if (cat.includes("NUT")) return "badge-nut";
+  if (cat.includes("PSI")) return "badge-psi";
+  if (cat.includes("TERAP") || cat.includes("FISIO")) return "badge-terap";
+  if (cat.includes("COORD") || cat.includes("JUNTA")) return "badge-coord";
+  return "badge-gen";
+}
 
 const defaultProfesionales = [
   {
     id: "EQ-001",
     nombre: "Dr. Carlos Restrepo Mendoza",
     rol: "MED",
-    rolNombre: "Médico Internista / Evaluador Senior",
+    rolNombre: "Médico Internista / Geriatra",
     cedula: "71234567",
     registro: "RM-98432-COL",
     especialidad: "Medicina Interna y Cronicidad IOCC",
@@ -1706,10 +1757,18 @@ const defaultProfesionales = [
 let stateProfesionales = [];
 
 function loadProfessionals() {
+  loadRoles();
   try {
     const raw = localStorage.getItem(STORAGE_PROF_KEY);
     if (raw) {
       stateProfesionales = JSON.parse(raw);
+      // Sanitización: si algún profesional tiene el texto antiguo "Evaluador Senior", corregirlo
+      stateProfesionales.forEach(p => {
+        if (p.rolNombre === "Médico Internista / Evaluador Senior") {
+          p.rolNombre = "Médico Internista / Geriatra";
+        }
+      });
+      saveProfessionals();
     } else {
       stateProfesionales = JSON.parse(JSON.stringify(defaultProfesionales));
       saveProfessionals();
@@ -1739,13 +1798,12 @@ function populateEvaluatorDropdowns() {
   stateProfesionales.forEach(p => {
     const opt = document.createElement("option");
     opt.value = p.id;
-    opt.textContent = `${p.nombre} (${p.rol})`;
+    opt.textContent = `${p.nombre} (${p.rolNombre || p.rol})`;
     opt.style.backgroundColor = "#0f172a";
     opt.style.color = "#ffffff";
     sel.appendChild(opt);
   });
 
-  // Keep current active selection or default to first
   const activeId = localStorage.getItem("newcare_active_evaluator_id") || (stateProfesionales[0] ? stateProfesionales[0].id : "");
   if (activeId) {
     sel.value = activeId;
@@ -1765,17 +1823,14 @@ function updateActiveEvaluatorBadge(profId) {
   const badge = document.getElementById("header-user-role-badge");
   if (badge) {
     badge.textContent = prof.rolNombre || prof.rol;
-    badge.className = "badge-role " + (
-      prof.rol === "MED" ? "badge-med" :
-      prof.rol === "ENF" ? "badge-enf" :
-      prof.rol === "TS" ? "badge-ts" : "badge-coord"
-    );
+    badge.className = "badge-role " + getRoleBadgeClass(prof.rol);
   }
 
-  // Update currentUser object for evaluations audit
+  // Actualizar objeto currentUser para trazabilidad de auditoría
   currentUser = {
     name: prof.nombre,
     role: prof.rol,
+    rolNombre: prof.rolNombre,
     reg: prof.registro,
     doc: prof.cedula
   };
@@ -1788,8 +1843,7 @@ function renderTeamDirectory() {
   tbody.innerHTML = "";
   stateProfesionales.forEach(p => {
     const tr = document.createElement("tr");
-
-    const roleBadgeClass = p.rol === "MED" ? "badge-med" : (p.rol === "ENF" ? "badge-enf" : (p.rol === "TS" ? "badge-ts" : "badge-coord"));
+    const roleBadgeClass = getRoleBadgeClass(p.rol);
     const statusColor = p.estado === "Activo" ? "#16a34a" : "#94a3b8";
 
     tr.innerHTML = `
@@ -1828,16 +1882,74 @@ function renderTeamDirectory() {
   if (window.lucide) lucide.createIcons();
 }
 
+// ----------------------------------------------------------------------------
+// GESTIÓN DINÁMICA DE ROLES EN MODAL DE PROFESIONAL
+// ----------------------------------------------------------------------------
+function populateRoleSelectOptions(selectedRoleIdOrName) {
+  const sel = document.getElementById("edit-prof-role");
+  if (!sel) return;
+
+  sel.innerHTML = "";
+  stateRoles.forEach(r => {
+    const opt = document.createElement("option");
+    opt.value = r.id;
+    opt.textContent = `${r.name}`;
+    sel.appendChild(opt);
+  });
+
+  // Opción especial para crear nuevo rol
+  const optNew = document.createElement("option");
+  optNew.value = "__NEW_CUSTOM_ROLE__";
+  optNew.textContent = "➕ Agregar / Definir Nuevo Rol...";
+  optNew.style.color = "#2563eb";
+  optNew.style.fontWeight = "700";
+  sel.appendChild(optNew);
+
+  // Seleccionar rol adecuado
+  if (selectedRoleIdOrName) {
+    const byId = stateRoles.find(r => r.id === selectedRoleIdOrName);
+    const byName = stateRoles.find(r => r.name.toLowerCase() === selectedRoleIdOrName.toLowerCase());
+    if (byId) {
+      sel.value = byId.id;
+    } else if (byName) {
+      sel.value = byName.id;
+    } else {
+      sel.selectedIndex = 0;
+    }
+  } else {
+    sel.selectedIndex = 0;
+  }
+
+  onModalRoleChange(sel.value);
+}
+
+function onModalRoleChange(val) {
+  const box = document.getElementById("inline-custom-role-box");
+  if (!box) return;
+
+  if (val === "__NEW_CUSTOM_ROLE__") {
+    box.style.display = "block";
+    const nameInput = document.getElementById("inline-custom-role-name");
+    if (nameInput) {
+      nameInput.value = "";
+      nameInput.focus();
+    }
+  } else {
+    box.style.display = "none";
+  }
+}
+
 function openNewProfessionalModal() {
   document.getElementById("edit-prof-id").value = "";
   document.getElementById("edit-prof-name").value = "";
-  document.getElementById("edit-prof-role").value = "MED";
   document.getElementById("edit-prof-doc").value = "";
   document.getElementById("edit-prof-reg").value = "";
   document.getElementById("edit-prof-spec").value = "";
   document.getElementById("edit-prof-phone").value = "";
   document.getElementById("edit-prof-email").value = "";
   document.getElementById("modal-new-prof-title").textContent = "Registrar Nuevo Miembro del Equipo de Salud";
+  
+  populateRoleSelectOptions("ROLE-001"); // Por defecto: Médico Internista / Geriatra
   openModal("modal-new-prof");
 }
 
@@ -1847,47 +1959,68 @@ function editProfessionalRecord(id) {
 
   document.getElementById("edit-prof-id").value = p.id;
   document.getElementById("edit-prof-name").value = p.nombre || "";
-  document.getElementById("edit-prof-role").value = p.rol || "MED";
   document.getElementById("edit-prof-doc").value = p.cedula || "";
   document.getElementById("edit-prof-reg").value = p.registro || "";
   document.getElementById("edit-prof-spec").value = p.especialidad || "";
   document.getElementById("edit-prof-phone").value = p.telefono || "";
   document.getElementById("edit-prof-email").value = p.email || "";
   document.getElementById("modal-new-prof-title").textContent = "Editar Miembro del Equipo de Salud";
+
+  populateRoleSelectOptions(p.rolNombre || p.rol);
   openModal("modal-new-prof");
 }
 
 function saveProfessionalRecord() {
   const idField = document.getElementById("edit-prof-id").value;
   const nombre = document.getElementById("edit-prof-name").value.trim();
-  const rol = document.getElementById("edit-prof-role").value;
   const cedula = document.getElementById("edit-prof-doc").value.trim();
   const registro = document.getElementById("edit-prof-reg").value.trim();
   const especialidad = document.getElementById("edit-prof-spec").value.trim();
   const telefono = document.getElementById("edit-prof-phone").value.trim();
   const email = document.getElementById("edit-prof-email").value.trim();
+  const roleSelectVal = document.getElementById("edit-prof-role").value;
 
   if (!nombre) {
     alert("Por favor ingrese los nombres y apellidos del profesional.");
     return;
   }
 
-  const rolNombres = {
-    "MED": "Médico Internista / Evaluador Senior",
-    "ENF": "Enfermera(o) de Práctica Avanzada",
-    "TS": "Trabajador(a) Social Sociosanitaria",
-    "COORD": "Coordinador(a) / Junta de Cronicidad"
-  };
+  let finalRolNombre = "";
+  let finalRolCat = "MED";
+
+  if (roleSelectVal === "__NEW_CUSTOM_ROLE__") {
+    const customName = document.getElementById("inline-custom-role-name").value.trim();
+    const customCat = document.getElementById("inline-custom-role-cat").value;
+    if (!customName) {
+      alert("Por favor ingrese el nombre del nuevo rol personalizado.");
+      return;
+    }
+    // Registrar el nuevo rol en el catálogo
+    const newRoleId = "ROLE-" + Date.now();
+    stateRoles.push({ id: newRoleId, name: customName, category: customCat });
+    saveRoles();
+    finalRolNombre = customName;
+    finalRolCat = customCat;
+  } else {
+    const foundRole = stateRoles.find(r => r.id === roleSelectVal);
+    if (foundRole) {
+      finalRolNombre = foundRole.name;
+      finalRolCat = foundRole.category || "MED";
+    } else {
+      finalRolNombre = roleSelectVal;
+      finalRolCat = "MED";
+    }
+  }
 
   if (idField) {
-    // Editar
+    // Editar profesional existente
     const idx = stateProfesionales.findIndex(x => x.id === idField);
     if (idx !== -1) {
       stateProfesionales[idx] = {
         ...stateProfesionales[idx],
         nombre,
-        rol,
-        rolNombre: rolNombres[rol] || rol,
+        rol: finalRolCat,
+        rolNombre: finalRolNombre,
         cedula,
         registro,
         especialidad,
@@ -1896,13 +2029,13 @@ function saveProfessionalRecord() {
       };
     }
   } else {
-    // Crear nuevo
+    // Crear nuevo profesional
     const newId = "EQ-" + String(stateProfesionales.length + 1).padStart(3, "0");
     stateProfesionales.push({
       id: newId,
       nombre,
-      rol,
-      rolNombre: rolNombres[rol] || rol,
+      rol: finalRolCat,
+      rolNombre: finalRolNombre,
       cedula,
       registro,
       especialidad,
@@ -1916,7 +2049,10 @@ function saveProfessionalRecord() {
   populateEvaluatorDropdowns();
   renderTeamDirectory();
   closeModal("modal-new-prof");
-  alert("Profesional guardado exitosamente en el Directorio New Care.");
+  alert(`✅ Profesional guardado exitosamente:
+
+• Nombre: ${nombre}
+• Rol Asignado: ${finalRolNombre}`);
 }
 
 function deleteProfessionalRecord(id) {
@@ -1932,7 +2068,135 @@ function deleteProfessionalRecord(id) {
   renderTeamDirectory();
 }
 
-// ============================================================================
+// ----------------------------------------------------------------------------
+// MODAL GESTOR DE CATÁLOGO DE ROLES (CREAR, EDITAR, RENOMBRAR, ELIMINAR)
+// ----------------------------------------------------------------------------
+function openRolesManagementModal() {
+  resetRoleForm();
+  renderRolesManagerList();
+  openModal("modal-manage-roles");
+}
+
+function renderRolesManagerList() {
+  const container = document.getElementById("roles-manager-list");
+  const countLabel = document.getElementById("roles-count-label");
+  if (!container) return;
+
+  if (countLabel) countLabel.textContent = `${stateRoles.length} roles`;
+  container.innerHTML = "";
+
+  stateRoles.forEach(r => {
+    const item = document.createElement("div");
+    item.style.padding = "10px 14px";
+    item.style.borderBottom = "1px solid #f1f5f9";
+    item.style.display = "flex";
+    item.style.alignItems = "center";
+    item.style.justifyContent = "space-between";
+    item.style.gap = "10px";
+
+    const badgeClass = getRoleBadgeClass(r.category);
+
+    item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge-role ${badgeClass}">${r.category}</span>
+        <span style="font-weight: 700; color: #1e293b; font-size: 13px;">${r.name}</span>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn btn-secondary btn-sm" onclick="editRoleInManager('${r.id}')" title="Modificar denominación del rol">
+          <i data-lucide="edit-2" style="width: 12px; height: 12px;"></i>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="deleteRoleInManager('${r.id}')" title="Eliminar rol" style="color: #ef4444;">
+          <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+        </button>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function editRoleInManager(roleId) {
+  const r = stateRoles.find(x => x.id === roleId);
+  if (!r) return;
+
+  document.getElementById("manage-role-edit-id").value = r.id;
+  document.getElementById("manage-role-name").value = r.name;
+  document.getElementById("manage-role-cat").value = r.category || "MED";
+  document.getElementById("manage-role-form-title").textContent = "✏️ Modificar / Renombrar Rol";
+  document.getElementById("btn-cancel-edit-role").style.display = "inline-flex";
+}
+
+function resetRoleForm() {
+  document.getElementById("manage-role-edit-id").value = "";
+  document.getElementById("manage-role-name").value = "";
+  document.getElementById("manage-role-cat").value = "MED";
+  document.getElementById("manage-role-form-title").textContent = "+ Agregar Nuevo Rol al Catálogo";
+  document.getElementById("btn-cancel-edit-role").style.display = "none";
+}
+
+function saveRoleFromManager() {
+  const editId = document.getElementById("manage-role-edit-id").value;
+  const name = document.getElementById("manage-role-name").value.trim();
+  const category = document.getElementById("manage-role-cat").value;
+
+  if (!name) {
+    alert("Por favor ingrese la denominación del rol.");
+    return;
+  }
+
+  if (editId) {
+    // Actualizar rol existente
+    const idx = stateRoles.findIndex(x => x.id === editId);
+    if (idx !== -1) {
+      const oldName = stateRoles[idx].name;
+      stateRoles[idx].name = name;
+      stateRoles[idx].category = category;
+
+      // Actualizar en cascada a los profesionales que tenían el nombre antiguo
+      stateProfesionales.forEach(p => {
+        if (p.rolNombre === oldName) {
+          p.rolNombre = name;
+          p.rol = category;
+        }
+      });
+      saveProfessionals();
+    }
+  } else {
+    // Crear nuevo rol
+    const newId = "ROLE-" + Date.now();
+    stateRoles.push({ id: newId, name, category });
+  }
+
+  saveRoles();
+  resetRoleForm();
+  renderRolesManagerList();
+  renderTeamDirectory();
+  populateEvaluatorDropdowns();
+  alert("Rol guardado exitosamente en el catálogo New Care.");
+}
+
+function deleteRoleInManager(roleId) {
+  if (stateRoles.length <= 1) {
+    alert("Debe existir al menos un rol en el catálogo.");
+    return;
+  }
+  const r = stateRoles.find(x => x.id === roleId);
+  if (!r) return;
+
+  // Verificar si hay profesionales usando este rol
+  const inUse = stateProfesionales.some(p => p.rolNombre === r.name);
+  if (inUse) {
+    alert(`No se puede eliminar el rol "${r.name}" porque actualmente está asignado a miembros activos del equipo de salud.`);
+    return;
+  }
+
+  if (!confirm(`¿Está seguro de eliminar el rol "${r.name}"?`)) return;
+
+  stateRoles = stateRoles.filter(x => x.id !== roleId);
+  saveRoles();
+  renderRolesManagerList();
+}
 // MODULO: CONEXION NUBE SUPABASE (POSTGRESQL & REALTIME SYNC)
 // ============================================================================
 const SUPABASE_URL_KEY = "newcare_supabase_url";
@@ -2088,7 +2352,7 @@ async function syncAllWithSupabase() {
     // 1. Cargar profesionales de Supabase
     const { data: profs, error: errP } = await window.supabaseClient.from("profesionales").select("*");
     if (!errP && profs && profs.length > 0) {
-      stateProfesionales = profs;
+      stateProfesionales = profs.map(p => ({ ...p, rolNombre: p.rol_nombre || p.rolNombre || p.rol }));
       localStorage.setItem(STORAGE_PROF_KEY, JSON.stringify(stateProfesionales));
       populateEvaluatorDropdowns();
       renderTeamDirectory();
