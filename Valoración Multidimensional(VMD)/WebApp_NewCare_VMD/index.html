@@ -9,6 +9,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Supabase Cloud Database SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SheetJS para Importacion y Exportacion Masiva en Excel (.xlsx) y CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -91,20 +93,28 @@
           <div class="card-title">
             <i data-lucide="folder-kanban" style="color: var(--primary);"></i> Gestión de Pacientes con Insuficiencias Orgánicas Crónicas (IOCC)
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
             <button class="btn btn-primary" onclick="createNewPatient()">
               <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> Nueva Valoración
             </button>
+            <!-- Importación Masiva Excel / CSV -->
+            <button class="btn btn-secondary" onclick="triggerImportExcelCSV()" title="Carga masiva de pacientes desde Excel (.xlsx) o CSV" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #047857; font-weight: 700;">
+              <i data-lucide="file-up" style="width: 14px; height: 14px;"></i> Importar Excel / CSV
+            </button>
+            <button class="btn btn-secondary" onclick="downloadImportTemplate()" title="Descargar plantilla modelo Excel con los campos clave" style="border: 1px solid #cbd5e1;">
+              <i data-lucide="file-down" style="width: 14px; height: 14px;"></i> Plantilla Excel
+            </button>
+            <button class="btn btn-secondary" onclick="exportDataCSV()" title="Exportar consolidado oficial de 51 columnas para Excel NewCare">
+              <i data-lucide="file-spreadsheet" style="width: 14px; height: 14px;"></i> Exportar Excel (51 cols)
+            </button>
             <button class="btn btn-secondary" onclick="exportDataJSON()" title="Descargar copia de seguridad en JSON">
-              <i data-lucide="download" style="width: 14px; height: 14px;"></i> Exportar JSON
+              <i data-lucide="download" style="width: 14px; height: 14px;"></i> Backup JSON
             </button>
-            <button class="btn btn-secondary" onclick="exportDataCSV()" title="Exportar formato compatible con Excel NewCare">
-              <i data-lucide="file-spreadsheet" style="width: 14px; height: 14px;"></i> Exportar Excel / CSV
-            </button>
-            <button class="btn btn-secondary" onclick="triggerImportJSON()" title="Cargar evaluaciones previas">
-              <i data-lucide="upload" style="width: 14px; height: 14px;"></i> Importar JSON
+            <button class="btn btn-secondary" onclick="triggerImportJSON()" title="Cargar evaluaciones previas en JSON">
+              <i data-lucide="upload" style="width: 14px; height: 14px;"></i> Restaurar JSON
             </button>
             <input type="file" id="import-json-file" style="display: none;" accept=".json" onchange="handleImportJSON(event)">
+            <input type="file" id="import-excel-file" style="display: none;" accept=".xlsx,.xls,.csv" onchange="handleImportExcelCSV(event)">
           </div>
         </div>
 

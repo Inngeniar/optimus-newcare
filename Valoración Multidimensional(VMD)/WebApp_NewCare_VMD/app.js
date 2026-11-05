@@ -2174,4 +2174,312 @@ saveToStorage = function() {
   }
 };
 
+
+// ============================================================================
+// MODULO: IMPORTACIÓN Y EXPORTACIÓN MASIVA (EXCEL .XLSX / CSV)
+// ============================================================================
+
+function triggerImportExcelCSV() {
+  const fileInput = document.getElementById("import-excel-file");
+  if (fileInput) {
+    fileInput.value = "";
+    fileInput.click();
+  }
+}
+
+function downloadImportTemplate() {
+  if (typeof XLSX === "undefined") {
+    alert("La librería de procesamiento Excel aún se está cargando. Espere un segundo y vuelva a intentar.");
+    return;
+  }
+
+  // Estructura de Campos Clave para Importación Masiva
+  const templateData = [
+    {
+      "Documento": "1020304050",
+      "Nombre_Completo": "Juan Alberto Gómez Pérez",
+      "Edad": 72,
+      "Sexo": "M",
+      "EPS": "Sura EPS",
+      "Telefono": "3104567890",
+      "Direccion": "Calle 45 # 23-10 Sincelejo",
+      "Criterio_Primario": "IC",
+      "NYHA": "Clase III",
+      "GOLD": "",
+      "Child_Pugh": "",
+      "Estadio_ERC": "",
+      "Barthel": 65,
+      "Lawton_Brody": 4,
+      "Pfeiffer": 2,
+      "MNA_SF": 9,
+      "Gijon": 12,
+      "Zarit": 35,
+      "Observaciones": "Paciente con hospitalizaciones frecuentes por falla cardíaca"
+    },
+    {
+      "Documento": "43567891",
+      "Nombre_Completo": "María Elena Restrepo Cárdenas",
+      "Edad": 68,
+      "Sexo": "F",
+      "EPS": "Nueva EPS",
+      "Telefono": "3156781234",
+      "Direccion": "Cra 18 # 12-40 Corozal",
+      "Criterio_Primario": "EPOC",
+      "NYHA": "",
+      "GOLD": "Grupo D",
+      "Child_Pugh": "",
+      "Estadio_ERC": "",
+      "Barthel": 50,
+      "Lawton_Brody": 3,
+      "Pfeiffer": 4,
+      "MNA_SF": 7,
+      "Gijon": 16,
+      "Zarit": 48,
+      "Observaciones": "Oxigenorrequiriente, cuidador con sobrecarga intensa"
+    },
+    {
+      "Documento": "98765432",
+      "Nombre_Completo": "Roberto Carlos Mendoza",
+      "Edad": 64,
+      "Sexo": "M",
+      "EPS": "Sanitas",
+      "Telefono": "3001122334",
+      "Direccion": "Barrio Boston Sincelejo",
+      "Criterio_Primario": "CIRROSIS",
+      "NYHA": "",
+      "GOLD": "",
+      "Child_Pugh": "Grado B",
+      "Estadio_ERC": "",
+      "Barthel": 80,
+      "Lawton_Brody": 6,
+      "Pfeiffer": 1,
+      "MNA_SF": 11,
+      "Gijon": 9,
+      "Zarit": 25,
+      "Observaciones": "Cirrosis hepática compensada sin ascitis refractaria"
+    }
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Plantilla_Pacientes_NewCare");
+
+  // Anchos automáticos de columnas
+  ws["!cols"] = [
+    { wch: 14 }, // Documento
+    { wch: 32 }, // Nombre
+    { wch: 8 },  // Edad
+    { wch: 8 },  // Sexo
+    { wch: 14 }, // EPS
+    { wch: 14 }, // Telefono
+    { wch: 28 }, // Direccion
+    { wch: 18 }, // Criterio_Primario
+    { wch: 12 }, // NYHA
+    { wch: 12 }, // GOLD
+    { wch: 12 }, // Child_Pugh
+    { wch: 14 }, // Estadio_ERC
+    { wch: 10 }, // Barthel
+    { wch: 12 }, // Lawton
+    { wch: 10 }, // Pfeiffer
+    { wch: 10 }, // MNA_SF
+    { wch: 10 }, // Gijon
+    { wch: 10 }, // Zarit
+    { wch: 35 }  // Observaciones
+  ];
+
+  XLSX.writeFile(wb, `Plantilla_Carga_Masiva_Pacientes_NewCare.xlsx`);
+}
+
+function handleImportExcelCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (typeof XLSX === "undefined") {
+    alert("Error: Librería de lectura Excel no disponible. Verifique su conexión a internet.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[firstSheetName];
+      const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      if (!rawRows || rawRows.length === 0) {
+        alert("El archivo importado no contiene filas de datos.");
+        return;
+      }
+
+      let importedCount = 0;
+      let updatedCount = 0;
+
+      rawRows.forEach((row, idx) => {
+        // Normalizar nombres de columnas ignorando mayúsculas, espacios y tildes
+        const normalized = {};
+        for (const k in row) {
+          const normKey = k.trim().toLowerCase()
+            .normalize("NFD").replace(/[̀-ͯ]/g, "")
+            .replace(/[^a-z0-9]/g, "_");
+          normalized[normKey] = String(row[k]).trim();
+        }
+
+        // Buscar campos clave
+        const doc = normalized["documento"] || normalized["cedula"] || normalized["id"] || normalized["identificacion"] || normalized["identificacion_del_paciente"] || ("PAC-IMP-" + (idx + 1));
+        const nombre = normalized["nombre_completo"] || normalized["nombre"] || normalized["paciente"] || normalized["nombres_y_apellidos"] || "Paciente Importado";
+        const edad = parseInt(normalized["edad"]) || 65;
+        const sexo = (normalized["sexo"] || "M").toUpperCase().startsWith("F") ? "F" : "M";
+        const eps = normalized["eps"] || normalized["aseguradora"] || "Optimus Salud";
+        const telefono = normalized["telefono"] || normalized["celular"] || "";
+        const direccion = normalized["direccion"] || "";
+        const obs = normalized["observaciones"] || normalized["notas"] || "";
+
+        // Criterio Primario (IC, EPOC, CIRROSIS, ERC)
+        let crit = (normalized["criterio_primario"] || normalized["criterio"] || normalized["diagnostico"] || "IC").toUpperCase();
+        if (crit.includes("CARD")) crit = "IC";
+        else if (crit.includes("PULM") || crit.includes("EPOC") || crit.includes("RESP")) crit = "EPOC";
+        else if (crit.includes("HEPAT") || crit.includes("CIRR") || crit.includes("HIG")) crit = "CIRROSIS";
+        else if (crit.includes("REN") || crit.includes("ERC")) crit = "ERC";
+
+        // Subcriterios de Severidad
+        const nyha = normalized["nyha"] || "Clase II";
+        const gold = normalized["gold"] || "Grupo B";
+        const cp = normalized["child_pugh"] || normalized["childpugh"] || "Grado B";
+        const erc = normalized["estadio_erc"] || normalized["erc"] || "Estadio 3a";
+
+        // Escalas
+        const barthel = normalized["barthel"] !== "" ? parseInt(normalized["barthel"]) : 75;
+        const lawton = normalized["lawton_brody"] !== "" ? parseInt(normalized["lawton_brody"]) : 5;
+        const pfeiffer = normalized["pfeiffer"] !== "" ? parseInt(normalized["pfeiffer"]) : 1;
+        const mna = normalized["mna_sf"] !== "" ? parseInt(normalized["mna_sf"]) : 11;
+        const gijon = normalized["gijon"] !== "" ? parseInt(normalized["gijon"]) : 10;
+        const zarit = normalized["zarit"] !== "" ? parseInt(normalized["zarit"]) : 28;
+
+        // Calcular Score New Care
+        const scores = calculateImportedScores(crit, nyha, gold, cp, erc, barthel, lawton, pfeiffer, mna, gijon, zarit);
+
+        const newPat = {
+          id: doc,
+          name: nombre,
+          doc: doc,
+          age: edad,
+          sex: sexo,
+          eps: eps,
+          tel: telefono,
+          dir: direccion,
+          crit: crit,
+          nyha: nyha,
+          gold: gold,
+          childPugh: cp,
+          ercStage: erc,
+          barthel: barthel,
+          lawton: lawton,
+          pfeiffer: pfeiffer,
+          mnaSf: mna,
+          gijon: gijon,
+          zarit: zarit,
+          res: scores,
+          vmdDate: new Date().toISOString().split("T")[0],
+          pai: {
+            sanitarias: scores.admitsProgram ? "Ingreso a Programa New Care. Visitas clínicas interdisciplinarias y control de polimedicación." : "Control en Atención Primaria.",
+            nutricionales: mna < 11 ? "Evaluación por Nutrición Clínica. Dieta hiperproteica y suplementación calórica." : "Mantenimiento nutricional preventivo.",
+            psicologicas: pfeiffer >= 3 ? "Taller de estimulación neurocognitiva y apoyo al cuidador principal." : "Acompañamiento básico.",
+            sociales: zarit >= 47 ? "Intervención urgente de Trabajo Social por sobrecarga del cuidador. Respiro familiar." : "Monitoreo de red de apoyo comunitaria."
+          },
+          observaciones: obs
+        };
+
+        // Upsert en arreglo de pacientes
+        const existingIdx = patients.findIndex(p => p.id === doc || (p.doc && p.doc === doc));
+        if (existingIdx !== -1) {
+          patients[existingIdx] = { ...patients[existingIdx], ...newPat };
+          updatedCount++;
+        } else {
+          patients.push(newPat);
+          importedCount++;
+        }
+      });
+
+      // Guardar y sincronizar
+      saveToStorage();
+      renderPatientsTable();
+      if (patients.length > 0) loadPatient(patients[0].id);
+
+      alert(`✅ ¡Importación Masiva Completada con Éxito!\n\n` +
+            `• Total registros procesados: ${importedCount + updatedCount}\n` +
+            `• Nuevos pacientes incorporados: ${importedCount}\n` +
+            `• Pacientes actualizados: ${updatedCount}\n\n` +
+            `La base de datos y Supabase Nube han sido sincronizados en tiempo real.`);
+
+    } catch (err) {
+      console.error("Error al procesar archivo Excel / CSV:", err);
+      alert("Error al importar el archivo: " + (err.message || "Estructura de archivo inválida."));
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function calculateImportedScores(crit, nyha, gold, cp, erc, barthel, lawton, pfeiffer, mna, gijon, zarit) {
+  // 1. T (Severidad)
+  let sNyha = 0;
+  if (nyha.includes("II") && !nyha.includes("III")) sNyha = 1;
+  else if (nyha.includes("III") || nyha.includes("IV")) sNyha = 2;
+
+  let sGold = 0;
+  if (gold.includes("B")) sGold = 1;
+  else if (gold.includes("C") || gold.includes("D")) sGold = 2;
+
+  let sCp = 0;
+  if (cp.includes("B")) sCp = 1;
+  else if (cp.includes("C")) sCp = 2;
+
+  let sErc = 0;
+  if (erc.includes("3a") || erc.includes("3b")) sErc = 1;
+  else if (erc.includes("4") || erc.includes("5")) sErc = 2;
+
+  let T = 0;
+  if (crit === "IC") T = sNyha;
+  else if (crit === "EPOC") T = sGold;
+  else if (crit === "CIRROSIS") T = sCp;
+  else if (crit === "ERC") T = sErc;
+
+  // 2. Z (Funcionalidad)
+  let sBarthel = barthel >= 90 ? 0 : (barthel >= 60 ? 1 : 2);
+  let sLawton = lawton >= 6 ? 0 : (lawton >= 4 ? 1 : 2);
+  let Z = Math.max(sBarthel, sLawton);
+
+  // 3. AF (Cognitivo)
+  let AF = pfeiffer <= 2 ? 0 : (pfeiffer <= 4 ? 1 : 2);
+
+  // 4. AL (Nutricional)
+  let AL = mna >= 12 ? 0 : (mna >= 8 ? 1 : 2);
+
+  // 5. AR (Social)
+  let sGijon = gijon <= 9 ? 0 : (gijon <= 14 ? 1 : 2);
+  let sZarit = zarit < 47 ? 0 : (zarit <= 55 ? 1 : 2);
+  let AR = Math.max(sGijon, sZarit);
+
+  // 6. Complejidad Final New Care
+  let finalScore = T;
+  const hasAgravante = (Z === 2 || AF === 2 || AL === 2 || AR === 2);
+  if (hasAgravante) {
+    finalScore = Math.min(2, T + 1);
+  }
+
+  const complexityText = finalScore === 2 ? "Alta Complejidad" : (finalScore === 1 ? "Media Complejidad" : "Baja Complejidad");
+  const admitsProgram = finalScore >= 1;
+
+  return {
+    T, Z, AF, AL, AR,
+    finalScore,
+    complexityText,
+    admitsProgram,
+    sNyha, sGold, sCp, sErc,
+    sBarthel, sLawton, sPfeiffer: AF, sMnaSf: AL, sGijon, sZarit
+  };
+}
+
 window.addEventListener("DOMContentLoaded", initApp);
