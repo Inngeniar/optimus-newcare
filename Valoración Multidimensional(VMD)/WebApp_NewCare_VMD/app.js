@@ -1740,6 +1740,8 @@ function populateEvaluatorDropdowns() {
     const opt = document.createElement("option");
     opt.value = p.id;
     opt.textContent = `${p.nombre} (${p.rol})`;
+    opt.style.backgroundColor = "#0f172a";
+    opt.style.color = "#ffffff";
     sel.appendChild(opt);
   });
 
