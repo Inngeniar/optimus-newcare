@@ -1,0 +1,12 @@
+{
+  "name": "newcare-vmd-optimushealth",
+  "version": "1.0.0",
+  "description": "Herramienta de Valoración Multidimensional (VMD) New Care - Optimus Health IPS",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["newcare", "vmd", "salud", "iocc", "optimushealth", "supabase"],
+  "author": "Optimus Health IPS & Fundacion NewHealth",
+  "license": "UNLICENSED"
+}

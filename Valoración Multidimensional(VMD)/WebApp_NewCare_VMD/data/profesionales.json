@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "name": "Dr. Carlos Restrepo",
+    "document": "71234567",
+    "reg": "RM-12345",
+    "role": "MED",
+    "roleName": "Médico Internista / Geriatra",
+    "specialty": "Medicina Interna y Cronicidad Compleja",
+    "email": "carlos.restrepo@optimushealth.com",
+    "phone": "3101234567",
+    "status": "Activo"
+  },
+  {
+    "id": "2",
+    "name": "Enf. Sandra Patricia Mejía",
+    "document": "52345678",
+    "reg": "RE-67890",
+    "role": "ENF",
+    "roleName": "Enfermera(o) Jefe",
+    "specialty": "Cuidado Crónico y Funcionalidad",
+    "email": "sandra.mejia@optimushealth.com",
+    "phone": "3119876543",
+    "status": "Activo"
+  },
+  {
+    "id": "3",
+    "name": "Lic. Marcela Gómez",
+    "document": "43567890",
+    "reg": "RTS-54321",
+    "role": "TS",
+    "roleName": "Trabajador(a) Social",
+    "specialty": "Redes de Apoyo y Evaluación Familiar",
+    "email": "marcela.gomez@optimushealth.com",
+    "phone": "3154567890",
+    "status": "Activo"
+  },
+  {
+    "id": "4",
+    "name": "Dra. Elena Torres",
+    "document": "32456789",
+    "reg": "RM-99887",
+    "role": "COORD",
+    "roleName": "Coordinador(a) / Junta de Cronicidad",
+    "specialty": "Gerencia Clínica y Auditoría NewCare",
+    "email": "elena.torres@optimushealth.com",
+    "phone": "3001122334",
+    "status": "Activo"
+  }
+]

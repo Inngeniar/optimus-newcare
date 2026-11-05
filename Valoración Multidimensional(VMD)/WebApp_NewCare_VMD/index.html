@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Care VMD - Optimus Health & NewHealth Foundation</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons via unpkg -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase Cloud Database SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="width: 38px; height: 38px; border-radius: 8px; background: white; color: #1e3a8a; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px;">
+        NC
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h1 style="font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">PROGRAMA NEW CARE</h1>
+          <span class="brand-badge">Optimus Health &bull; NewHealth</span>
+        </div>
+        <p style="font-size: 11px; opacity: 0.85;">Sistema Interdisciplinario de Valoración Multidimensional (VMD) y Gestión de IOCC</p>
+      </div>
+    </div>
+
+    <!-- Active Evaluator Switcher & Cloud Status -->
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end;">
+      <!-- Cloud Supabase Status -->
+      <button class="btn btn-secondary btn-sm" onclick="openModal('modal-supabase')" id="btn-supabase-status" title="Conexión en la Nube Supabase (PostgreSQL)" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #fff; cursor: pointer;">
+        <span id="supabase-indicator-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; display: inline-block;"></span>
+        <span id="supabase-status-text">Modo Local (Offline)</span>
+      </button>
+
+      <!-- Evaluador Activo -->
+      <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);">
+        <i data-lucide="user-check" style="width: 16px; height: 16px; color: #93c5fd;"></i>
+        <div style="display: flex; flex-direction: column;">
+          <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Evaluador Activo:</span>
+          <select id="active-evaluator-select" onchange="onEvaluatorChange(this.value)" style="background: transparent; color: #fff; border: none; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; padding: 0;">
+            <!-- Populated by JS -->
+          </select>
+        </div>
+        <span id="header-user-role-badge" class="badge-role badge-med" style="margin-left: 4px;">Médico</span>
+      </div>
+
+      <!-- Quick Action to Team Directory -->
+      <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-equipo')" title="Abrir Directorio de Profesionales" style="padding: 6px 10px;">
+        <i data-lucide="users" style="width: 14px; height: 14px;"></i> Equipo
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Bar -->
+  <nav class="nav-bar no-print">
+    <div class="nav-tab active" onclick="switchTab('tab-padron')">
+      <i data-lucide="users" style="width: 16px; height: 16px;"></i> Padrón de Pacientes
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-vmd')">
+      <i data-lucide="clipboard-check" style="width: 16px; height: 16px;"></i> Ficha de Valoración VMD
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-risk')">
+      <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Suite de Riesgo Clínico
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-red')">
+      <i data-lucide="heart-handshake" style="width: 16px; height: 16px;"></i> Red de Cuidados
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-pai')">
+      <i data-lucide="file-text" style="width: 16px; height: 16px;"></i> Plan de Atención (PAI) & Dictamen
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-equipo')">
+      <i data-lucide="users-2" style="width: 16px; height: 16px;"></i> Directorio Equipo de Salud
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-guia')">
+      <i data-lucide="book-open" style="width: 16px; height: 16px;"></i> Guía Metodológica NewCare
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: PADRÓN DE PACIENTES -->
+    <!-- ======================================================== -->
+    <section id="tab-padron" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="folder-kanban" style="color: var(--primary);"></i> Gestión de Pacientes con Insuficiencias Orgánicas Crónicas (IOCC)
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="createNewPatient()">
+              <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> Nueva Valoración
+            </button>
+            <button class="btn btn-secondary" onclick="exportDataJSON()" title="Descargar copia de seguridad en JSON">
+              <i data-lucide="download" style="width: 14px; height: 14px;"></i> Exportar JSON
+            </button>
+            <button class="btn btn-secondary" onclick="exportDataCSV()" title="Exportar formato compatible con Excel NewCare">
+              <i data-lucide="file-spreadsheet" style="width: 14px; height: 14px;"></i> Exportar Excel / CSV
+            </button>
+            <button class="btn btn-secondary" onclick="triggerImportJSON()" title="Cargar evaluaciones previas">
+              <i data-lucide="upload" style="width: 14px; height: 14px;"></i> Importar JSON
+            </button>
+            <input type="file" id="import-json-file" style="display: none;" accept=".json" onchange="handleImportJSON(event)">
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Buscar por Nombre o Cédula</label>
+            <input type="text" id="search-input" class="form-control" placeholder="Ej: Gómez, 102030..." oninput="renderPatientsTable()">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Filtrar por Complejidad</label>
+            <select id="filter-complexity" class="form-control" onchange="renderPatientsTable()">
+              <option value="ALL">Todas las complejidades</option>
+              <option value="Alta Complejidad">Alta Complejidad</option>
+              <option value="Media Complejidad">Media Complejidad</option>
+              <option value="Baja Complejidad">Baja Complejidad</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Filtrar por Estado de Ingreso</label>
+            <select id="filter-admission" class="form-control" onchange="renderPatientsTable()">
+              <option value="ALL">Todos los estados</option>
+              <option value="ELEGIBLE">Candidatos Elegibles (Ingresa)</option>
+              <option value="NO_ELEGIBLE">No Ingresa (Atención Primaria)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Resumen de Padrón</label>
+            <div id="padron-stats" style="font-size: 12px; font-weight: 600; color: #475569; padding-top: 8px;">
+              Cargando estadísticas...
+            </div>
+          </div>
+        </div>
+
+        <!-- Patients Table -->
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No. Cédula</th>
+                <th>Nombre del Afiliado</th>
+                <th>Edad</th>
+                <th>Insuficiencias (IOCC)</th>
+                <th>Severidad (T)</th>
+                <th>Funcional (Z)</th>
+                <th>Cognitivo (AF)</th>
+                <th>Nutrición (AL)</th>
+                <th>Social (AR)</th>
+                <th>Complejidad NewCare</th>
+                <th>Decisión Programa</th>
+                <th>Modalidad PAI</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="patients-table-body">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: FICHA DE VALORACIÓN VMD -->
+    <!-- ======================================================== -->
+    <section id="tab-vmd" class="tab-content" style="display: none;">
+      
+      <!-- Patient Banner -->
+      <div class="card" style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-left: 5px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Afiliado Seleccionado</span>
+            <h2 id="banner-patient-name" style="font-size: 20px; font-weight: 800; color: #1e293b;">Seleccione o cree un paciente</h2>
+            <div style="display: flex; gap: 16px; font-size: 12px; color: #475569; margin-top: 4px;">
+              <span><strong>Cédula:</strong> <span id="banner-patient-id">-</span></span>
+              <span><strong>Edad:</strong> <span id="banner-patient-age">-</span></span>
+              <span><strong>Aseguradora:</strong> <span id="banner-patient-eps">-</span></span>
+              <span><strong>Ámbito:</strong> <span id="banner-patient-amb">-</span></span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-success" onclick="saveCurrentPatient()">
+              <i data-lucide="save" style="width: 14px; height: 14px;"></i> Guardar Cambios
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('tab-pai')">
+              <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Ver / Imprimir PAI
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VMD Sub-Tabs by Role -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;">
+        <button id="vmd-sub-1" class="btn btn-primary btn-sm" onclick="switchVmdSub(1)">
+          <i data-lucide="id-card" style="width: 14px; height: 14px;"></i> 1. Datos Generales
+        </button>
+        <button id="vmd-sub-2" class="btn btn-secondary btn-sm" onclick="switchVmdSub(2)">
+          <i data-lucide="stethoscope" style="width: 14px; height: 14px;"></i> 2. Severidad Clínica (Médico)
+        </button>
+        <button id="vmd-sub-3" class="btn btn-secondary btn-sm" onclick="switchVmdSub(3)">
+          <i data-lucide="heart-pulse" style="width: 14px; height: 14px;"></i> 3. Funcionalidad & Nutrición (Enfermería)
+        </button>
+        <button id="vmd-sub-4" class="btn btn-secondary btn-sm" onclick="switchVmdSub(4)">
+          <i data-lucide="users-round" style="width: 14px; height: 14px;"></i> 4. Cognitividad & Social (TS / Médico)
+        </button>
+        <button id="vmd-sub-5" class="btn btn-secondary btn-sm" onclick="switchVmdSub(5)">
+          <i data-lucide="scale" style="width: 14px; height: 14px;"></i> 5. Dictamen NewCare & PAI
+        </button>
+      </div>
+
+      <!-- VMD SUB-TAB 1: DATOS GENERALES -->
+      <div id="vmd-subpanel-1" class="vmd-subpanel">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Identificación y Datos del Afiliado</div>
+            <span class="badge-role badge-med">Acceso Interdisciplinario</span>
+          </div>
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label">No. Identificación (Cédula)</label>
+              <input type="text" id="vmd-id" class="form-control" placeholder="1020304050" onchange="updateCurrentFromForm()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nombres y Apellidos Completos</label>
+              <input type="text" id="vmd-name" class="form-control" placeholder="Nombre completo del afiliado" onchange="updateCurrentFromForm()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha de Nacimiento</label>
+              <input type="date" id="vmd-birthdate" class="form-control" onchange="calculateAge(); updateCurrentFromForm();">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Edad Calculada (Años)</label>
+              <input type="number" id="vmd-age" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha Inicio Valoración (VMD)</label>
+              <input type="date" id="vmd-date" class="form-control" onchange="updateCurrentFromForm()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de Valoración</label>
+              <select id="vmd-type" class="form-control" onchange="updateCurrentFromForm()">
+                <option value="VMD inicial">VMD inicial</option>
+                <option value="VMD cambio situación del paciente">VMD cambio situación del paciente</option>
+                <option value="VMD tras hospitalización">VMD tras hospitalización</option>
+                <option value="VMD por descompensación o alteración">VMD por descompensación o alteración</option>
+                <option value="VMD de seguimiento">VMD de seguimiento</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aseguradora / EPS</label>
+              <input type="text" id="vmd-eps" class="form-control" placeholder="Sura, Nueva EPS, etc." onchange="updateCurrentFromForm()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prestador / Sede</label>
+              <input type="text" id="vmd-provider" class="form-control" value="Optimus Health IPS" onchange="updateCurrentFromForm()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ámbito de Atención Previsto</label>
+              <select id="vmd-ambit" class="form-control" onchange="updateCurrentFromForm()">
+                <option value="Domiciliario">Domiciliario</option>
+                <option value="Ambulatorio">Ambulatorio</option>
+                <option value="Hospitalario">Hospitalario</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VMD SUB-TAB 2: SEVERIDAD CLÍNICA (MÉDICO) -->
+      <div id="vmd-subpanel-2" class="vmd-subpanel" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="stethoscope" style="color: var(--primary);"></i> Dimensión 1: Severidad Clínica - Insuficiencias Orgánicas Crónicas Complejas
+            </div>
+            <span class="badge-role badge-med">Rol: Médico Internista / Geriatra</span>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin-bottom: 16px;">
+            La severidad clínica es el <strong>eje preponderante</strong> para determinar la complejidad (Base T: 0, 1 o 2). Seleccione el estadio o grado de cada insuficiencia diagnosticada.
+          </p>
+
+          <div class="grid-2">
+            <!-- Insuficiencia Cardiaca -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>1. Insuficiencia Cardíaca (NYHA)</span>
+                <span id="score-nyha" class="badge-role badge-med">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Clase Funcional NYHA</label>
+                <select id="vmd-nyha" class="form-control" onchange="calcVMD()">
+                  <option value="No aplica">No aplica (0)</option>
+                  <option value="CLASE I">CLASE I - Sin limitación de actividad física habitual (0)</option>
+                  <option value="CLASE II">CLASE II - Ligera limitación en esfuerzos moderados (1)</option>
+                  <option value="CLASE III">CLASE III - Marcada limitación en esfuerzos mínimos (2)</option>
+                  <option value="CLASE IV">CLASE IV - Incapacidad o síntomas en reposo (2)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Pruebas diagnósticas / FEVI (%) / BNP</label>
+                <input type="text" id="vmd-nyha-obs" class="form-control" placeholder="Ej: FEVI 35%, BNP 850 pg/mL">
+              </div>
+            </div>
+
+            <!-- EPOC / Respiratoria -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>2. Insuficiencia Respiratoria - EPOC (GOLD)</span>
+                <span id="score-gold" class="badge-role badge-med">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Clasificación Espirométrica GOLD</label>
+                <select id="vmd-gold" class="form-control" onchange="calcVMD()">
+                  <option value="No aplica">No aplica (0)</option>
+                  <option value="GOLD I">GOLD I - Leve (FEV1 ≥ 80% predicho) (0)</option>
+                  <option value="GOLD II">GOLD II - Moderado (50% ≤ FEV1 < 80%) (1)</option>
+                  <option value="GOLD III">GOLD III - Severo (30% ≤ FEV1 < 50%) (2)</option>
+                  <option value="GOLD IV">GOLD IV - Muy severo (FEV1 < 30%) (2)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Oxigenoterapia domiciliaria / Disnea mMRC</label>
+                <input type="text" id="vmd-gold-obs" class="form-control" placeholder="Ej: O2 continuo 2L/min, mMRC 2">
+              </div>
+            </div>
+
+            <!-- Insuficiencia Hepatica -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>3. Insuficiencia Hepática Crónica (Child-Pugh)</span>
+                <span id="score-cp" class="badge-role badge-med">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estadio Child-Pugh</label>
+                <div style="display: flex; gap: 8px;">
+                  <select id="vmd-cp" class="form-control" onchange="calcVMD()">
+                    <option value="No aplica">No aplica (0)</option>
+                    <option value="GRADO A">GRADO A - Compensada (5-6 puntos) (0)</option>
+                    <option value="GRADO B">GRADO B - Compromiso funcional (7-9 puntos) (1)</option>
+                    <option value="GRADO C">GRADO C - Descompensada (10-15 puntos) (2)</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" onclick="openModal('modal-cp')" title="Calcular por parámetros de laboratorio">
+                    <i data-lucide="calculator" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Complicaciones (Ascitis, Encefalopatía, INR)</label>
+                <input type="text" id="vmd-cp-obs" class="form-control" placeholder="Ej: Ascitis leve, albúmina 3.1, INR 1.5">
+              </div>
+            </div>
+
+            <!-- Insuficiencia Renal -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>4. Insuficiencia Renal Crónica (ERC)</span>
+                <span id="score-erc" class="badge-role badge-med">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estadio ERC según Tasa Filtración Glomerular</label>
+                <div style="display: flex; gap: 8px;">
+                  <select id="vmd-erc" class="form-control" onchange="calcVMD()">
+                    <option value="No aplica">No aplica (0)</option>
+                    <option value="G1">Estadio G1 - Normal/elevado (TFG ≥ 90 ml/min) (0)</option>
+                    <option value="G2">Estadio G2 - Ligeramente disminuido (TFG 60-89 ml/min) (0)</option>
+                    <option value="G3a">Estadio G3a - Ligera a moderadamente disminuido (TFG 45-59) (1)</option>
+                    <option value="G3b">Estadio G3b - Moderada a gravemente disminuido (TFG 30-44) (1)</option>
+                    <option value="G4">Estadio G4 - Gravemente disminuido (TFG 15-29 ml/min) (2)</option>
+                    <option value="G5">Estadio G5 - Fallo renal terminal (TFG < 15 ml/min o diálisis) (2)</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-risk')" title="Calcular con CKD-EPI">
+                    <i data-lucide="calculator" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Creatinina / Proteinuria / Diálisis</label>
+                <input type="text" id="vmd-erc-obs" class="form-control" placeholder="Ej: Creatinina 1.9 mg/dL, TFGe 36 ml/min">
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen Severidad T -->
+          <div class="card" style="background: #eff6ff; border: 2px solid #bfdbfe; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-size: 11px; font-weight: 700; color: #1e40af; text-transform: uppercase;">Puntaje Resumen Severidad Clínica (T)</span>
+                <div id="vmd-t-desc" style="font-size: 16px; font-weight: 800; color: #1e3a8a;">Baja Severidad Clínica (Base 0)</div>
+              </div>
+              <div id="vmd-t-score" style="font-size: 32px; font-weight: 900; color: #1e3a8a;">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VMD SUB-TAB 3: FUNCIONALIDAD & NUTRICION (ENFERMERÍA) -->
+      <div id="vmd-subpanel-3" class="vmd-subpanel" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="heart-pulse" style="color: var(--secondary);"></i> Dimensiones 2 y 4: Funcionalidad & Estado Nutricional
+            </div>
+            <span class="badge-role badge-enf">Rol: Enfermería</span>
+          </div>
+
+          <div class="grid-2">
+            <!-- Funcionalidad: Barthel -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Actividades Básicas (Índice de Barthel)</span>
+                <span id="badge-barthel" class="badge-role badge-enf">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje Total Barthel (0 a 100)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="vmd-barthel" class="form-control" placeholder="0-100" min="0" max="100" step="5" value="100" onchange="calcVMD()">
+                  <button class="btn btn-teal btn-sm" onclick="openModal('modal-barthel')">
+                    <i data-lucide="list-checks" style="width: 14px; height: 14px;"></i> Abrir Cuestionario (10 ítems)
+                  </button>
+                </div>
+              </div>
+              <p id="desc-barthel" style="font-size: 11px; color: #0f766e; font-weight: 600;">
+                95-100 pts: Alta Funcionalidad / Independiente (0)
+              </p>
+            </div>
+
+            <!-- Funcionalidad: Lawton Brody -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Actividades Instrumentales (Lawton & Brody)</span>
+                <span id="badge-lawton" class="badge-role badge-enf">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje Total Lawton & Brody (0 a 8)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="vmd-lawton" class="form-control" placeholder="0-8" min="0" max="8" value="8" onchange="calcVMD()">
+                  <button class="btn btn-teal btn-sm" onclick="openModal('modal-lawton')">
+                    <i data-lucide="list-checks" style="width: 14px; height: 14px;"></i> Abrir Cuestionario (8 ítems)
+                  </button>
+                </div>
+              </div>
+              <p id="desc-lawton" style="font-size: 11px; color: #0f766e; font-weight: 600;">
+                6-8 pts: Alta Funcionalidad (0)
+              </p>
+            </div>
+
+            <!-- Nutrición Cribaje: MNA-SF -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Cribaje Nutricional (MNA-SF)</span>
+                <span id="badge-mna-sf" class="badge-role badge-enf">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje MNA-SF (0 a 14)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="vmd-mna-sf" class="form-control" placeholder="0-14" min="0" max="14" value="14" onchange="calcVMD()">
+                  <button class="btn btn-teal btn-sm" onclick="openModal('modal-mna-sf')">
+                    <i data-lucide="list-checks" style="width: 14px; height: 14px;"></i> Cuestionario MNA-SF (6 ítems)
+                  </button>
+                </div>
+              </div>
+              <p id="desc-mna-sf" style="font-size: 11px; color: #0f766e; font-weight: 600;">
+                12-14 pts: Estado Nutricional Normal (0)
+              </p>
+            </div>
+
+            <!-- Nutrición Completa: MNA -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #0d9488; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>MNA Completo (Opcional ante dudas 8-11 pts)</span>
+                <span id="badge-mna-c" class="badge-role badge-enf">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje MNA Completo (0 a 30)</label>
+                <select id="vmd-mna-c" class="form-control" onchange="calcVMD()">
+                  <option value="No Aplica">No Aplica (No requerido)</option>
+                  <option value="26">24 - 30 pts: Estado Nutricional Normal (0)</option>
+                  <option value="20">17 - 23.5 pts: Riesgo de Malnutrición (1)</option>
+                  <option value="12">< 17 pts: Malnutrición Confirmada (2)</option>
+                </select>
+              </div>
+              <p style="font-size: 11px; color: #64748b;">
+                *Solo se aplica si existen dudas en MNA-SF con puntaje entre 8 y 11.
+              </p>
+            </div>
+          </div>
+
+          <!-- Subtotales Enfermeria Z y AL -->
+          <div class="grid-2" style="margin-top: 10px;">
+            <div class="card" style="background: #ccfbf1; border: 2px solid #99f6e4;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-size: 11px; font-weight: 700; color: #0f766e; text-transform: uppercase;">Valor Funcionalidad (Z) = MAX(Barthel, Lawton)</span>
+                  <div id="vmd-z-desc" style="font-size: 14px; font-weight: 800; color: #0f766e;">Alta Funcionalidad (0)</div>
+                </div>
+                <div id="vmd-z-score" style="font-size: 28px; font-weight: 900; color: #0f766e;">0</div>
+              </div>
+            </div>
+
+            <div class="card" style="background: #ccfbf1; border: 2px solid #99f6e4;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-size: 11px; font-weight: 700; color: #0f766e; text-transform: uppercase;">Valor Nutricional (AL) = MAX(MNA-SF, MNA)</span>
+                  <div id="vmd-al-desc" style="font-size: 14px; font-weight: 800; color: #0f766e;">Normal (0)</div>
+                </div>
+                <div id="vmd-al-score" style="font-size: 28px; font-weight: 900; color: #0f766e;">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VMD SUB-TAB 4: COGNITIVIDAD & SOCIAL (TS / MÉDICO) -->
+      <div id="vmd-subpanel-4" class="vmd-subpanel" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="users-round" style="color: var(--purple);"></i> Dimensiones 3 y 5: Cognitividad, Situación Social y Cuidador
+            </div>
+            <span class="badge-role badge-ts">Roles: Trabajo Social & Médico</span>
+          </div>
+
+          <div class="grid-2">
+            <!-- Cognitivo: Pfeiffer -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #7c3aed; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Cognición Cribaje (Test de Pfeiffer)</span>
+                <span id="badge-pfeiffer" class="badge-role badge-ts">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Número de Errores (0 a 10)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="vmd-pfeiffer" class="form-control" placeholder="0-10" min="0" max="10" value="0" onchange="calcVMD()">
+                  <button class="btn btn-purple btn-sm" onclick="openModal('modal-pfeiffer')">
+                    <i data-lucide="list-checks" style="width: 14px; height: 14px;"></i> Cuestionario Pfeiffer (10 preguntas)
+                  </button>
+                </div>
+              </div>
+              <p id="desc-pfeiffer" style="font-size: 11px; color: #6b21a8; font-weight: 600;">
+                0-4 errores: Función Normal / Sin deterioro (0)
+              </p>
+            </div>
+
+            <!-- Cognitivo: Minimental -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #7c3aed; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Minimental Test (MMSE - Opcional ante dudas)</span>
+                <span id="badge-mmse" class="badge-role badge-ts">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje MMSE (0 a 30)</label>
+                <select id="vmd-mmse" class="form-control" onchange="calcVMD()">
+                  <option value="No Aplica">No Aplica (No requerido)</option>
+                  <option value="28">≥ 24 pts: Sin Deterioro Significativo (0)</option>
+                  <option value="18">< 24 pts: Deterioro Cognitivo Relevante (2)</option>
+                </select>
+              </div>
+              <p style="font-size: 11px; color: #64748b;">
+                *Solo se aplica ante dudas o resultado limítrofe en Test de Pfeiffer.
+              </p>
+            </div>
+
+            <!-- Social: Gijon -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #7c3aed; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Situación Sociofamiliar (Escala de Gijón)</span>
+                <span id="badge-gijon" class="badge-role badge-ts">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje Escala de Gijón (5 a 25)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="vmd-gijon" class="form-control" placeholder="5-25" min="5" max="25" value="5" onchange="calcVMD()">
+                  <button class="btn btn-purple btn-sm" onclick="openModal('modal-gijon')">
+                    <i data-lucide="list-checks" style="width: 14px; height: 14px;"></i> Cuestionario Gijón (5 áreas)
+                  </button>
+                </div>
+              </div>
+              <p id="desc-gijon" style="font-size: 11px; color: #6b21a8; font-weight: 600;">
+                5-9 pts: Buena o aceptable situación social (0)
+              </p>
+            </div>
+
+            <!-- Social: Zarit -->
+            <div class="card" style="background: #fbfcfe; border-color: #cbd5e1;">
+              <div style="font-weight: 700; color: #7c3aed; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>Sobrecarga del Cuidador (Escala de Zarit)</span>
+                <span id="badge-zarit" class="badge-role badge-ts">Valor: 0</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Puntaje Escala de Zarit (0 a 88)</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="vmd-zarit" class="form-control" placeholder="0-88" min="0" max="88" value="20" onchange="calcVMD()">
+                  <button class="btn btn-purple btn-sm" onclick="openModal('modal-zarit')">
+                    <i data-lucide="list-checks" style="width: 14px; height: 14px;"></i> Cuestionario Zarit (22 ítems)
+                  </button>
+                </div>
+              </div>
+              <p id="desc-zarit" style="font-size: 11px; color: #6b21a8; font-weight: 600;">
+                ≤ 46 pts: Sin sobrecarga del cuidador (0)
+              </p>
+            </div>
+          </div>
+
+          <!-- Subtotales TS AF y AR -->
+          <div class="grid-2" style="margin-top: 10px;">
+            <div class="card" style="background: #f3e8ff; border: 2px solid #e9d5ff;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-size: 11px; font-weight: 700; color: #6b21a8; text-transform: uppercase;">Valor Cognitivo (AF) = MAX(Pfeiffer, MMSE)</span>
+                  <div id="vmd-af-desc" style="font-size: 14px; font-weight: 800; color: #6b21a8;">Cognición Normal (0)</div>
+                </div>
+                <div id="vmd-af-score" style="font-size: 28px; font-weight: 900; color: #6b21a8;">0</div>
+              </div>
+            </div>
+
+            <div class="card" style="background: #f3e8ff; border: 2px solid #e9d5ff;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-size: 11px; font-weight: 700; color: #6b21a8; text-transform: uppercase;">Valor Social (AR) = MAX(Gijón, Zarit)</span>
+                  <div id="vmd-ar-desc" style="font-size: 14px; font-weight: 800; color: #6b21a8;">Buena Situación Social (0)</div>
+                </div>
+                <div id="vmd-ar-score" style="font-size: 28px; font-weight: 900; color: #6b21a8;">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VMD SUB-TAB 5: DICTAMEN OFICIAL & PAI -->
+      <div id="vmd-subpanel-5" class="vmd-subpanel" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="scale" style="color: var(--primary);"></i> Consolidación Multidimensional y Algoritmo Oficial New Care
+            </div>
+            <span class="badge-role badge-coord">Junta de Cronicidad Clínica</span>
+          </div>
+
+          <!-- Cards 5 Dimensions -->
+          <div class="grid-6" style="margin-bottom: 16px;">
+            <div class="kpi-card">
+              <div class="kpi-title">Severidad (T)</div>
+              <div id="card-t" class="kpi-value">0</div>
+              <div id="card-t-desc" class="kpi-desc">Baja</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Funcional (Z)</div>
+              <div id="card-z" class="kpi-value">0</div>
+              <div id="card-z-desc" class="kpi-desc">Alta</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Nutrición (AL)</div>
+              <div id="card-al" class="kpi-value">0</div>
+              <div id="card-al-desc" class="kpi-desc">Normal</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Cognición (AF)</div>
+              <div id="card-af" class="kpi-value">0</div>
+              <div id="card-af-desc" class="kpi-desc">Normal</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Social (AR)</div>
+              <div id="card-ar" class="kpi-value">0</div>
+              <div id="card-ar-desc" class="kpi-desc">Bueno</div>
+            </div>
+            <div class="kpi-card" style="background: #fef3c7; border-color: #fde68a;">
+              <div class="kpi-title" style="color: #92400e;">Valor Final</div>
+              <div id="card-final" class="kpi-value" style="color: #b45309;">0</div>
+              <div id="card-final-desc" class="kpi-desc" style="color: #92400e; font-weight: 700;">Base T</div>
+            </div>
+          </div>
+
+          <!-- Decision Banner -->
+          <div id="dictamen-banner" class="card" style="background: #dcfce7; border: 2px solid #86efac; text-align: center; padding: 24px;">
+            <span style="font-size: 11px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 1px;">Resultado Algoritmo New Care</span>
+            <h2 id="dictamen-complexity" style="font-size: 26px; font-weight: 900; color: #14532d; margin: 6px 0;">BAJA COMPLEJIDAD</h2>
+            <div id="dictamen-decision" style="font-size: 15px; font-weight: 700; color: #166534; margin-bottom: 12px;">
+              NO CUMPLE CRITERIOS DE INGRESO A NEW CARE - MANEJO EN ATENCIÓN PRIMARIA
+            </div>
+            <div id="dictamen-formula-explanation" style="font-size: 12px; color: #14532d; max-width: 800px; margin: 0 auto; line-height: 1.6;">
+              Severidad Clínica Base T = 0. Ninguna dimensión asociada (Funcionalidad, Cognición, Nutrición o Social) se encuentra en alta complejidad (2).
+            </div>
+          </div>
+
+          <!-- PAI Specification -->
+          <div class="grid-2" style="margin-top: 16px;">
+            <div class="card" style="background: #f8fafc;">
+              <div style="font-weight: 700; color: #1e293b; margin-bottom: 10px;">Modalidad y Cronograma Oficial PAI</div>
+              <div class="form-group">
+                <label class="form-label">Ámbito y Modalidad Asignada</label>
+                <input type="text" id="pai-modalidad" class="form-control" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cadencia Mínima de Visitas y Seguimiento</label>
+                <textarea id="pai-cadencia" class="form-control" rows="3" readonly></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fecha Límite Presentación a Junta de Cronicidad (Máx 30 días)</label>
+                <input type="text" id="pai-deadline" class="form-control" readonly>
+              </div>
+            </div>
+
+            <div class="card" style="background: #f8fafc;">
+              <div style="font-weight: 700; color: #1e293b; margin-bottom: 10px;">Necesidades y Metas Individualizadas (PAI)</div>
+              <div class="form-group">
+                <label class="form-label">Necesidades Sanitarias</label>
+                <input type="text" id="pai-sanitarias" class="form-control" placeholder="Ajuste terapéutico, control de disnea, etc." onchange="updateCurrentFromForm()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Necesidades Nutricionales</label>
+                <input type="text" id="pai-nutricionales" class="form-control" placeholder="Dieta hiposódica, suplementación proteica..." onchange="updateCurrentFromForm()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Necesidades Psicológicas</label>
+                <input type="text" id="pai-psicologicas" class="form-control" placeholder="Afrontamiento de cronicidad, apoyo emocional..." onchange="updateCurrentFromForm()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Necesidades Sociales</label>
+                <input type="text" id="pai-sociales" class="form-control" placeholder="Alivio del cuidador, barreras en hogar, red..." onchange="updateCurrentFromForm()">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: SUITE DE RIESGO CLÍNICO -->
+    <!-- ======================================================== -->
+    <section id="tab-risk" class="tab-content" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="activity" style="color: var(--orange);"></i> Suite Integral de Calculadoras de Riesgo Clínico
+          </div>
+          <span class="brand-badge" style="background: var(--orange); color: white;">Herramientas Clínicas Avanzadas</span>
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+          Calculadoras clínicas para la estratificación del riesgo renal, pronóstico hepático, riesgo en EPOC, vulnerabilidad ante caídas, úlceras por presión y probabilidad de reingreso hospitalario no planificado.
+        </p>
+
+        <div class="grid-2">
+          <!-- 1. CKD-EPI 2021 -->
+          <div class="card" style="border-top: 4px solid #0284c7;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: #0369a1;">1. Riesgo Renal: TFGe (CKD-EPI 2021)</h3>
+              <span id="badge-risk-ckdepi" class="badge-complex complex-baja">Estadio -</span>
+            </div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Creatinina (mg/dL)</label>
+                <input type="number" id="calc-scr" class="form-control" step="0.1" value="1.8" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Edad (Años)</label>
+                <input type="number" id="calc-age" class="form-control" value="74" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sexo Biológico</label>
+                <select id="calc-sex" class="form-control" onchange="runRiskCalculators()">
+                  <option value="male">Hombre</option>
+                  <option value="female">Mujer</option>
+                </select>
+              </div>
+            </div>
+            <div style="background: #f0f9ff; padding: 12px; border-radius: 6px; border: 1px solid #bae6fd; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #0369a1;">TFGe CALCULADA</div>
+                <div id="res-ckdepi-val" style="font-size: 22px; font-weight: 900; color: #0284c7;">36.2 ml/min</div>
+              </div>
+              <div id="res-ckdepi-desc" style="font-size: 12px; font-weight: 700; color: #075985; text-align: right;">
+                Estadio G3b (30-44 ml/min)<br><span style="font-size: 10px; font-weight: 400;">Moderada a gravemente disminuida</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. MELD-Na -->
+          <div class="card" style="border-top: 4px solid #d97706;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: #b45309;">2. Riesgo Hepático: Score MELD-Na</h3>
+              <span id="badge-risk-meld" class="badge-complex complex-media">Riesgo -</span>
+            </div>
+            <div class="grid-4">
+              <div class="form-group">
+                <label class="form-label">Bilirrubina (mg/dL)</label>
+                <input type="number" id="calc-bili" class="form-control" step="0.1" value="2.4" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">INR</label>
+                <input type="number" id="calc-inr" class="form-control" step="0.1" value="1.8" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Creatinina (mg/dL)</label>
+                <input type="number" id="calc-creat" class="form-control" step="0.1" value="1.5" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sodio (mEq/L)</label>
+                <input type="number" id="calc-na" class="form-control" value="132" oninput="runRiskCalculators()">
+              </div>
+            </div>
+            <div style="background: #fffbeb; padding: 12px; border-radius: 6px; border: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #b45309;">PUNTAJE MELD-Na</div>
+                <div id="res-meld-val" style="font-size: 22px; font-weight: 900; color: #d97706;">21 pts</div>
+              </div>
+              <div id="res-meld-desc" style="font-size: 12px; font-weight: 700; color: #92400e; text-align: right;">
+                Riesgo Alto<br><span style="font-size: 10px; font-weight: 400;">Mortalidad estimada a 3 meses ~19.6%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. INDICE BODEx (EPOC) -->
+          <div class="card" style="border-top: 4px solid #059669;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: #047857;">3. Riesgo en EPOC: Índice BODEx</h3>
+              <span id="badge-risk-bodex" class="badge-complex complex-media">Cuartil -</span>
+            </div>
+            <div class="grid-4">
+              <div class="form-group">
+                <label class="form-label">IMC (kg/m²)</label>
+                <input type="number" id="calc-bode-imc" class="form-control" step="0.5" value="20.5" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">FEV1 (% predicho)</label>
+                <input type="number" id="calc-bode-fev1" class="form-control" value="48" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Disnea mMRC (0-4)</label>
+                <select id="calc-bode-mmrc" class="form-control" onchange="runRiskCalculators()">
+                  <option value="0">0: Solo esfuerzo intenso</option>
+                  <option value="1">1: Al andar rápido o cuesta</option>
+                  <option value="2" selected>2: Incapaz al paso de otros</option>
+                  <option value="3">3: Para tras 100m en llano</option>
+                  <option value="4">4: Al vestirse / en reposo</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Exacerbaciones/año</label>
+                <select id="calc-bode-exac" class="form-control" onchange="runRiskCalculators()">
+                  <option value="0">0 exacerbaciones</option>
+                  <option value="1" selected>1 a 2 exacerbaciones</option>
+                  <option value="2">≥ 3 exacerbaciones</option>
+                </select>
+              </div>
+            </div>
+            <div style="background: #ecfdf5; padding: 12px; border-radius: 6px; border: 1px solid #a7f3d0; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #047857;">PUNTAJE BODEx (0-9)</div>
+                <div id="res-bodex-val" style="font-size: 22px; font-weight: 900; color: #059669;">5 pts</div>
+              </div>
+              <div id="res-bodex-desc" style="font-size: 12px; font-weight: 700; color: #065f46; text-align: right;">
+                Cuartil 3: Riesgo Alto<br><span style="font-size: 10px; font-weight: 400;">Mortalidad a 4 años estimada ~40%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. RIESGO DE CAIDAS: DOWNTON -->
+          <div class="card" style="border-top: 4px solid #dc2626;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: #b91c1c;">4. Riesgo de Caídas: Escala de Downton</h3>
+              <span id="badge-risk-downton" class="badge-complex complex-alta">Alto Riesgo</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 12px;">
+              <label><input type="checkbox" id="dt-falls" checked onchange="runRiskCalculators()"> Caídas previas en los últimos 12 meses (+1)</label>
+              <label><input type="checkbox" id="dt-meds" checked onchange="runRiskCalculators()"> Medicamentos de riesgo: diuréticos, sedantes, hipotensores (+1)</label>
+              <label><input type="checkbox" id="dt-sensory" checked onchange="runRiskCalculators()"> Déficits sensoriales: visual, auditivo o extremidades (+1)</label>
+              <label><input type="checkbox" id="dt-mental" onchange="runRiskCalculators()"> Estado mental: confuso o deteriorado (+1)</label>
+              <label><input type="checkbox" id="dt-gait" checked onchange="runRiskCalculators()"> Deambulación insegura o con pasos cortos/inestables (+1)</label>
+            </div>
+            <div style="background: #fef2f2; padding: 12px; border-radius: 6px; border: 1px solid #fecaca; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #b91c1c;">PUNTOS DOWNTON</div>
+                <div id="res-downton-val" style="font-size: 22px; font-weight: 900; color: #dc2626;">4 pts</div>
+              </div>
+              <div id="res-downton-desc" style="font-size: 12px; font-weight: 700; color: #991b1b; text-align: right;">
+                ALTO RIESGO DE CAÍDAS (>2 pts)<br><span style="font-size: 10px; font-weight: 400;">Activar protocolo de prevención en PAI</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. RIESGO UPP: BRADEN -->
+          <div class="card" style="border-top: 4px solid #7c3aed;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: #6d28d9;">5. Riesgo Úlceras por Presión: Escala de Braden</h3>
+              <span id="badge-risk-braden" class="badge-complex complex-media">Riesgo -</span>
+            </div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Sensibilidad (1-4)</label>
+                <select id="calc-braden-sens" class="form-control" onchange="runRiskCalculators()">
+                  <option value="1">1: Totalmente limitada</option>
+                  <option value="2">2: Muy limitada</option>
+                  <option value="3" selected>3: Ligeramente limitada</option>
+                  <option value="4">4: Sin limitaciones</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Humedad (1-4)</label>
+                <select id="calc-braden-hum" class="form-control" onchange="runRiskCalculators()">
+                  <option value="1">1: Constantemente húmeda</option>
+                  <option value="2">2: A menudo húmeda</option>
+                  <option value="3" selected>3: Ocasionalmente húmeda</option>
+                  <option value="4">4: Raramente húmeda</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Actividad (1-4)</label>
+                <select id="calc-braden-act" class="form-control" onchange="runRiskCalculators()">
+                  <option value="1">1: Encamado</option>
+                  <option value="2" selected>2: En silla</option>
+                  <option value="3">3: Deambula ocasional</option>
+                  <option value="4">4: Deambula frecuente</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Movilidad (1-4)</label>
+                <select id="calc-braden-mov" class="form-control" onchange="runRiskCalculators()">
+                  <option value="1">1: Totalmente inmóvil</option>
+                  <option value="2" selected>2: Muy limitada</option>
+                  <option value="3">3: Ligeramente limitada</option>
+                  <option value="4">4: Sin limitaciones</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nutrición (1-4)</label>
+                <select id="calc-braden-nut" class="form-control" onchange="runRiskCalculators()">
+                  <option value="1">1: Muy pobre</option>
+                  <option value="2" selected>2: Probablemente inadecuada</option>
+                  <option value="3">3: Adecuada</option>
+                  <option value="4">4: Excelente</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fricción (1-3)</label>
+                <select id="calc-braden-fric" class="form-control" onchange="runRiskCalculators()">
+                  <option value="1">1: Problema constante</option>
+                  <option value="2" selected>2: Problema potencial</option>
+                  <option value="3">3: No existe problema</option>
+                </select>
+              </div>
+            </div>
+            <div style="background: #faf5ff; padding: 12px; border-radius: 6px; border: 1px solid #e9d5ff; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #6d28d9;">PUNTAJE BRADEN (6-23)</div>
+                <div id="res-braden-val" style="font-size: 22px; font-weight: 900; color: #7c3aed;">13 pts</div>
+              </div>
+              <div id="res-braden-desc" style="font-size: 12px; font-weight: 700; color: #5b21b6; text-align: right;">
+                Riesgo Moderado (13-14 pts)<br><span style="font-size: 10px; font-weight: 400;">Pautar cambios posturales e hidratación</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. RIESGO REINGRESO: LACE -->
+          <div class="card" style="border-top: 4px solid #475569;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: #334155;">6. Reingreso a 30 días: Índice LACE</h3>
+              <span id="badge-risk-lace" class="badge-complex complex-alta">Alto Riesgo</span>
+            </div>
+            <div class="grid-4">
+              <div class="form-group">
+                <label class="form-label">Días Estancia Hospital</label>
+                <input type="number" id="calc-lace-days" class="form-control" value="5" min="0" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ingreso Urgente (A)</label>
+                <select id="calc-lace-acute" class="form-control" onchange="runRiskCalculators()">
+                  <option value="3" selected>Sí, por Urgencias (3 pts)</option>
+                  <option value="0">No, ingreso electivo (0 pts)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Charlson Comorbidities</label>
+                <input type="number" id="calc-lace-charlson" class="form-control" value="3" min="0" max="6" oninput="runRiskCalculators()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Visitas Urgencias (6 meses)</label>
+                <input type="number" id="calc-lace-ed" class="form-control" value="2" min="0" max="10" oninput="runRiskCalculators()">
+              </div>
+            </div>
+            <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #334155;">SCORE LACE (0-19)</div>
+                <div id="res-lace-val" style="font-size: 22px; font-weight: 900; color: #1e293b;">12 pts</div>
+              </div>
+              <div id="res-lace-desc" style="font-size: 12px; font-weight: 700; color: #0f172a; text-align: right;">
+                ALTO RIESGO DE REINGRESO (≥10 pts)<br><span style="font-size: 10px; font-weight: 400;">Llamada de seguimiento antes de 48-72h</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: RED DE CUIDADOS -->
+    <!-- ======================================================== -->
+    <section id="tab-red" class="tab-content" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="heart-handshake" style="color: var(--purple);"></i> Círculo y Red de Cuidados del Afiliado
+          </div>
+          <span class="badge-role badge-ts">Rol: Trabajo Social</span>
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
+          Identificación cuantitativa y cualitativa de la red de apoyo para garantizar el acompañamiento y sostenibilidad del Plan de Atención Individualizado (PAI).
+        </p>
+
+        <div class="grid-3">
+          <!-- Red Interna -->
+          <div class="card" style="border-top: 4px solid var(--purple);">
+            <div style="font-weight: 700; color: #6b21a8; margin-bottom: 12px;">Red Interna (Familiar y Conviviente)</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Hijos(as)</label>
+                <input type="number" id="red-hijos" class="form-control" value="2" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nietos(as)</label>
+                <input type="number" id="red-nietos" class="form-control" value="1" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Hermanos(as)</label>
+                <input type="number" id="red-hermanos" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amigos Cercanos</label>
+                <input type="number" id="red-amigos" class="form-control" value="1" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Padres</label>
+                <input type="number" id="red-padres" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Otros Familiares</label>
+                <input type="number" id="red-otros-fam" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Red Externa -->
+          <div class="card" style="border-top: 4px solid var(--secondary);">
+            <div style="font-weight: 700; color: #0f766e; margin-bottom: 12px;">Red Externa (Vecindario y Comercio)</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Vecinos de Confianza</label>
+                <input type="number" id="red-vecinos" class="form-control" value="1" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amigos Lejanos</label>
+                <input type="number" id="red-amigos-lej" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Farmacia de Barrio</label>
+                <input type="number" id="red-farmacia" class="form-control" value="1" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Panadería / Tienda</label>
+                <input type="number" id="red-tienda" class="form-control" value="1" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Otros Externos</label>
+                <input type="number" id="red-otros-ext" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Comunidad y Totales -->
+          <div class="card" style="border-top: 4px solid var(--primary);">
+            <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 12px;">Comunidad y Red Total</div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Asociación de Pacientes</label>
+                <input type="number" id="red-asoc" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Centro Día / Adulto Mayor</label>
+                <input type="number" id="red-centrodia" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Voluntariado / ONG</label>
+                <input type="number" id="red-volunt" class="form-control" value="0" min="0" oninput="calcRedTotal()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Parroquia / Culto</label>
+                <input type="number" id="red-parroquia" class="form-control" value="1" min="0" oninput="calcRedTotal()">
+              </div>
+            </div>
+
+            <!-- Total KPI -->
+            <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; text-align: center; margin-top: 10px;">
+              <div style="font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase;">Total Personas en Red de Cuidados</div>
+              <div id="red-total-val" style="font-size: 28px; font-weight: 900; color: #b45309;">7</div>
+              <div style="font-size: 11px; color: #92400e;">Soporte social implicado</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observaciones y Diagnóstico Social de la Red / Cuidador Principal</label>
+          <textarea id="red-observaciones" class="form-control" rows="3" placeholder="Detalle si existe un cuidador principal único con riesgo de claudicación, apoyo de relevo, red comunitaria disponible..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: PLAN DE ATENCIÓN (PAI) & INFORME IMPRIMIBLE -->
+    <!-- ======================================================== -->
+    <section id="tab-pai" class="tab-content" style="display: none;">
+      <div style="margin-bottom: 16px; display: flex; justify-content: flex-end; gap: 10px;" class="no-print">
+        <button class="btn btn-primary" onclick="window.print()">
+          <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Imprimir / Guardar en PDF
+        </button>
+      </div>
+
+      <!-- Printable Clinical Report Card -->
+      <div class="card" id="printable-pai-report" style="padding: 30px; font-size: 13px;">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 16px;">
+          <div>
+            <h1 style="font-size: 18px; font-weight: 900; color: #1e3a8a; margin-bottom: 2px;">OPTIMUS HEALTH IPS &bull; PROGRAMA NEW CARE</h1>
+            <h2 style="font-size: 14px; font-weight: 700; color: #334155;">DICTAMEN DE VALORACIÓN MULTIDIMENSIONAL (VMD) Y PLAN DE ATENCIÓN INDIVIDUALIZADO (PAI)</h2>
+            <div style="font-size: 11px; color: #64748b;">Fundación NewHealth &bull; Modelo de Gestión de Insuficiencias Orgánicas Crónicas Complejas</div>
+          </div>
+          <div style="text-align: right; font-size: 11px; color: #475569;">
+            <div><strong>Fecha Emisión:</strong> <span id="rep-date">--/--/----</span></div>
+            <div><strong>Código Informe:</strong> <span id="rep-code">VMD-NEWCARE-2026</span></div>
+          </div>
+        </div>
+
+        <!-- Paciente -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+          <div class="grid-4" style="font-size: 12px;">
+            <div><strong>Afiliado:</strong> <span id="rep-name">-</span></div>
+            <div><strong>Cédula:</strong> <span id="rep-id">-</span></div>
+            <div><strong>Edad:</strong> <span id="rep-age">-</span> años</div>
+            <div><strong>Aseguradora:</strong> <span id="rep-eps">-</span></div>
+            <div><strong>Tipo VMD:</strong> <span id="rep-type">-</span></div>
+            <div><strong>Ámbito PAI:</strong> <span id="rep-ambit">-</span></div>
+            <div><strong>Prestador:</strong> <span id="rep-provider">Optimus Health IPS</span></div>
+            <div><strong>Zona:</strong> Urbana</div>
+          </div>
+        </div>
+
+        <!-- Resumen 5 Dimensiones -->
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-size: 13px; font-weight: 800; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px;">
+            1. RESUMEN DE PUNTUACIONES MULTIDIMENSIONALES (ESCALAS OFICIALES)
+          </h3>
+          <table class="data-table" style="font-size: 12px;">
+            <thead>
+              <tr>
+                <th>Dimensión</th>
+                <th>Escalas Utilizadas</th>
+                <th>Puntajes Obtenidos</th>
+                <th>Valor Normalizado (0-2)</th>
+                <th>Interpretación Clínica</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1. Severidad Clínica (T)</strong></td>
+                <td>NYHA, GOLD, Child-Pugh, ERC</td>
+                <td id="rep-dim-t-scales">-</td>
+                <td id="rep-dim-t-val" style="font-weight: 700; text-align: center;">-</td>
+                <td id="rep-dim-t-desc">-</td>
+              </tr>
+              <tr>
+                <td><strong>2. Funcionalidad (Z)</strong></td>
+                <td>Índice de Barthel, Lawton & Brody</td>
+                <td id="rep-dim-z-scales">-</td>
+                <td id="rep-dim-z-val" style="font-weight: 700; text-align: center;">-</td>
+                <td id="rep-dim-z-desc">-</td>
+              </tr>
+              <tr>
+                <td><strong>3. Nutricional (AL)</strong></td>
+                <td>MNA-SF Cribaje, MNA Completo</td>
+                <td id="rep-dim-al-scales">-</td>
+                <td id="rep-dim-al-val" style="font-weight: 700; text-align: center;">-</td>
+                <td id="rep-dim-al-desc">-</td>
+              </tr>
+              <tr>
+                <td><strong>4. Cognitiva (AF)</strong></td>
+                <td>Test de Pfeiffer, MMSE</td>
+                <td id="rep-dim-af-scales">-</td>
+                <td id="rep-dim-af-val" style="font-weight: 700; text-align: center;">-</td>
+                <td id="rep-dim-af-desc">-</td>
+              </tr>
+              <tr>
+                <td><strong>5. Situación Social (AR)</strong></td>
+                <td>Escala de Gijón, Zarit Cuidador</td>
+                <td id="rep-dim-ar-scales">-</td>
+                <td id="rep-dim-ar-val" style="font-weight: 700; text-align: center;">-</td>
+                <td id="rep-dim-ar-desc">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estratificación de Riesgo Clínico -->
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-size: 13px; font-weight: 800; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px;">
+            2. PERFIL DE RIESGO CLÍNICO Y VULNERABILIDAD
+          </h3>
+          <div class="grid-3" style="font-size: 11px;">
+            <div style="border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+              <strong>Riesgo Renal (CKD-EPI):</strong> <span id="rep-risk-renal">-</span>
+            </div>
+            <div style="border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+              <strong>Riesgo Hepático (MELD-Na):</strong> <span id="rep-risk-hepatic">-</span>
+            </div>
+            <div style="border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+              <strong>Riesgo EPOC (BODEx):</strong> <span id="rep-risk-bode">-</span>
+            </div>
+            <div style="border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+              <strong>Riesgo de Caídas (Downton):</strong> <span id="rep-risk-falls">-</span>
+            </div>
+            <div style="border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+              <strong>Riesgo UPP (Braden):</strong> <span id="rep-risk-braden">-</span>
+            </div>
+            <div style="border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px;">
+              <strong>Reingreso 30d (LACE):</strong> <span id="rep-risk-lace">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dictamen Final -->
+        <div style="background: #eff6ff; border: 2px solid #93c5fd; border-radius: 6px; padding: 14px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #1e40af; text-transform: uppercase;">DICTAMEN JUNTA DE CRONICIDAD CLÍNICA</div>
+              <div id="rep-complexity-title" style="font-size: 18px; font-weight: 900; color: #1e3a8a;">ALTA COMPLEJIDAD</div>
+              <div id="rep-decision-text" style="font-size: 13px; font-weight: 700; color: #166534;">CANDIDATO ELEGIBLE - INGRESO APROBADO A PROGRAMA NEW CARE</div>
+            </div>
+            <div style="text-align: right;">
+              <span id="rep-modalidad-badge" class="badge-role badge-coord" style="font-size: 12px; padding: 6px 12px;">MODALIDAD DOMICILIARIA</span>
+            </div>
+          </div>
+          <p id="rep-explanation-text" style="font-size: 11px; color: #334155; margin-top: 8px; line-height: 1.5;"></p>
+        </div>
+
+        <!-- Plan PAI -->
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-size: 13px; font-weight: 800; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px;">
+            3. PLAN DE ATENCIÓN INDIVIDUALIZADO (PAI) - METAS Y SEGUIMIENTO
+          </h3>
+          <div class="grid-2" style="font-size: 12px; margin-bottom: 10px;">
+            <div><strong>Cadencia de Visitas / Consultas:</strong> <span id="rep-pai-visitas">-</span></div>
+            <div><strong>Cadencia de Seguimiento Telefónico:</strong> <span id="rep-pai-llamadas">-</span></div>
+          </div>
+          <div style="font-size: 12px;">
+            <p style="margin-bottom: 4px;"><strong>&bull; Metas Sanitarias:</strong> <span id="rep-pai-san">-</span></p>
+            <p style="margin-bottom: 4px;"><strong>&bull; Metas Nutricionales:</strong> <span id="rep-pai-nut">-</span></p>
+            <p style="margin-bottom: 4px;"><strong>&bull; Metas Psicológicas:</strong> <span id="rep-pai-psi">-</span></p>
+            <p style="margin-bottom: 4px;"><strong>&bull; Metas Sociales y Red de Cuidados:</strong> <span id="rep-pai-soc">-</span></p>
+          </div>
+        </div>
+
+        <!-- Signatures Block -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; padding-top: 20px;">
+          <div style="text-align: center; border-top: 1px solid #475569; padding-top: 6px; font-size: 11px;">
+            <div id="rep-sig-med" style="font-weight: 700;">Dr. Carlos Restrepo</div>
+            <div>Médico Internista / Geriatra</div>
+            <div>Registro Médico: RM-12345</div>
+          </div>
+          <div style="text-align: center; border-top: 1px solid #475569; padding-top: 6px; font-size: 11px;">
+            <div id="rep-sig-enf" style="font-weight: 700;">Enf. Sandra Patricia Mejía</div>
+            <div>Jefe de Enfermería</div>
+            <div>Registro: RE-67890</div>
+          </div>
+          <div style="text-align: center; border-top: 1px solid #475569; padding-top: 6px; font-size: 11px;">
+            <div id="rep-sig-ts" style="font-weight: 700;">Lic. Marcela Gómez</div>
+            <div>Trabajadora Social</div>
+            <div>Registro: RTS-54321</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6: GUÍA METODOLÓGICA NEWCARE -->
+    <!-- ======================================================== -->
+    <section id="tab-guia" class="tab-content" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="book-open" style="color: var(--primary);"></i> Lineamientos Metodológicos New Care (Recursos 2.1)
+          </div>
+        </div>
+        <div style="font-size: 13px; color: #334155; line-height: 1.7;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">1. Protocolo de Tiempos y Flujo de Atención</h3>
+          <p>
+            • <strong>Días 1 a 15:</strong> Recepción del caso remitido por la aseguradora y agendamiento prioritario de la Valoración Multidimensional.<br>
+            • <strong>Días 16 a 30:</strong> Valoración conjunta interdisciplinaria (Médico, Enfermera, TS). No debe superar 15 días tras el agendamiento.<br>
+            • <strong>Día 30:</strong> Consenso del equipo tratante, cálculo de complejidad y presentación en la Junta de Cronicidad Clínica / Aseguradora.
+          </p>
+
+          <h3 style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-top: 16px; margin-bottom: 8px;">2. Algoritmo Oficial de Asignación de Complejidad</h3>
+          <p>
+            1. <strong>Severidad Clínica (T):</strong> Máximo valor entre NYHA, GOLD, Child-Pugh y ERC (Valores 0, 1 o 2). La severidad es la base.<br>
+            2. <strong>Factor de Complejidad Asociada:</strong> Si cualquiera de las áreas de Funcionalidad (Z), Cognitividad (AF), Estado Nutricional (AL) o Situación Social (AR) tiene valor de <strong>Alta Complejidad (2)</strong>, la complejidad final aumenta un grado: <code>Valor Final = T + 1</code> (máximo 2).<br>
+            3. Si ninguna área asociada puntúa 2, la complejidad final es igual a la severidad clínica: <code>Valor Final = T</code>.<br>
+            4. <strong>Criterio de Ingreso:</strong> Todo paciente con Media o Alta Complejidad con IOCC es candidato elegible para ingresar al programa.
+          </p>
+
+          <h3 style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-top: 16px; margin-bottom: 8px;">3. Seguimiento PAI Mínimo</h3>
+          <p>
+            • <strong>Alta Complejidad Domiciliaria:</strong> Visita médica/enfermería/TS mensual en domicilio + llamada quincenal.<br>
+            • <strong>Alta Complejidad Ambulatoria:</strong> Consulta trimestral presencial + llamada mensual.<br>
+            • <strong>Media Complejidad:</strong> Consulta cada 4-6 meses + llamada cada 2-3 meses.<br>
+            • <strong>Reevaluación Periódica:</strong> Cada 6 meses en Alta Complejidad; anualmente en Media Complejidad; o tras alta hospitalaria / descompensación.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- ======================================================== -->
+    <!-- TAB: DIRECTORIO EQUIPO DE SALUD (NUEVOS PROFESIONALES) -->
+    <!-- ======================================================== -->
+    <section id="tab-equipo" class="tab-content" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="users-2" style="color: var(--primary);"></i> Directorio de Miembros del Equipo de Salud Tratante
+          </div>
+          <button class="btn btn-primary" onclick="openNewProfessionalModal()">
+            <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> Registrar Nuevo Profesional
+          </button>
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+          Todos los profesionales matriculados quedan disponibles en el sistema para firmar y registrar sus evaluaciones clínicas. Los datos se almacenan de forma permanente y compartida en el servidor central.
+        </p>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Profesional</th>
+                <th>Rol / Perfil</th>
+                <th>Cédula</th>
+                <th>Registro / Tarjeta Profesional</th>
+                <th>Especialidad / Área</th>
+                <th>Contacto (Tel / Correo)</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="equipo-table-body">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: REGISTRAR / EDITAR PROFESIONAL -->
+  <!-- ======================================================== -->
+  <div id="modal-new-prof" class="modal-overlay">
+    <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-new-prof-title">Registrar Nuevo Miembro del Equipo de Salud</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-new-prof')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-prof-id">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Nombres y Apellidos Completos</label>
+            <input type="text" id="edit-prof-name" class="form-control" placeholder="Ej: Dr. Fernando Castro">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rol en el Programa New Care</label>
+            <select id="edit-prof-role" class="form-control" onchange="updateRoleDefaults()">
+              <option value="MED">Médico Internista / Geriatra</option>
+              <option value="ENF">Enfermera(o) Jefe</option>
+              <option value="TS">Trabajador(a) Social</option>
+              <option value="COORD">Coordinador(a) / Junta de Cronicidad</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">No. Cédula de Ciudadanía</label>
+            <input type="text" id="edit-prof-doc" class="form-control" placeholder="Ej: 71234567">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarjeta / Registro Profesional</label>
+            <input type="text" id="edit-prof-reg" class="form-control" placeholder="Ej: RM-45678">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Especialidad / Enfoque Clínico</label>
+            <input type="text" id="edit-prof-spec" class="form-control" placeholder="Ej: Medicina Interna y Cronicidad">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono de Contacto</label>
+            <input type="text" id="edit-prof-phone" class="form-control" placeholder="Ej: 3101234567">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo Electrónico Institucional</label>
+          <input type="email" id="edit-prof-email" class="form-control" placeholder="profesional@optimushealth.com">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-new-prof')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveProfessionalRecord()">Guardar Miembro del Equipo</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CAMBIO DE ROL Y USUARIO -->
+  <!-- ======================================================== -->
+  <div id="modal-role" class="modal-overlay">
+    <div class="modal-container" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">Identificación y Rol del Profesional</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-role')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Nombre del Profesional</label>
+          <input type="text" id="prof-name-input" class="form-control" value="Dr. Carlos Restrepo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Registro / Tarjeta Profesional</label>
+          <input type="text" id="prof-reg-input" class="form-control" value="RM-12345">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rol en el Equipo de Salud</label>
+          <select id="prof-role-input" class="form-control">
+            <option value="MED">Médico Internista / Geriatra</option>
+            <option value="ENF">Enfermera(o) Jefe</option>
+            <option value="TS">Trabajador(a) Social</option>
+            <option value="COORD">Coordinador(a) / Junta de Cronicidad</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-role')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveUserRole()">Guardar y Aplicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CUESTIONARIO BARTHEL -->
+  <!-- ======================================================== -->
+  <div id="modal-barthel" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Índice de Barthel (Actividades Básicas de la Vida Diaria - ABVD)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-barthel')">&times;</button>
+      </div>
+      <div class="modal-body" id="barthel-questions-container">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--primary);">
+          Total Barthel: <span id="modal-barthel-total">100</span> / 100 pts
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="closeModal('modal-barthel')">Cancelar</button>
+          <button class="btn btn-teal" onclick="applyBarthelScore()">Aplicar a Valoración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CUESTIONARIO LAWTON & BRODY -->
+  <!-- ======================================================== -->
+  <div id="modal-lawton" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Índice de Lawton y Brody (Actividades Instrumentales - AIVD)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-lawton')">&times;</button>
+      </div>
+      <div class="modal-body" id="lawton-questions-container">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--primary);">
+          Total Lawton: <span id="modal-lawton-total">8</span> / 8 pts
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="closeModal('modal-lawton')">Cancelar</button>
+          <button class="btn btn-teal" onclick="applyLawtonScore()">Aplicar a Valoración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CUESTIONARIO PFEIFFER -->
+  <!-- ======================================================== -->
+  <div id="modal-pfeiffer" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Test de Pfeiffer (Short Portable Mental Status Questionnaire - SPMSQ)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-pfeiffer')">&times;</button>
+      </div>
+      <div class="modal-body" id="pfeiffer-questions-container">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--purple);">
+          Total Errores: <span id="modal-pfeiffer-total">0</span> / 10
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="closeModal('modal-pfeiffer')">Cancelar</button>
+          <button class="btn btn-purple" onclick="applyPfeifferScore()">Aplicar a Valoración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CUESTIONARIO MNA-SF -->
+  <!-- ======================================================== -->
+  <div id="modal-mna-sf" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Mini Nutritional Assessment - Short Form (MNA-SF Cribaje)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-mna-sf')">&times;</button>
+      </div>
+      <div class="modal-body" id="mna-questions-container">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--secondary);">
+          Total MNA-SF: <span id="modal-mna-total">14</span> / 14 pts
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="closeModal('modal-mna-sf')">Cancelar</button>
+          <button class="btn btn-teal" onclick="applyMnaScore()">Aplicar a Valoración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CUESTIONARIO GIJON -->
+  <!-- ======================================================== -->
+  <div id="modal-gijon" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Escala Sociofamiliar de Gijón (Situación Social)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-gijon')">&times;</button>
+      </div>
+      <div class="modal-body" id="gijon-questions-container">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--purple);">
+          Total Gijón: <span id="modal-gijon-total">5</span> / 25 pts
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="closeModal('modal-gijon')">Cancelar</button>
+          <button class="btn btn-purple" onclick="applyGijonScore()">Aplicar a Valoración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CUESTIONARIO ZARIT -->
+  <!-- ======================================================== -->
+  <div id="modal-zarit" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Escala de Zarit (Sobrecarga del Cuidador - 22 ítems)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-zarit')">&times;</button>
+      </div>
+      <div class="modal-body" id="zarit-questions-container">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 14px; color: var(--purple);">
+          Total Zarit: <span id="modal-zarit-total">22</span> / 88 pts
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="closeModal('modal-zarit')">Cancelar</button>
+          <button class="btn btn-purple" onclick="applyZaritScore()">Aplicar a Valoración</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CALCULADORA CHILD-PUGH -->
+  <!-- ======================================================== -->
+  <div id="modal-cp" class="modal-overlay">
+    <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title">Calculadora Child-Pugh (Hepatopatía Crónica)</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cp')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Bilirrubina Total (mg/dL)</label>
+          <select id="cp-m-bili" class="form-control" onchange="calcModalCP()">
+            <option value="1">< 2.0 mg/dL (1 pto)</option>
+            <option value="2">2.0 - 3.0 mg/dL (2 ptos)</option>
+            <option value="3">> 3.0 mg/dL (3 ptos)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Albúmina Sérica (g/dL)</label>
+          <select id="cp-m-alb" class="form-control" onchange="calcModalCP()">
+            <option value="1">> 3.5 g/dL (1 pto)</option>
+            <option value="2">2.8 - 3.5 g/dL (2 ptos)</option>
+            <option value="3">< 2.8 g/dL (3 ptos)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tiempo de Protrombina / INR</label>
+          <select id="cp-m-inr" class="form-control" onchange="calcModalCP()">
+            <option value="1">INR < 1.7 / alargamiento < 4s (1 pto)</option>
+            <option value="2">INR 1.7 - 2.3 / alargamiento 4-6s (2 ptos)</option>
+            <option value="3">INR > 2.3 / alargamiento > 6s (3 ptos)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ascitis</label>
+          <select id="cp-m-asc" class="form-control" onchange="calcModalCP()">
+            <option value="1">Ausente (1 pto)</option>
+            <option value="2">Leve / responde a diuréticos (2 ptos)</option>
+            <option value="3">Moderada a severa / refractaria (3 ptos)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Encefalopatía Hepática</label>
+          <select id="cp-m-enc" class="form-control" onchange="calcModalCP()">
+            <option value="1">Ausente / Grado 0 (1 pto)</option>
+            <option value="2">Grado I o II (2 ptos)</option>
+            <option value="3">Grado III o IV (3 ptos)</option>
+          </select>
+        </div>
+
+        <div style="background: #eff6ff; padding: 12px; border-radius: 6px; text-align: center; margin-top: 10px;">
+          <div style="font-size: 11px; font-weight: 700; color: #1e40af;">PUNTOS CHILD-PUGH</div>
+          <div id="cp-m-total" style="font-size: 24px; font-weight: 900; color: #1e3a8a;">5 pts</div>
+          <div id="cp-m-class" style="font-size: 13px; font-weight: 700; color: #166534;">GRADO A (5-6 puntos) - Compensada</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-cp')">Cancelar</button>
+        <button class="btn btn-primary" onclick="applyCPScore()">Aplicar Grado a Ficha</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="app.js"></script>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CONFIGURACIÓN EN LA NUBE SUPABASE (POSTGRESQL) -->
+  <!-- ======================================================== -->
+  <div id="modal-supabase" class="modal-overlay">
+    <div class="modal-container" style="max-width: 620px;">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="database" style="color: #10b981;"></i> Conexión en la Nube Supabase (PostgreSQL)
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-supabase')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: #475569; line-height: 1.5; margin-bottom: 16px;">
+          Conectar con <strong>Supabase</strong> permite que todos los profesionales de la IPS (médicos, enfermeras, trabajadoras sociales) compartan la misma base de datos en tiempo real desde cualquier computador o tablet, sin necesidad de servidores locales ni archivos manuales.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 600;">Supabase Project URL</label>
+          <input type="text" id="supabase-url-input" class="form-control" placeholder="https://tu-proyecto.supabase.co" style="font-family: monospace; font-size: 12px;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 600;">Supabase Anon Key (Public Key)</label>
+          <input type="password" id="supabase-key-input" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-family: monospace; font-size: 12px;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 14px;">
+          <button type="button" class="btn btn-secondary" onclick="testSupabaseConnectionUI()">
+            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Probar Conexión
+          </button>
+          <button type="button" class="btn btn-primary" onclick="saveSupabaseConfigUI()">
+            <i data-lucide="cloud-check" style="width: 14px; height: 14px;"></i> Guardar y Conectar Nube
+          </button>
+          <button type="button" class="btn btn-outline" onclick="disconnectSupabaseUI()" style="margin-left: auto; color: #ef4444; border-color: #fca5a5;">
+            Desconectar Nube
+          </button>
+        </div>
+
+        <div id="supabase-status-feedback" style="margin-top: 14px; padding: 10px; border-radius: 6px; font-size: 12px; display: none;"></div>
+
+        <div style="margin-top: 18px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; color: #334155;">
+          <strong>Guía Rápida para Supabase (100% Gratuito):</strong>
+          <ol style="margin: 6px 0 0 18px; padding: 0; line-height: 1.6;">
+            <li>Ingresa a <a href="https://supabase.com" target="_blank" style="color: #2563eb; text-decoration: underline;">supabase.com</a> y crea un nuevo proyecto.</li>
+            <li>Ve a <strong>SQL Editor</strong> y ejecuta el archivo <code>schema_supabase.sql</code> que dejamos en la carpeta del proyecto.</li>
+            <li>Ve a <strong>Project Settings -> API</strong>, copia tu <strong>Project URL</strong> y la clave <strong>anon public</strong> y pégalas aquí arriba.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-supabase')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
