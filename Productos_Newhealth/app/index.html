@@ -95,52 +95,61 @@
   <!-- TOP BRANDING & NAVIGATION HEADER -->
   <header class="bg-optimus-navy text-white shadow-xl sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-20">
+      <div class="flex flex-col sm:flex-row items-center justify-between py-3 gap-3 min-h-[5rem]">
 
         <!-- Logos & Titles -->
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-between w-full sm:w-auto space-x-3">
           <div class="flex items-center bg-white/10 backdrop-blur-sm p-2 rounded-xl border border-white/15">
-            <img src="assets/optimus_logo.png" alt="Optimus Health Logo" class="h-10 object-contain max-w-[140px]"
+            <img src="assets/optimus_logo.png" alt="Optimus Health Logo" class="h-9 sm:h-10 object-contain max-w-[130px] sm:max-w-[140px]"
               onerror="this.onerror=null; this.src='https://dummyimage.com/140x40/0B2545/ffffff&text=Optimus+Health';">
             <span class="mx-2 text-white/40 font-light">|</span>
             <div class="text-left">
               <span
-                class="text-xs uppercase tracking-widest text-optimus-accent font-semibold block leading-none">Programa</span>
-              <span class="text-base font-extrabold tracking-tight text-white block leading-tight">NEWCARE</span>
+                class="text-[10px] sm:text-xs uppercase tracking-widest text-optimus-accent font-semibold block leading-none">Programa</span>
+              <span class="text-sm sm:text-base font-extrabold tracking-tight text-white block leading-tight">NEWCARE</span>
             </div>
           </div>
-          <div class="hidden md:block">
+          <div class="hidden lg:block">
             <p class="text-sm font-semibold text-white/90">Sistema de Diseño y Costeo de Productos de Salud</p>
             <p class="text-xs text-white/60">Atención Domiciliaria e Intramural para Crónicos Complejos</p>
           </div>
+
+          <!-- Mobile Quick Status Pill -->
+          <div onclick="openSupabaseModal()" class="cursor-pointer sm:hidden flex items-center px-2 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold" title="Configurar conexión Supabase">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+            <span>Nube</span>
+          </div>
         </div>
 
-        <!-- Quick Info & Action Buttons -->
-        <div class="flex items-center space-x-3">
-                    <!-- Cloud Status Indicator -->
-          <div onclick="openSupabaseModal()" class="cursor-pointer hidden sm:flex items-center px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-900/50 transition" title="Configurar conexión Supabase">
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end overflow-x-auto pb-1 sm:pb-0">
+          <!-- Desktop Cloud Status Indicator -->
+          <div onclick="openSupabaseModal()" class="cursor-pointer hidden sm:flex items-center px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-900/50 transition whitespace-nowrap" title="Configurar conexión Supabase">
             <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
             <span id="supabase-pill-text">Nube Supabase Conectada</span>
           </div>
+
           <button onclick="exportExcelFilePrompt()"
-            class="hidden sm:inline-flex items-center px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">
+            class="hidden md:inline-flex items-center px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition whitespace-nowrap">
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Excel Portafolio
           </button>
-                        <button onclick="saveProposalToCloud()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition text-center flex items-center justify-center">
-                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                Guardar Nube
-              </button>
-              <button onclick="switchTab('tab-quote')"
-            class="inline-flex items-center px-4 py-2 rounded-lg bg-optimus-cyan hover:bg-sky-600 text-white text-xs font-bold shadow-md transition">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          <button onclick="saveProposalToCloud()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow transition text-center flex items-center justify-center whitespace-nowrap">
+            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            <span>Guardar Nube</span>
+          </button>
+
+          <button onclick="switchTab('tab-quote')"
+            class="inline-flex items-center px-3 sm:px-4 py-2 rounded-lg bg-optimus-cyan hover:bg-sky-600 text-white text-xs font-bold shadow-md transition whitespace-nowrap">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Generar Cotización
+            <span>Cotización</span>
           </button>
         </div>
 
@@ -149,7 +158,7 @@
       <!-- Nav Tabs -->
       <nav class="flex space-x-2 border-t border-white/10 overflow-x-auto py-2 text-xs font-semibold custom-scrollbar">
         <button id="btn-portfolio" onclick="switchTab('tab-portfolio')"
-          class="tab-btn px-4 py-2 rounded-lg text-white bg-white/15 transition flex items-center">
+          class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-white whitespace-nowrap flex-shrink-0 bg-white/15 transition flex items-center">
           <svg class="w-4 h-4 mr-1.5 text-optimus-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -157,7 +166,7 @@
           Portafolio Base NewCare
         </button>
         <button id="btn-designer" onclick="switchTab('tab-designer')"
-          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-white/70 whitespace-nowrap flex-shrink-0 hover:text-white hover:bg-white/10 transition flex items-center">
           <svg class="w-4 h-4 mr-1.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -165,7 +174,7 @@
           Diseñador a la Medida (Simulador)
         </button>
         <button id="btn-catalog" onclick="switchTab('tab-catalog')"
-          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-white/70 whitespace-nowrap flex-shrink-0 hover:text-white hover:bg-white/10 transition flex items-center">
           <svg class="w-4 h-4 mr-1.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -173,7 +182,7 @@
           Catálogo de Eventos & CUPS
         </button>
         <button id="btn-quote" onclick="switchTab('tab-quote')"
-          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-white/70 whitespace-nowrap flex-shrink-0 hover:text-white hover:bg-white/10 transition flex items-center">
           <svg class="w-4 h-4 mr-1.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -181,7 +190,7 @@
           Propuesta Comercial & PDF
         </button>
                 <button id="btn-cloud" onclick="switchTab('tab-cloud')"
-          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-white/70 whitespace-nowrap flex-shrink-0 hover:text-white hover:bg-white/10 transition flex items-center">
           <svg class="w-4 h-4 mr-1.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" />
@@ -189,7 +198,7 @@
           Propuestas en la Nube (Multi-Usuario)
         </button>
         <button id="btn-clinical" onclick="switchTab('tab-clinical')"
-          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          class="tab-btn px-3 sm:px-4 py-2 rounded-lg text-white/70 whitespace-nowrap flex-shrink-0 hover:text-white hover:bg-white/10 transition flex items-center">
           <svg class="w-4 h-4 mr-1.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -946,7 +955,7 @@
         </div>
 
         <!-- Target Client Info -->
-        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
           <div>
             <span class="text-slate-400 font-semibold block uppercase text-[10px]">Entidad Aseguradora / Cliente:</span>
             <span id="quote-client-name" class="font-extrabold text-sm text-optimus-navy">EPS COOSALUD S.A.</span>
@@ -974,8 +983,8 @@
             <span id="quote-table-indicator" class="text-[11px] font-semibold text-slate-500">Vista: Aseguradora / Externa</span>
           </div>
           
-          <div class="border border-slate-200 rounded-xl overflow-hidden">
-            <table class="w-full text-left text-xs" id="quote-table">
+          <div class="border border-slate-200 rounded-xl overflow-x-auto custom-scrollbar">
+            <table class="min-w-full text-left text-xs" id="quote-table">
               <thead id="quote-table-head" class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
                 <!-- Dynamically filled based on selected version -->
               </thead>
@@ -990,7 +999,7 @@
         <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-4">
           <h3 class="font-bold text-sm text-optimus-navy uppercase tracking-wider text-xs">3. Propuesta Económica y Condiciones Comerciales</h3>
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div class="p-3 bg-white rounded-xl border border-slate-200">
               <span class="text-[10px] text-slate-400 font-semibold block uppercase">Precio Base por Paciente / Mes</span>
               <span id="quote-unit-price" class="text-xl font-extrabold text-optimus-navy">$0.00</span>
@@ -1016,7 +1025,7 @@
         </div>
 
         <!-- Official Signatures: Dr. Julio Herrera & Beatriz Monterroza -->
-        <div class="pt-8 border-t border-slate-200 grid grid-cols-2 gap-8 text-xs">
+        <div class="pt-8 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 text-xs">
           <div class="space-y-1">
             <div class="border-b border-slate-400 pb-8"></div>
             <p class="font-bold text-optimus-navy pt-2 text-sm">Dr. Julio Herrera</p>
