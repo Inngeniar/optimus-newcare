@@ -3,91 +3,29 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <!-- PWA & Apple iOS / Safari Compatibility -->
+  <meta name="theme-color" content="#0B2545">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NewCare Portafolio">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Optimus Health | Diseñador & Portafolio NewCare</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Static Local Tailwind CSS (Guaranteed to load instantly on iOS Safari & WhatsApp) -->
+  <link rel="stylesheet" href="tailwind.min.css">
+  <!-- Custom Optimus Palette & Responsive Styles -->
+  <link rel="stylesheet" href="custom.css">
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Supabase JS Client v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Google Fonts: Inter -->
+  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-          },
-          colors: {
-            optimus: {
-              navy: '#0B2545',
-              slate: '#133E87',
-              cyan: '#0284C7',
-              teal: '#0D9488',
-              light: '#F8FAFC',
-              card: '#FFFFFF',
-              border: '#E2E8F0',
-              accent: '#38BDF8'
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #F1F5F9;
-      color: #0F172A;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #F1F5F9;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #CBD5E1;
-      border-radius: 4px;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #94A3B8;
-    }
-
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-
-      #print-area,
-      #print-area * {
-        visibility: visible;
-      }
-
-      #print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: white;
-        padding: 20px;
-      }
-
-      .no-print {
-        display: none !important;
-      }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body class="min-h-screen flex flex-col">
@@ -100,7 +38,7 @@
         <!-- Logos & Titles -->
         <div class="flex items-center justify-between w-full sm:w-auto space-x-3">
           <div class="flex items-center bg-white/10 backdrop-blur-sm p-2 rounded-xl border border-white/15">
-            <img src="assets/optimus_logo.png" alt="Optimus Health Logo" class="h-9 sm:h-10 object-contain max-w-[130px] sm:max-w-[140px]"
+            <img src="assets/optimus_logo.png" alt="Optimus Health Logo" class="h-9 sm:h-10 object-contain" style="max-height: 40px; width: auto; max-width: 140px; object-fit: contain;"
               onerror="this.onerror=null; this.src='https://dummyimage.com/140x40/0B2545/ffffff&text=Optimus+Health';">
             <span class="mx-2 text-white/40 font-light">|</span>
             <div class="text-left">
@@ -1929,25 +1867,31 @@
       const wordHTML = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
-          <meta charset='utf-8'>
-          <title>${versionTitle} - ${client}</title>
-          <style>
-            @page { size: letter; margin: 2.5cm 2.5cm 2.5cm 2.5cm; }
-            body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 11pt; color: #0F172A; line-height: 1.4; }
-            h1 { font-size: 16pt; color: #0B2545; margin-bottom: 2px; }
-            h2 { font-size: 12pt; color: #133E87; margin-top: 14pt; margin-bottom: 6pt; text-transform: uppercase; border-bottom: 1px solid #CBD5E1; padding-bottom: 3pt; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10pt; margin-bottom: 12pt; }
-            .meta-box { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 10pt; margin-top: 12pt; margin-bottom: 14pt; border-radius: 4pt; }
-            .kpi-table { width: 100%; border-collapse: collapse; margin-top: 8pt; }
-            .kpi-card { background-color: #F1F5F9; border: 1px solid #CBD5E1; padding: 8pt; text-align: center; }
-            .kpi-title { font-size: 8.5pt; font-weight: bold; color: #475569; text-transform: uppercase; }
-            .kpi-value { font-size: 14pt; font-weight: bold; color: #0B2545; margin-top: 3pt; }
-            .footer-notes { font-size: 9pt; color: #475569; margin-top: 10pt; }
-            .sig-table { width: 100%; border: none; margin-top: 30pt; }
-            .sig-td { width: 50%; vertical-align: top; border: none; padding-top: 25pt; }
-            .sig-line { border-top: 1px solid #0F172A; width: 85%; margin-bottom: 4pt; }
-          </style>
-        </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <!-- PWA & Apple iOS / Safari Compatibility -->
+  <meta name="theme-color" content="#0B2545">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NewCare Portafolio">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Optimus Health | Diseñador & Portafolio NewCare</title>
+
+  <!-- Static Local Tailwind CSS (Guaranteed to load instantly on iOS Safari & WhatsApp) -->
+  <link rel="stylesheet" href="tailwind.min.css">
+  <!-- Custom Optimus Palette & Responsive Styles -->
+  <link rel="stylesheet" href="custom.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
         <body>
           <!-- Header Banner -->
           <table style="width: 100%; border: none; margin-bottom: 10pt;">
