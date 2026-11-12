@@ -1,0 +1,13 @@
+{
+  "name": "optimus-newcare-portafolio",
+  "version": "1.0.0",
+  "description": "Plataforma de Diseño, Costeo y Portafolio NEWCARE - Optimus Health IPS",
+  "main": "app/index.html",
+  "scripts": {
+    "start": "npx serve app",
+    "build": "echo 'Static app ready for Vercel'"
+  },
+  "keywords": ["healthtech", "newcare", "optimus-health", "costeo", "salud-domiciliaria"],
+  "author": "Optimus Health S.A.S.",
+  "license": "UNLICENSED"
+}

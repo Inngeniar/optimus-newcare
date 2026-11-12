@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optimus Health | Diseñador & Portafolio NewCare</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            optimus: {
+              navy: '#0B2545',
+              slate: '#133E87',
+              cyan: '#0284C7',
+              teal: '#0D9488',
+              light: '#F8FAFC',
+              card: '#FFFFFF',
+              border: '#E2E8F0',
+              accent: '#38BDF8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F1F5F9;
+      color: #0F172A;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #print-area,
+      #print-area * {
+        visibility: visible;
+      }
+
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        padding: 20px;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP BRANDING & NAVIGATION HEADER -->
+  <header class="bg-optimus-navy text-white shadow-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+
+        <!-- Logos & Titles -->
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center bg-white/10 backdrop-blur-sm p-2 rounded-xl border border-white/15">
+            <img src="assets/optimus_logo.png" alt="Optimus Health Logo" class="h-10 object-contain max-w-[140px]"
+              onerror="this.onerror=null; this.src='https://dummyimage.com/140x40/0B2545/ffffff&text=Optimus+Health';">
+            <span class="mx-2 text-white/40 font-light">|</span>
+            <div class="text-left">
+              <span
+                class="text-xs uppercase tracking-widest text-optimus-accent font-semibold block leading-none">Programa</span>
+              <span class="text-base font-extrabold tracking-tight text-white block leading-tight">NEWCARE</span>
+            </div>
+          </div>
+          <div class="hidden md:block">
+            <p class="text-sm font-semibold text-white/90">Sistema de Diseño y Costeo de Productos de Salud</p>
+            <p class="text-xs text-white/60">Atención Domiciliaria e Intramural para Crónicos Complejos</p>
+          </div>
+        </div>
+
+        <!-- Quick Info & Action Buttons -->
+        <div class="flex items-center space-x-3">
+                    <!-- Cloud Status Indicator -->
+          <div onclick="openSupabaseModal()" class="cursor-pointer hidden sm:flex items-center px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:bg-emerald-900/50 transition" title="Configurar conexión Supabase">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+            <span id="supabase-pill-text">Nube Supabase Conectada</span>
+          </div>
+          <button onclick="exportExcelFilePrompt()"
+            class="hidden sm:inline-flex items-center px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel Portafolio
+          </button>
+                        <button onclick="saveProposalToCloud()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition text-center flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                Guardar Nube
+              </button>
+              <button onclick="switchTab('tab-quote')"
+            class="inline-flex items-center px-4 py-2 rounded-lg bg-optimus-cyan hover:bg-sky-600 text-white text-xs font-bold shadow-md transition">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Generar Cotización
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Nav Tabs -->
+      <nav class="flex space-x-2 border-t border-white/10 overflow-x-auto py-2 text-xs font-semibold custom-scrollbar">
+        <button id="btn-portfolio" onclick="switchTab('tab-portfolio')"
+          class="tab-btn px-4 py-2 rounded-lg text-white bg-white/15 transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-optimus-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          Portafolio Base NewCare
+        </button>
+        <button id="btn-designer" onclick="switchTab('tab-designer')"
+          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          Diseñador a la Medida (Simulador)
+        </button>
+        <button id="btn-catalog" onclick="switchTab('tab-catalog')"
+          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          Catálogo de Eventos & CUPS
+        </button>
+        <button id="btn-quote" onclick="switchTab('tab-quote')"
+          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Propuesta Comercial & PDF
+        </button>
+                <button id="btn-cloud" onclick="switchTab('tab-cloud')"
+          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
+          Propuestas en la Nube (Multi-Usuario)
+        </button>
+        <button id="btn-clinical" onclick="switchTab('tab-clinical')"
+          class="tab-btn px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          </svg>
+          Criterios Clínicos (Manual)
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN BODY CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: PORTAFOLIO BASE NEWCARE -->
+    <!-- ======================================================== -->
+    <section id="tab-portfolio" class="tab-content block space-y-6">
+
+      <!-- Banner Introduction -->
+      <div
+        class="bg-gradient-to-r from-optimus-navy to-optimus-slate rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between">
+        <div class="space-y-1">
+          <div
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-optimus-teal text-white mb-2">
+            Metodología New Health Foundation & Optimus Health
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight">Portafolio de Atención Integral a Pacientes Crónicos Complejos
+          </h1>
+          <p class="text-sm text-white/80 max-w-3xl">
+            Estratificación de modelos asistenciales basados en carga de enfermedad, funcionalidad (Barthel), severidad
+            clínica (NYHA, GOLD, ERC, Child-Pugh) y necesidades sociofamiliares.
+          </p>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-2">
+          <button onclick="loadTemplateToDesigner('dom_alta')"
+            class="px-4 py-2 bg-white text-optimus-navy font-bold text-xs rounded-xl shadow hover:bg-slate-100 transition">
+            Personalizar Modelo en Diseñador
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick KPI Overview Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- Amb Media -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+            <span>AMBULATORIO MEDIA</span>
+            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700">UCC Sede</span>
+          </div>
+          <div class="text-2xl font-extrabold text-optimus-navy">$1,712.30</div>
+          <p class="text-xs text-slate-400 mt-0.5">Costo Técnico Base</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Precio Sug. (25% mrg):</span>
+            <span class="font-bold text-emerald-600 text-sm">$2,283.07</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Ref. Promedio: $2,329.70</div>
+        </div>
+
+        <!-- Amb Alta -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+            <span>AMBULATORIO ALTA</span>
+            <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-700">UCC Sede</span>
+          </div>
+          <div class="text-2xl font-extrabold text-optimus-navy">$2,947.26</div>
+          <p class="text-xs text-slate-400 mt-0.5">Costo Técnico Base</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Precio Sug. (25% mrg):</span>
+            <span class="font-bold text-emerald-600 text-sm">$3,929.68</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Ref. Promedio: $2,329.70</div>
+        </div>
+
+        <!-- Dom Media -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+            <span>DOMICILIARIO MEDIA</span>
+            <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-700">Hogar (PAD)</span>
+          </div>
+          <div class="text-2xl font-extrabold text-optimus-navy">$4,281.26</div>
+          <p class="text-xs text-slate-400 mt-0.5">Costo Técnico Base</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Precio Sug. (25% mrg):</span>
+            <span class="font-bold text-emerald-600 text-sm">$5,708.35</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Ref. Promedio: $5,480.26</div>
+        </div>
+
+        <!-- Dom Alta -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition">
+          <div class="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
+            <span>DOMICILIARIO ALTA</span>
+            <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700">Hogar (PAD)</span>
+          </div>
+          <div class="text-2xl font-extrabold text-optimus-navy">$6,679.26</div>
+          <p class="text-xs text-slate-400 mt-0.5">Costo Técnico Base</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 font-medium">Precio Sug. (25% mrg):</span>
+            <span class="font-bold text-emerald-600 text-sm">$8,905.68</span>
+          </div>
+          <div class="mt-1 text-[11px] text-slate-400">Ref. Promedio: $5,480.26</div>
+        </div>
+
+      </div>
+
+      <!-- Main Cards of 4 Base Models Detailed -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- CARD: MODELOS AMBULATORIOS -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div
+            class="bg-gradient-to-r from-optimus-navy to-optimus-slate p-4 text-white flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold">1. Modelos Ambulatorios (Unidad de Cuidado Crónico - UCC)</h2>
+              <p class="text-xs text-white/70">Atención institucional en sede con monitoreo periódico programado</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-white/20 text-xs font-semibold">2 Niveles</span>
+          </div>
+
+          <div class="p-5 space-y-4">
+
+            <!-- Media Complejidad -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-optimus-cyan/50 transition">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-optimus-navy">Ambulatorio Media Complejidad</h3>
+                  <p class="text-xs text-slate-500">Barthel 61-90 | NYHA II | GOLD II | ERC 3 | Pfeiffer 0-4</p>
+                </div>
+                <button onclick="loadTemplateToDesigner('amb_media')"
+                  class="text-xs font-bold text-optimus-cyan hover:underline">
+                  Cargar en Diseñador &rarr;
+                </button>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs py-2 border-y border-slate-200 my-2">
+                <div><span class="text-slate-400 block text-[10px]">Talento Humano:</span><span
+                    class="font-semibold">$1,090.47</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Insumos + Labs:</span><span
+                    class="font-semibold">$571.83</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Administrativo:</span><span
+                    class="font-semibold">$50.00</span></div>
+              </div>
+              <p class="text-xs text-slate-600 line-clamp-2">
+                Incluye especialista según subárea (cardio/nefro/neumo), internista/geriatra, médico general, enfermera
+                jefe, trabajador social, auxiliar y talleres de autocuidado.
+              </p>
+            </div>
+
+            <!-- Alta Complejidad -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-optimus-cyan/50 transition">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-optimus-navy">Ambulatorio Alta Complejidad</h3>
+                  <p class="text-xs text-slate-500">Barthel &lt;60 | NYHA III-IV | GOLD III-IV | ERC 4-5 | Pfeiffer 5-7
+                  </p>
+                </div>
+                <button onclick="loadTemplateToDesigner('amb_alta')"
+                  class="text-xs font-bold text-optimus-cyan hover:underline">
+                  Cargar en Diseñador &rarr;
+                </button>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs py-2 border-y border-slate-200 my-2">
+                <div><span class="text-slate-400 block text-[10px]">Talento Humano:</span><span
+                    class="font-semibold">$1,873.60</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Insumos + Labs:</span><span
+                    class="font-semibold">$973.66</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Administrativo:</span><span
+                    class="font-semibold">$100.00</span></div>
+              </div>
+              <p class="text-xs text-slate-600 line-clamp-2">
+                Mayor frecuencia de internista y enfermería jefe (0.68), laboratorios trimestrales, mayor dosis de
+                soporte farmacológico y evaluación de fragilidad avanzada.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CARD: MODELOS DOMICILIARIOS -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div
+            class="bg-gradient-to-r from-optimus-slate to-optimus-teal p-4 text-white flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold">2. Modelos Domiciliarios (Atención Extramural - PAD)</h2>
+              <p class="text-xs text-white/70">Atención profesional en el domicilio del paciente con limitación o
+                dependencia</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-white/20 text-xs font-semibold">2 Niveles</span>
+          </div>
+
+          <div class="p-5 space-y-4">
+
+            <!-- Media Complejidad Dom -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-optimus-teal/50 transition">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-optimus-navy">Domiciliario Media Complejidad</h3>
+                  <p class="text-xs text-slate-500">Dependencia funcional moderada | Movilidad reducida | Hogar seguro
+                  </p>
+                </div>
+                <button onclick="loadTemplateToDesigner('dom_media')"
+                  class="text-xs font-bold text-optimus-teal hover:underline">
+                  Cargar en Diseñador &rarr;
+                </button>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs py-2 border-y border-slate-200 my-2">
+                <div><span class="text-slate-400 block text-[10px]">Talento Humano:</span><span
+                    class="font-semibold">$3,257.60</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Insumos + Labs:</span><span
+                    class="font-semibold">$973.66</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Administrativo:</span><span
+                    class="font-semibold">$50.00</span></div>
+              </div>
+              <p class="text-xs text-slate-600 line-clamp-2">
+                Visitas domiciliarias de internista/geriatra (0.68), enfermera jefe (0.68), trabajador social (0.68),
+                seguimiento telefónico continuo mensual (1.0) y gestión de redes.
+              </p>
+            </div>
+
+            <!-- Alta Complejidad Dom -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-optimus-teal/50 transition">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-sm font-bold text-optimus-navy">Domiciliario Alta Complejidad</h3>
+                  <p class="text-xs text-slate-500">Alta dependencia | Fragilidad clínica extrema | Cuidador
+                    sobrecargado</p>
+                </div>
+                <button onclick="loadTemplateToDesigner('dom_alta')"
+                  class="text-xs font-bold text-optimus-teal hover:underline">
+                  Cargar en Diseñador &rarr;
+                </button>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs py-2 border-y border-slate-200 my-2">
+                <div><span class="text-slate-400 block text-[10px]">Talento Humano:</span><span
+                    class="font-semibold">$5,375.60</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Insumos + Labs:</span><span
+                    class="font-semibold">$1,203.66</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Administrativo:</span><span
+                    class="font-semibold">$100.00</span></div>
+              </div>
+              <p class="text-xs text-slate-600 line-clamp-2">
+                Doble frecuencia asistencial (internista 1.36, enfermera 1.36, trabajador social 1.36), insumos
+                reforzados, botiquín de descompensación de urgencia y laboratorios periódicos.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Specialized Modules Table (from PAQUETES Y EVENTOS.xlsx) -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-optimus-navy">Paquetes Institucionales Contratados de Atención
+              Domiciliaria (PAD)</h2>
+            <p class="text-xs text-slate-500">Catálogo de productos integrales vigentes en Optimus Health (Mercado
+              Colombiano - COP)</p>
+          </div>
+          <span
+            class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold">
+            Valores Contratados
+          </span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase text-[11px]">
+                <th class="py-3 px-4">Código</th>
+                <th class="py-3 px-4">Nombre del Paquete</th>
+                <th class="py-3 px-4">Alcance & Componentes</th>
+                <th class="py-3 px-4">Modalidad</th>
+                <th class="py-3 px-4">Periodicidad</th>
+                <th class="py-3 px-4 text-right">Tarifa Vigente</th>
+                <th class="py-3 px-4 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-normal text-slate-700">
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3 px-4 font-mono font-bold text-optimus-slate">E985110</td>
+                <td class="py-3 px-4 font-bold text-slate-900">Paquete Paciente Crónico Básico</td>
+                <td class="py-3 px-4 text-slate-600">Médico general mensual, especialista semestral, enfermería,
+                  nutrición/TS y laboratorios.</td>
+                <td class="py-3 px-4">Domiciliaria</td>
+                <td class="py-3 px-4">Mensual</td>
+                <td class="py-3 px-4 text-right font-bold text-emerald-600">$333,972</td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="loadContractedPackage('E985110')"
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Ver</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3 px-4 font-mono font-bold text-optimus-slate">E985111</td>
+                <td class="py-3 px-4 font-bold text-slate-900">Paquete Crónico con Terapias</td>
+                <td class="py-3 px-4 text-slate-600">Atención médica mensual, especialista semestral, 12 sesiones de
+                  terapias (física/resp/ocup/lenguaje).</td>
+                <td class="py-3 px-4">Domiciliaria</td>
+                <td class="py-3 px-4">Mensual</td>
+                <td class="py-3 px-4 text-right font-bold text-emerald-600">$667,939</td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="loadContractedPackage('E985111')"
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Ver</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3 px-4 font-mono font-bold text-optimus-slate">E890190</td>
+                <td class="py-3 px-4 font-bold text-slate-900">Paquete Domiciliario Intermedio</td>
+                <td class="py-3 px-4 text-slate-600">Soporte médico y de enfermería continuado, procedimientos
+                  periódicos y terapias en hogar.</td>
+                <td class="py-3 px-4">Domiciliaria</td>
+                <td class="py-3 px-4">Mensual</td>
+                <td class="py-3 px-4 text-right font-bold text-emerald-600">$1,616,506</td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="loadContractedPackage('E890190-I')"
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Ver</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3 px-4 font-mono font-bold text-optimus-slate">E890190-P</td>
+                <td class="py-3 px-4 font-bold text-slate-900">Paquete Crónico Paliativo</td>
+                <td class="py-3 px-4 text-slate-600">Manejo del dolor y síntomas refractarios, soporte emocional
+                  continuado a familia y cuidador.</td>
+                <td class="py-3 px-4">Domiciliaria</td>
+                <td class="py-3 px-4">Mensual</td>
+                <td class="py-3 px-4 text-right font-bold text-emerald-600">$1,450,175</td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="loadContractedPackage('E890190-P')"
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Ver</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3 px-4 font-mono font-bold text-optimus-slate">E891864</td>
+                <td class="py-3 px-4 font-bold text-slate-900">Heridas de Alta Complejidad</td>
+                <td class="py-3 px-4 text-slate-600">Curación avanzada, apósitos biológicos, terapia de presión negativa
+                  (VAC), seguimiento médico.</td>
+                <td class="py-3 px-4">Domicilio/Amb</td>
+                <td class="py-3 px-4">Mensual</td>
+                <td class="py-3 px-4 text-right font-bold text-emerald-600">$2,559,159</td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="loadContractedPackage('E891864')"
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Ver</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3 px-4 font-mono font-bold text-optimus-slate">E985112</td>
+                <td class="py-3 px-4 font-bold text-slate-900">Paquete Traqueostomía Mensual</td>
+                <td class="py-3 px-4 text-slate-600">Manejo de cánulas, higiene estéril, aspiración, insumos y
+                  seguimiento por terapia respiratoria.</td>
+                <td class="py-3 px-4">Domiciliaria</td>
+                <td class="py-3 px-4">Mensual</td>
+                <td class="py-3 px-4 text-right font-bold text-emerald-600">$2,307,156</td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="loadContractedPackage('E985112')"
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Ver</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: DISEÑADOR DE PRODUCTOS A LA MEDIDA (SIMULADOR) -->
+    <!-- ======================================================== -->
+    <section id="tab-designer" class="tab-content hidden space-y-6">
+
+      <!-- Top Bar: Presets & Controls -->
+      <div
+        class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-optimus-navy">Diseñador y Cotizador de Productos Personalizados</h2>
+          <p class="text-xs text-slate-500">Ajusta inclusiones, frecuencias de visita, insumos y márgenes para modelar
+            ofertas comerciales</p>
+        </div>
+
+        <!-- Quick Preset Dropdown -->
+        <div class="flex items-center space-x-2">
+          <label class="text-xs font-semibold text-slate-600">Plantillas Rápidas:</label>
+          <select id="preset-selector" onchange="applyPreset(this.value)"
+            class="text-xs bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-800 focus:ring-2 focus:ring-optimus-cyan">
+            <option value="custom">-- Seleccionar Plantilla --</option>
+            <option value="amb_media">Ambulatorio Media Complejidad</option>
+            <option value="amb_alta">Ambulatorio Alta Complejidad</option>
+            <option value="dom_media">Domiciliario Media Complejidad</option>
+            <option value="dom_alta" selected>Domiciliario Alta Complejidad</option>
+            <option value="cronico_terapias">Domiciliario con Terapias (E985111)</option>
+            <option value="paliativo">Crónico Paliativo Avanzado (E890190-P)</option>
+            <option value="heridas">Clínica de Heridas con VAC (E891864)</option>
+            <option value="traqueo">Paciente con Traqueostomía (E985112)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Two-column Layout: Service List (Left) vs Financial Panel & Chart (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- LEFT COLUMN: SERVICE ACCORDIONS / CHECKLIST (7 Cols) -->
+        <div class="lg:col-span-7 space-y-4">
+
+          <!-- Package Meta Data Box -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Nombre del Producto</label>
+              <input type="text" id="cfg-product-name" value="Plan NewCare Domiciliario Avanzado"
+                class="w-full text-xs font-semibold p-2 border border-slate-300 rounded-lg focus:border-optimus-cyan"
+                onchange="recalculate()">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Modalidad</label>
+              <select id="cfg-modality"
+                class="w-full text-xs font-semibold p-2 border border-slate-300 rounded-lg focus:border-optimus-cyan"
+                onchange="recalculate()">
+                <option value="Domiciliaria" selected>Domiciliaria (Extramural)</option>
+                <option value="Ambulatoria">Ambulatoria (Unidad Crónicos)</option>
+                <option value="Mixta">Mixta (Hogar + Sede)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Población Objetivo
+                (Pacientes)</label>
+              <input type="number" id="cfg-patients-count" value="100" min="1" max="10000"
+                class="w-full text-xs font-semibold p-2 border border-slate-300 rounded-lg focus:border-optimus-cyan"
+                onchange="recalculate()">
+            </div>
+          </div>
+
+          <!-- SERVICES LIST ACCORDION / SECTIONS -->
+
+          <!-- SECTION 1: TALENTO HUMANO MÉDICO & ASISTENCIAL -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-bold text-optimus-navy uppercase tracking-wider flex items-center">
+                <svg class="w-4 h-4 mr-1.5 text-optimus-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                1. Talento Humano Asistencial (Medicina y Especialidades)
+              </span>
+              <span id="subtotal-med-badge" class="text-xs font-bold text-optimus-slate">$0.00</span>
+            </div>
+            <div class="divide-y divide-slate-100 p-2 text-xs" id="services-medical-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- SECTION 2: ENFERMERÍA, CUIDADORES & SOPORTE SOCIAL -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-bold text-optimus-navy uppercase tracking-wider flex items-center">
+                <svg class="w-4 h-4 mr-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                2. Enfermería, Cuidado & Ámbito Social (NewCare 2.2)
+              </span>
+              <span id="subtotal-nursing-badge" class="text-xs font-bold text-optimus-slate">$0.00</span>
+            </div>
+            <div class="divide-y divide-slate-100 p-2 text-xs" id="services-nursing-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- SECTION 3: REHABILITACIÓN INTEGRAL & TERAPIAS -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-bold text-optimus-navy uppercase tracking-wider flex items-center">
+                <svg class="w-4 h-4 mr-1.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                3. Rehabilitación Integral (Fisioterapia, Fono, Resp, Ocupacional)
+              </span>
+              <span id="subtotal-therapy-badge" class="text-xs font-bold text-optimus-slate">$0.00</span>
+            </div>
+            <div class="divide-y divide-slate-100 p-2 text-xs" id="services-therapy-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- SECTION 4: INSUMOS, MEDICAMENTOS, LABS & ADMINISTRATIVO -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-bold text-optimus-navy uppercase tracking-wider flex items-center">
+                <svg class="w-4 h-4 mr-1.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+                4. Medicamentos de Urgencia, Insumos, Labs & Logística TIC
+              </span>
+              <span id="subtotal-supplies-badge" class="text-xs font-bold text-optimus-slate">$0.00</span>
+            </div>
+            <div class="divide-y divide-slate-100 p-2 text-xs" id="services-supplies-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: FINANCIAL KPI SUMMARY & CHART (5 Cols Sticky) -->
+        <div class="lg:col-span-5 space-y-4 lg:sticky lg:top-28">
+
+          <!-- FINANCIAL MASTER CARD -->
+          <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-xl space-y-5">
+            <div class="border-b border-slate-100 pb-4">
+              <span class="text-xs font-extrabold uppercase tracking-widest text-optimus-cyan">Resultados del
+                Costeo</span>
+              <h3 class="text-xl font-extrabold text-optimus-navy">Estructura Económica Mensual</h3>
+              <p class="text-xs text-slate-500">Cálculos automáticos con margen comercial</p>
+            </div>
+
+            <!-- Cost Breakdown Lines -->
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between text-slate-600">
+                <span>Subtotal Talento Humano:</span>
+                <span id="sum-labor" class="font-bold text-slate-900">$0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Subtotal Insumos y Medicamentos:</span>
+                <span id="sum-supplies" class="font-bold text-slate-900">$0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Subtotal Laboratorios Periódicos:</span>
+                <span id="sum-labs" class="font-bold text-slate-900">$0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Gastos Administrativos / TIC (INFORMEX):</span>
+                <span id="sum-admin" class="font-bold text-slate-900">$0.00</span>
+              </div>
+
+              <div class="pt-2 border-t border-slate-200 flex justify-between text-sm font-bold text-optimus-navy">
+                <span>COSTO TÉCNICO DIRECTO:</span>
+                <span id="sum-total-cost" class="text-base text-optimus-slate">$0.00</span>
+              </div>
+            </div>
+
+            <!-- Commercial Margin Slider -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+              <div class="flex justify-between items-center text-xs font-bold">
+                <span class="text-slate-700">Margen Comercial Deseado:</span>
+                <span id="margin-badge"
+                  class="px-2.5 py-0.5 rounded-full bg-optimus-teal text-white text-xs font-extrabold">25%</span>
+              </div>
+              <input type="range" id="margin-slider" min="5" max="50" step="1" value="25"
+                class="w-full accent-optimus-teal cursor-pointer" oninput="updateMargin(this.value)">
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>5% (Mínimo)</span>
+                <span>25% (Objetivo)</span>
+                <span>50% (VIP / Máximo)</span>
+              </div>
+            </div>
+
+            <!-- FINAL SUGGESTED PRICE CARD -->
+            <div
+              class="bg-gradient-to-br from-optimus-navy to-optimus-slate text-white p-5 rounded-2xl shadow-lg space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-wider text-optimus-accent font-semibold">Precio Base
+                  Sugerido</span>
+                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">Por Paciente / Mes</span>
+              </div>
+              <div id="final-price-display" class="text-3xl font-black text-white">$0.00</div>
+              <div class="pt-2 border-t border-white/10 flex justify-between text-xs text-white/80">
+                <span>Utilidad Bruta por Paciente:</span>
+                <span id="unit-profit-display" class="font-bold text-emerald-400">$0.00</span>
+              </div>
+            </div>
+
+            <!-- TOTAL COHORT SUMMARY -->
+            <div
+              class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-900 space-y-1.5 text-xs">
+              <div class="flex justify-between font-bold">
+                <span>Facturación Mensual Cohorte (<span id="cohort-size-label">100</span> pac.):</span>
+                <span id="cohort-monthly-display" class="font-extrabold text-sm">$0.00</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-emerald-700">
+                <span>Facturación Anual Estimada (12 meses):</span>
+                <span id="cohort-annual-display" class="font-bold">$0.00</span>
+              </div>
+            </div>
+
+            <!-- CHART: COST BREAKDOWN -->
+            <div class="pt-2">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Composición Porcentual del Precio</h4>
+              <div class="h-44 flex items-center justify-center">
+                <canvas id="costBreakdownChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-2 pt-2">
+                            <button onclick="saveProposalToCloud()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition text-center flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                Guardar Nube
+              </button>
+              <button onclick="switchTab('tab-quote')"
+                class="flex-1 py-2.5 bg-optimus-cyan hover:bg-sky-600 text-white font-bold rounded-xl text-xs shadow transition text-center">
+                Generar Propuesta
+              </button>
+              <button onclick="exportDesignerJSON()"
+                class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition"
+                title="Exportar JSON">
+                💾 Guardar
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: CATÁLOGO DE EVENTOS & CUPS -->
+    <!-- ======================================================== -->
+    <section id="tab-catalog" class="tab-content hidden space-y-6">
+
+      <div
+        class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-optimus-navy">Catálogo Institucional de Procedimientos y Eventos CUPS</h2>
+          <p class="text-xs text-slate-500">Tarifario de referencia de Optimus Health para contratación individual o
+            complementaria</p>
+        </div>
+
+        <!-- Search and Category Filter -->
+        <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+          <input type="text" id="catalog-search" placeholder="Buscar por CUPS o nombre..."
+            class="text-xs p-2 border border-slate-300 rounded-lg w-full sm:w-56 focus:border-optimus-cyan"
+            onkeyup="filterCatalog()">
+          <select id="catalog-cat-filter"
+            class="text-xs p-2 border border-slate-300 rounded-lg w-full sm:w-44 focus:border-optimus-cyan font-semibold"
+            onchange="filterCatalog()">
+            <option value="all">Todas las Categorías</option>
+            <option value="Consultas Médicas">Consultas Médicas</option>
+            <option value="Terapias Domiciliarias">Terapias Domiciliarias</option>
+            <option value="Enfermería Domiciliaria">Enfermería Domiciliaria</option>
+            <option value="Cuidadores Domiciliarios">Cuidadores Domiciliarios</option>
+            <option value="Turnos de Enfermería">Turnos de Enfermería</option>
+            <option value="Clínica de Heridas">Clínica de Heridas</option>
+            <option value="Procedimientos Vía Aérea">Procedimientos Vía Aérea</option>
+            <option value="Interconsultas UCC">Interconsultas UCC</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Catalog Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+                <th class="py-3.5 px-4">Categoría</th>
+                <th class="py-3.5 px-4">Código CUPS</th>
+                <th class="py-3.5 px-4">Descripción del Procedimiento / Servicio</th>
+                <th class="py-3.5 px-4">Ámbito</th>
+                <th class="py-3.5 px-4">Tipo Tarifa</th>
+                <th class="py-3.5 px-4 text-right">Tarifa Oferta (COP)</th>
+                <th class="py-3.5 px-4">Observaciones Técnicas</th>
+              </tr>
+            </thead>
+            <tbody id="catalog-table-body" class="divide-y divide-slate-100 font-normal text-slate-700">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: GENERADOR DE COTIZACIÓN Y PROPUESTA COMERCIAL -->
+    <!-- ======================================================== -->
+    <section id="tab-quote" class="tab-content hidden space-y-6">
+      
+      <!-- Action Bar & Version Selector -->
+      <div class="no-print bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-bold text-optimus-navy">Propuesta Comercial y Cotización Ejecutiva</h2>
+            <p class="text-xs text-slate-500">Documento membretado listo para presentar a aseguradores, EPS o clientes corporativos</p>
+          </div>
+          
+          <!-- Version Toggle & Export Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Version Switcher -->
+            <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button id="btn-ver-client" onclick="setQuoteVersion('client')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-optimus-navy shadow-sm flex items-center">
+                <svg class="w-3.5 h-3.5 mr-1 text-optimus-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Versión Aseguradora (Externa)
+              </button>
+              <button id="btn-ver-internal" onclick="setQuoteVersion('internal')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 flex items-center">
+                <svg class="w-3.5 h-3.5 mr-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                Versión Interna (Técnica)
+              </button>
+            </div>
+
+            <!-- Download Word Button -->
+            <button onclick="downloadQuoteWord()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-xl shadow transition flex items-center">
+              <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm1 9h-2v4h-2v-4H9V9h6v2zm-1-7.5L18.5 8H14V3.5z"/></svg>
+              Descargar Word (.docx)
+            </button>
+
+            <!-- Print / PDF Button -->
+            <button onclick="window.print()" class="px-4 py-2 bg-optimus-navy hover:bg-optimus-slate text-white text-xs font-bold rounded-xl shadow transition flex items-center">
+              <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              Imprimir / PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Editable Metadata Inputs for Individual Proposal Customization -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-100 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Entidad Aseguradora / Cliente:</label>
+            <input type="text" id="quote-client-input" value="EPS COOSALUD S.A." class="w-full p-2 border border-slate-300 rounded-lg font-bold text-optimus-navy focus:ring-2 focus:ring-optimus-cyan" oninput="syncQuoteMetadata()">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Atención / Destinatario:</label>
+            <input type="text" id="quote-contact-input" value="Dirección de Contratación y Redes de Servicios" class="w-full p-2 border border-slate-300 rounded-lg text-slate-700 focus:ring-2 focus:ring-optimus-cyan" oninput="syncQuoteMetadata()">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Número de Referencia:</label>
+            <input type="text" id="quote-ref-input" value="OH-NEWCARE-2026-0042" class="w-full p-2 border border-slate-300 rounded-lg font-mono text-slate-700 focus:ring-2 focus:ring-optimus-cyan" oninput="syncQuoteMetadata()">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Fecha de la Propuesta:</label>
+            <input type="text" id="quote-date-input" value="12 de Noviembre de 2026" class="w-full p-2 border border-slate-300 rounded-lg text-slate-700 focus:ring-2 focus:ring-optimus-cyan" oninput="syncQuoteMetadata()">
+          </div>
+        </div>
+      </div>
+
+      <!-- PRINTABLE PROPOSAL SHEET CONTAINER -->
+      <div id="print-area" class="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl max-w-4xl mx-auto space-y-8 text-slate-800">
+        
+        <!-- Header with Official Logo -->
+        <div class="flex justify-between items-start border-b border-slate-200 pb-6">
+          <div class="space-y-1">
+            <img src="assets/optimus_logo.png" alt="Optimus Health" class="h-12 object-contain" onerror="this.onerror=null; this.src='https://dummyimage.com/160x50/0B2545/ffffff&text=Optimus+Health';">
+            <p class="text-xs font-bold text-optimus-navy tracking-wide">OPTIMUS HEALTH S.A.S. - IPS</p>
+            <p class="text-[11px] text-slate-500">NIT: 900.892.412-1 | Sincelejo, Sucre, Colombia</p>
+            <p class="text-[11px] text-slate-500">Habilitación Salud No. 7000100845 | Programa NewCare</p>
+          </div>
+          <div class="text-right space-y-1">
+            <span id="quote-badge-version" class="inline-block px-3 py-1 bg-optimus-navy text-white text-xs font-bold rounded-lg uppercase tracking-wider">
+              Propuesta Comercial
+            </span>
+            <p class="text-xs text-slate-500" id="quote-date-display">Fecha: 12 de Noviembre de 2026</p>
+            <p class="text-xs font-mono text-slate-400" id="quote-ref-display">Ref: OH-NEWCARE-2026-0042</p>
+          </div>
+        </div>
+
+        <!-- Target Client Info -->
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs">
+          <div>
+            <span class="text-slate-400 font-semibold block uppercase text-[10px]">Entidad Aseguradora / Cliente:</span>
+            <span id="quote-client-name" class="font-extrabold text-sm text-optimus-navy">EPS COOSALUD S.A.</span>
+            <p class="text-slate-500 mt-1" id="quote-contact-display">Atención: Dirección de Contratación y Redes de Servicios</p>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 font-semibold block uppercase text-[10px]">Producto Diseñado:</span>
+            <span id="quote-product-title" class="font-bold text-sm text-optimus-cyan">Plan NewCare Integral a la Medida</span>
+            <p class="text-slate-500 mt-1">Cohorte Proyectada: <span id="quote-cohort-count" class="font-bold text-slate-800">100</span> usuarios activos/mes</p>
+          </div>
+        </div>
+
+        <!-- Scope & Description -->
+        <div class="space-y-2 text-xs text-slate-700 leading-relaxed">
+          <h3 class="font-bold text-sm text-optimus-navy uppercase tracking-wider">1. Objeto y Alcance del Servicio</h3>
+          <p>
+            Optimus Health IPS presenta la presente propuesta técnica y económica para la articulación del <strong>Programa NEWCARE</strong> (modelo avalado por la Fundación New Health), orientado a la atención integral de pacientes con insuficiencias orgánicas crónicas complejas (Enfermedad Renal Crónica, Insuficiencia Cardíaca NYHA II-IV, EPOC GOLD II-IV, Falla Hepática y Secuelas Neurológicas). El modelo incorpora atención médica y de enfermería especializada, rehabilitación funcional, abordaje del ámbito social y familiar (apoyo a cuidadores y redes de cuidado), provisión de fármacos de rescate y monitoreo clínico permanente mediante nuestra plataforma tecnológica de historia clínica <em>INFORMEX</em>.
+          </p>
+        </div>
+
+        <!-- Breakdown Table in Quote -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-sm text-optimus-navy uppercase tracking-wider text-xs">2. Resumen de Actividades y Recursos Incluidos en el Paquete</h3>
+            <span id="quote-table-indicator" class="text-[11px] font-semibold text-slate-500">Vista: Aseguradora / Externa</span>
+          </div>
+          
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs" id="quote-table">
+              <thead id="quote-table-head" class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                <!-- Dynamically filled based on selected version -->
+              </thead>
+              <tbody id="quote-breakdown-body" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Dynamically filled based on selected version -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Economic Summary Box -->
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-4">
+          <h3 class="font-bold text-sm text-optimus-navy uppercase tracking-wider text-xs">3. Propuesta Económica y Condiciones Comerciales</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Precio Base por Paciente / Mes</span>
+              <span id="quote-unit-price" class="text-xl font-extrabold text-optimus-navy">$0.00</span>
+              <span class="text-[10px] text-slate-500 block mt-0.5">Tarifa Paquete Integral (PBP)</span>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Facturación Mensual (Cohorte)</span>
+              <span id="quote-cohort-monthly" class="text-xl font-extrabold text-emerald-600">$0.00</span>
+              <span class="text-[10px] text-slate-500 block mt-0.5"><span id="quote-cohort-label-2">100</span> pacientes / mes</span>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Valor Total Anual del Contrato</span>
+              <span id="quote-cohort-annual" class="text-xl font-extrabold text-optimus-slate">$0.00</span>
+              <span class="text-[10px] text-slate-500 block mt-0.5">Vigencia 12 meses</span>
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-600 space-y-1 pt-2">
+            <p><strong>Condición Contractual:</strong> Conforme a las reglas institucionales de Optimus Health, se certifica el cumplimiento superior al 90% de las actividades descritas para la procedencia de liquidación mensual.</p>
+            <p><strong>Uso de Telemedicina:</strong> Se encuentra autorizada la teleorientación para controles médicos y seguimiento interdisciplinario; enfermería y terapias serán 100% presenciales en domicilio.</p>
+            <p><strong>Reevaluación del Paciente:</strong> Ventana máxima de vigencia del paquete de 3 a 6 meses con evaluación de desescalonamiento o egreso del programa.</p>
+          </div>
+        </div>
+
+        <!-- Official Signatures: Dr. Julio Herrera & Beatriz Monterroza -->
+        <div class="pt-8 border-t border-slate-200 grid grid-cols-2 gap-8 text-xs">
+          <div class="space-y-1">
+            <div class="border-b border-slate-400 pb-8"></div>
+            <p class="font-bold text-optimus-navy pt-2 text-sm">Dr. Julio Herrera</p>
+            <p class="text-slate-600 font-medium text-xs">Director Médico & Líder del Programa NewCare</p>
+            <p class="text-slate-400 text-[10px]">Optimus Health S.A.S. IPS</p>
+          </div>
+          <div class="space-y-1 text-right">
+            <div class="border-b border-slate-400 pb-8"></div>
+            <p class="font-bold text-optimus-navy pt-2 text-sm">Beatriz Monterroza</p>
+            <p class="text-slate-600 font-medium text-xs">Gerencia General / Comercial</p>
+            <p class="text-slate-400 text-[10px]">Optimus Health S.A.S. IPS</p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: CRITERIOS CLÍNICOS & MANUAL -->
+    <!-- ======================================================== -->
+    <section id="tab-clinical" class="tab-content hidden space-y-6">
+
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-optimus-navy">Criterios de Estratificación Clínica y Reglas Operativas</h2>
+        <p class="text-xs text-slate-500">Fundamentación técnica extraída del Manual Operativo Interno NEWCARE - Optimus
+          Health</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Clinical Scales Card -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-sm font-bold text-optimus-navy uppercase tracking-wider flex items-center">
+            <svg class="w-4 h-4 mr-1.5 text-optimus-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Escalas Validadas para Definición de Complejidad
+          </h3>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800">Índice de Barthel (Funcionalidad):</span>
+              <p class="text-slate-600 mt-0.5">91-100: Alta funcionalidad | 61-90: Dependencia Media | 0-60: Dependencia
+                Severa / Total (Alta Complejidad Domiciliaria).</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800">NYHA (Insuficiencia Cardíaca):</span>
+              <p class="text-slate-600 mt-0.5">Clase I: Baja | Clase II: Media Complejidad | Clase III-IV: Alta
+                Complejidad con limitación marcada o en reposo.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800">GOLD (EPOC):</span>
+              <p class="text-slate-600 mt-0.5">Estadio I: Baja | Estadio II: Media | Estadios III-IV: Severo / Muy
+                Severo con requerimiento de oxigenoterapia o VMNI.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800">ERC (Enfermedad Renal Crónica):</span>
+              <p class="text-slate-600 mt-0.5">Estadios 1-2: Baja | Estadio 3: Media Complejidad | Estadios 4-5: Falla
+                avanzada / pre-diálisis (Alta Complejidad).</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="font-bold text-slate-800">Test de Pfeiffer & Minimental (Cognitivo):</span>
+              <p class="text-slate-600 mt-0.5">0-4 errores: Leve/Normal | 5-7 errores: Deterioro Moderado | &gt;7
+                errores: Deterioro Severo (orientar plan al cuidador).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operational Rules Card -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-sm font-bold text-optimus-navy uppercase tracking-wider flex items-center">
+            <svg class="w-4 h-4 mr-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Reglas Operativas y de Facturación (Optimus Health)
+          </h3>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950">
+              <span class="font-bold">Regla del >90% de Cumplimiento:</span>
+              <p class="text-emerald-800 mt-0.5">Para que se autorice el pago del paquete mensual, el prestador debe
+                acreditar el cumplimiento superior al 90% de las actividades descritas en el PAI.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-950">
+              <span class="font-bold">Telemedicina y Presencialidad:</span>
+              <p class="text-blue-800 mt-0.5">Se avala teleconsulta para controles médicos y seguimiento
+                interdisciplinario; actividades de enfermería, auxiliar y terapias son 100% presenciales en domicilio.
+              </p>
+            </div>
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950">
+              <span class="font-bold">Ventana de Permanencia y Desescalonamiento:</span>
+              <p class="text-amber-800 mt-0.5">Los paquetes cuentan con autorización periódica de 3 a 6 meses. Tras este
+                ciclo, el comité de cronicidad evalúa egreso o transición a modelo básico.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-purple-50 border border-purple-200 text-purple-950">
+              <span class="font-bold">Plan Casero de Terapias:</span>
+              <p class="text-purple-800 mt-0.5">Todo usuario asignado a fisioterapia o fonoaudiología debe contar con un
+                plan de ejercicios para la familia con seguimiento en cada visita asistencial.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  
+    <!-- ======================================================== -->
+    <!-- TAB 6: PROPUESTAS EN LA NUBE SUPABASE (MULTI-USUARIO) -->
+    <!-- ======================================================== -->
+    <section id="tab-cloud" class="tab-content hidden space-y-6">
+      
+      <!-- Banner -->
+      <div class="bg-gradient-to-r from-optimus-navy via-slate-900 to-emerald-950 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-2">
+            Almacenamiento Seguro PostgreSQL & Sincronización Realtime
+          </div>
+          <h2 class="text-xl font-bold tracking-tight">Repositorio Central de Propuestas NewCare en la Nube</h2>
+          <p class="text-xs text-slate-300 max-w-2xl mt-1">
+            Permite a múltiples usuarios de Optimus Health crear, consultar, cargar en el cotizador y colaborar simultáneamente en las propuestas enviadas a aseguradores.
+          </p>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <button onclick="fetchProposalsFromCloud()" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition flex items-center">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Refrescar
+          </button>
+          <button onclick="openSupabaseModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center shadow">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Ajustes Nube
+          </button>
+        </div>
+      </div>
+
+      <!-- Cloud Proposals Table Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50">
+          <div>
+            <h3 class="text-sm font-bold text-optimus-navy">Propuestas Guardadas en Supabase</h3>
+            <p class="text-xs text-slate-500">Historial centralizado y disponible para todo el equipo de Optimus Health</p>
+          </div>
+          
+          <input type="text" id="cloud-search-input" placeholder="Filtrar por EPS o referencia..." class="text-xs p-2 border border-slate-300 rounded-lg w-full sm:w-64 focus:ring-2 focus:ring-optimus-cyan" onkeyup="filterCloudProposals()">
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+                <th class="py-3 px-4">Ref. / Fecha</th>
+                <th class="py-3 px-4">Entidad Aseguradora</th>
+                <th class="py-3 px-4">Producto Diseñado</th>
+                <th class="py-3 px-4 text-center">Cohorte</th>
+                <th class="py-3 px-4 text-right">Precio PBP (Mes)</th>
+                <th class="py-3 px-4 text-right">Facturación Mes</th>
+                <th class="py-3 px-4 text-center">Estado</th>
+                <th class="py-3 px-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cloud-proposals-tbody" class="divide-y divide-slate-100 font-normal text-slate-700">
+              <tr>
+                <td colspan="8" class="text-center py-8 text-slate-400">
+                  Cargando propuestas desde Supabase Cloud...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- MODAL: SUPABASE CONFIGURATION -->
+    <div id="supabase-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-optimus-navy">Conexión a Supabase Cloud</h3>
+              <p class="text-xs text-slate-500">PostgreSQL Seguro & Base de Datos Multi-Usuario</p>
+            </div>
+          </div>
+          <button onclick="closeSupabaseModal()" class="text-slate-400 hover:text-slate-600 p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 leading-relaxed">
+            <strong>Proyecto Activo:</strong> Conectado a la infraestructura Supabase de Optimus Health. Todas las propuestas guardadas quedan respaldadas en la nube y accesibles por cualquier usuario autorizado.
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Supabase Project URL:</label>
+            <input type="text" id="supabase-url-input" class="w-full p-2.5 font-mono text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-optimus-cyan">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Supabase Anon Key (Public Key):</label>
+            <input type="password" id="supabase-key-input" class="w-full p-2.5 font-mono text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-optimus-cyan">
+          </div>
+
+          <div id="supabase-test-feedback" class="p-2.5 rounded-xl text-xs font-semibold hidden"></div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+          <button onclick="testSupabaseConnection()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition">
+            Probar Conexión
+          </button>
+          <button onclick="saveSupabaseSettings()" class="px-4 py-2 bg-optimus-navy hover:bg-optimus-slate text-white rounded-xl font-bold text-xs shadow transition">
+            Guardar Configuración
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-optimus-navy text-white/70 py-6 border-t border-white/10 mt-auto text-xs">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-white">Optimus Health S.A.S.</span>
+        <span>&bull;</span>
+        <span>Modelo NEWCARE (New Health Foundation)</span>
+      </div>
+      <div>
+        <span>Desarrollado para Asesoría y Diseño de Productos en Salud Domiciliaria | 2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT: APPLICATION LOGIC & CHARTS -->
+  <script>
+    // Master Services Array for Product Designer
+    const masterServices = [
+      // Medical & Specialist
+      { id: 'srv_internist', cat: 'med', name: 'Interconsulta / Visita Medicina Interna o Geriatría', cups: '890102', role: 'Médico Internista / Geriatra', unitCost: 150000, defaultFreq: 1.0, active: true },
+      { id: 'srv_gen_med', cat: 'med', name: 'Atención Médica General Domiciliaria / Control', cups: '890101', role: 'Médico General', unitCost: 50000, defaultFreq: 1.0, active: true },
+      { id: 'srv_specialist', cat: 'med', name: 'Interconsulta Especialidad Subárea (Cardio/Neumo/Nefro)', cups: '890102', role: 'Especialista Específico', unitCost: 150000, defaultFreq: 0.17, active: false },
+
+      // Nursing & Social (Manual 2.2)
+      { id: 'srv_nurse_head', cat: 'nursing', name: 'Visita Domiciliaria Enfermera Profesional / Jefe', cups: '890105', role: 'Enfermera Profesional', unitCost: 30000, defaultFreq: 1.0, active: true },
+      { id: 'srv_nurse_aux', cat: 'nursing', name: 'Visita Domiciliaria Auxiliar de Enfermería', cups: '890105', role: 'Auxiliar de Enfermería', unitCost: 30000, defaultFreq: 2.0, active: true },
+      { id: 'srv_social_worker', cat: 'nursing', name: 'Valoración Sociofamiliar y Redes de Cuidado (Man. 2.2)', cups: '890108', role: 'Trabajador Social', unitCost: 30000, defaultFreq: 0.5, active: true },
+      { id: 'srv_psychologist', cat: 'nursing', name: 'Acompañamiento Psicológico y Salud Mental Familiar', cups: '890108', role: 'Psicólogo', unitCost: 30000, defaultFreq: 0.5, active: true },
+      { id: 'srv_telecare', cat: 'nursing', name: 'Teleorientación y Seguimiento Familiar Continuo', cups: 'TEL-01', role: 'Equipo Interdisciplinario', unitCost: 15000, defaultFreq: 2.0, active: true },
+      { id: 'srv_caregiver_8h', cat: 'nursing', name: 'Turno Cuidador 8 Horas Día Hábil (Opcional)', cups: '890105-2', role: 'Cuidador Calificado', unitCost: 136478, defaultFreq: 0.0, active: false },
+      { id: 'srv_caregiver_12h', cat: 'nursing', name: 'Turno Cuidador 12 Horas Día Hábil (Opcional)', cups: '890105-3', role: 'Cuidador Calificado', unitCost: 204717, defaultFreq: 0.0, active: false },
+
+      // Rehabilitation & Therapies
+      { id: 'srv_pt', cat: 'therapy', name: 'Sesión de Fisioterapia / Rehabilitación Motora', cups: '890111', role: 'Fisioterapeuta', unitCost: 30000, defaultFreq: 4.0, active: true },
+      { id: 'srv_resp', cat: 'therapy', name: 'Sesión de Terapia Respiratoria / Higiene Vía Aérea', cups: '890112', role: 'Terapeuta Respiratorio', unitCost: 30000, defaultFreq: 0.0, active: false },
+      { id: 'srv_phono', cat: 'therapy', name: 'Sesión de Fonoaudiología / Deglución y Voz', cups: '890110', role: 'Fonoaudiólogo', unitCost: 40000, defaultFreq: 0.0, active: false },
+      { id: 'srv_ot', cat: 'therapy', name: 'Sesión de Terapia Ocupacional y Adaptación Entorno', cups: '890113', role: 'Terapeuta Ocupacional', unitCost: 40000, defaultFreq: 0.0, active: false },
+      { id: 'srv_nutrition', cat: 'therapy', name: 'Valoración y Control Nutricional Domiciliario (MNA)', cups: '890106', role: 'Nutricionista', unitCost: 30000, defaultFreq: 0.33, active: true },
+
+      // Supplies, Labs & Admin
+      { id: 'srv_meds_urg', cat: 'supplies', name: 'Kit Medicamentos de Urgencia / Descompensación', cups: 'MED-URG', role: 'Farmacia Institucional', unitCost: 35000, defaultFreq: 1.0, active: true },
+      { id: 'srv_supplies_basic', cat: 'supplies', name: 'Kit Insumos Básicos Asistenciales (EPP, guantes, gasas)', cups: 'INS-BAS', role: 'Logística Asistencial', unitCost: 25000, defaultFreq: 1.0, active: true },
+      { id: 'srv_labs', cat: 'supplies', name: 'Paquete de Laboratorios Clínicos de Control', cups: 'LAB-PER', role: 'Laboratorio Clínico', unitCost: 60000, defaultFreq: 0.33, active: true },
+      { id: 'srv_wound_vac', cat: 'supplies', name: 'Kit Curación Avanzada Herida Terapia VAC (Opcional)', cups: '935701', role: 'Clínica de Heridas', unitCost: 1600000, defaultFreq: 0.0, active: false },
+      { id: 'srv_admin_tic', cat: 'supplies', name: 'Gestión Historia Clínica INFORMEX, Consentimientos y Logística', cups: 'ADM-01', role: 'Administración', unitCost: 20000, defaultFreq: 1.0, active: true }
+    ];
+
+    // Catalog Data from PAQUETES Y EVENTOS.xlsx
+    const catalogData = [
+      { cat: 'Consultas Médicas', cups: '890101', name: 'Atención (Visita) Domiciliaria por Medicina General', amb: 'Domiciliario', tip: 'Fija', fee: 50000, obs: 'Control clínico periódico y formulación' },
+      { cat: 'Consultas Médicas', cups: '890102', name: 'Atención (Visita) Domiciliaria por Medicina Especializada (Interna, Gineco)', amb: 'Domiciliario', tip: 'Fija', fee: 150000, obs: 'Evaluación y ajuste de plan terapéutico complejo' },
+      { cat: 'Consultas Médicas', cups: '890401', name: 'Interconsulta Domiciliaria Medicina General Certificado Defunción Autopsia Verbal', amb: 'Domiciliario', tip: 'Fija', fee: 240000, obs: 'Trámite médico-legal en domicilio' },
+      { cat: 'Terapias Domiciliarias', cups: '890111', name: 'Atención (Visita) Domiciliaria por Fisioterapia', amb: 'Domiciliario', tip: 'Fija', fee: 30000, obs: 'Movilidad, fuerza, prevención desacondicionamiento' },
+      { cat: 'Terapias Domiciliarias', cups: '890112', name: 'Atención (Visita) Domiciliaria por Terapia Respiratoria', amb: 'Domiciliario', tip: 'Fija', fee: 30000, obs: 'Higiene bronquial, manejo de secreciones' },
+      { cat: 'Terapias Domiciliarias', cups: '890106', name: 'Atención (Visita) Domiciliaria por Nutrición y Dietética', amb: 'Domiciliario', tip: 'Fija', fee: 30000, obs: 'Evaluación MNA, plan alimentario y soporte enteral' },
+      { cat: 'Terapias Domiciliarias', cups: '890110', name: 'Atención (Visita) Domiciliaria por Foniatría y Fonoaudiología', amb: 'Domiciliario', tip: 'Fija', fee: 40000, obs: 'Rehabilitación deglución y comunicación' },
+      { cat: 'Terapias Domiciliarias', cups: '890108', name: 'Atención (Visita) Domiciliaria por Psicología', amb: 'Domiciliario', tip: 'Fija', fee: 30000, obs: 'Acompañamiento emocional a paciente y familia' },
+      { cat: 'Terapias Domiciliarias', cups: '890113', name: 'Atención (Visita) Domiciliaria por Terapia Ocupacional', amb: 'Domiciliario', tip: 'Fija', fee: 40000, obs: 'Funcionalidad en AVD y adaptación del entorno' },
+      { cat: 'Enfermería Domiciliaria', cups: '890105', name: 'Atención (Visita) Domiciliaria por Enfermería (Muestras, Medicamentos, Signos)', amb: 'Domiciliario', tip: 'Fija', fee: 30000, obs: 'Monitoreo, glucometrías, administración' },
+      { cat: 'Enfermería Domiciliaria', cups: '890202', name: 'Consulta de Primera Vez Especialidades Médicas Clínica de Heridas', amb: 'Domiciliario', tip: 'Fija', fee: 60000, obs: 'Estratificación y plan de curación' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-1', name: 'Servicio de Cuidador por 6 Horas (Día Hábil)', amb: 'Domiciliario', tip: 'Propia', fee: 102358, obs: 'Asistencia en confort y movilización' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-2', name: 'Servicio de Cuidador por 8 Horas (Día Hábil)', amb: 'Domiciliario', tip: 'Propia', fee: 136478, obs: 'Jornada laboral completa diurna' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-3', name: 'Servicio de Cuidador por 12 Horas (Día Hábil)', amb: 'Domiciliario', tip: 'Propia', fee: 204717, obs: 'Turno 12h diurno o nocturno' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-4', name: 'Servicio de Cuidador por 24 Horas (Día Hábil)', amb: 'Domiciliario', tip: 'Propia', fee: 562977, obs: 'Cuidado continuo 24 horas' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-5', name: 'Servicio de Cuidador por 6 Horas Dominical / Festivo', amb: 'Domiciliario', tip: 'Propia', fee: 179127, obs: 'Recargo dominical y festivo' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-6', name: 'Servicio de Cuidador por 8 Horas Dominical / Festivo', amb: 'Domiciliario', tip: 'Propia', fee: 238836, obs: 'Recargo dominical y festivo' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-7', name: 'Servicio de Cuidador por 12 Horas Dominical / Festivo', amb: 'Domiciliario', tip: 'Propia', fee: 358254, obs: 'Recargo dominical y festivo' },
+      { cat: 'Cuidadores Domiciliarios', cups: '890105-8', name: 'Servicio de Cuidador por 24 Horas Dominical / Festivo', amb: 'Domiciliario', tip: 'Propia', fee: 788159, obs: 'Recargo dominical y festivo' },
+      { cat: 'Turnos de Enfermería', cups: '890105-9', name: 'Turno Auxiliar de Enfermería de 6 Horas a Domicilio', amb: 'Domiciliario', tip: 'Propia', fee: 102358, obs: 'Cuidado asistencial directo técnico' },
+      { cat: 'Turnos de Enfermería', cups: '890105-10', name: 'Turno Auxiliar de Enfermería de 8 Horas a Domicilio', amb: 'Domiciliario', tip: 'Propia', fee: 136478, obs: 'Turno técnico completo diurno' },
+      { cat: 'Turnos de Enfermería', cups: '890105-11', name: 'Turno Auxiliar de Enfermería de 12 Horas a Domicilio', amb: 'Domiciliario', tip: 'Propia', fee: 204717, obs: 'Turno técnico 12h diurno/nocturno' },
+      { cat: 'Clínica de Heridas', cups: '869501', name: 'Curación Básica de Lesión en Piel / Tejido (No Tecnológica)', amb: 'Domicilio / Amb', tip: 'Propia', fee: 50000, obs: 'Heridas de baja complejidad' },
+      { cat: 'Clínica de Heridas', cups: '935701', name: 'Herida Baja Complejidad Simple Tecnológica (Terapia VAC small)', amb: 'Domicilio / Amb', tip: 'Propia', fee: 1600000, obs: 'Canister 300cc, granufoam, apósitos' },
+      { cat: 'Clínica de Heridas', cups: '965901', name: 'Herida Baja Complejidad Clase I Tecnológica (Terapia VAC medium)', amb: 'Domicilio / Amb', tip: 'Propia', fee: 1800000, obs: 'Canister 500cc, apósitos e inmovilización' },
+      { cat: 'Clínica de Heridas', cups: '965902', name: 'Herida Baja Complejidad Clase II Tecnológica (VAC con infección)', amb: 'Domicilio / Amb', tip: 'Propia', fee: 2000000, obs: 'Granufoam silver, irrigación' },
+      { cat: 'Clínica de Heridas', cups: '935001', name: 'Herida Complejidad Media Clase III Tecnológica (VAC exp. ósea)', amb: 'Domicilio / Amb', tip: 'Propia', fee: 2000000, obs: 'Granufoam silver, cassette veralink' },
+      { cat: 'Clínica de Heridas', cups: '862310', name: 'Herida Alta Complejidad Clase IV Tecnológica (VAC medium exp. ósea)', amb: 'Domicilio / Amb', tip: 'Propia', fee: 2500000, obs: 'Manejo avanzado especializado' },
+      { cat: 'Procedimientos Vía Aérea', cups: '973701', name: 'Extracción de Tubo de Traqueostomía', amb: 'Domicilio / Amb', tip: 'Propia', fee: 80000, obs: 'No incluye kit de traqueostomía' },
+      { cat: 'Procedimientos Vía Aérea', cups: '965501', name: 'Limpieza y Cuidados de Traqueostomía', amb: 'Domicilio / Amb', tip: 'Propia', fee: 120000, obs: 'Higiene estéril y aspiración' },
+      { cat: 'Procedimientos Vía Aérea', cups: '972301', name: 'Sustitución de Tubo de Traqueostomía', amb: 'Domicilio / Amb', tip: 'Propia', fee: 120000, obs: 'Cambio de cánula según orden médica' },
+      { cat: 'Procedimientos Especiales', cups: '970200', name: 'Sustitución de Tubo (Sonda) de Gastrostomía en Domicilio', amb: 'Domiciliario', tip: 'Fija', fee: 120000, obs: 'No incluye sonda' },
+      { cat: 'Procedimientos Especiales', cups: '579501', name: 'Cambio de Catéter Urinario en Domicilio', amb: 'Domiciliario', tip: 'Fija', fee: 60000, obs: 'No incluye sonda vesical' },
+      { cat: 'Procedimientos Especiales', cups: '579401', name: 'Cateterismo Vesical en Domicilio', amb: 'Domiciliario', tip: 'Fija', fee: 50000, obs: 'Sondaje vesical evacuador / permanente' },
+      { cat: 'Interconsultas UCC', cups: '890443', name: 'Interconsulta Especialista en Dolor y Cuidados Paliativos', amb: 'Internación UCC', tip: 'Propia', fee: 100000, obs: 'Manejo de síntomas refractarios intramural' },
+      { cat: 'Interconsultas UCC', cups: '890484', name: 'Interconsulta Especialista en Psiquiatría', amb: 'Internación UCC', tip: 'Propia', fee: 80000, obs: 'Delirium, depresión y comorbilidad psíquica' },
+      { cat: 'Interconsultas UCC', cups: '890435', name: 'Interconsulta Especialista en Cirugía General', amb: 'Internación UCC', tip: 'Propia', fee: 100000, obs: 'Valoración de abdomen, accesos, ostomías' }
+    ];
+
+    let currentServices = JSON.parse(JSON.stringify(masterServices));
+    let currentMargin = 0.25;
+    let costChartInstance = null;
+
+    // Currency Formatter
+    const formatCOP = (num) => {
+      return '$ ' + Math.round(num).toLocaleString('es-CO');
+    };
+
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-white/15', 'text-white');
+        btn.classList.add('text-white/70');
+      });
+
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.remove('hidden');
+
+      const btnMap = {
+        'tab-portfolio': 'btn-portfolio',
+        'tab-designer': 'btn-designer',
+        'tab-catalog': 'btn-catalog',
+        'tab-quote': 'btn-quote',
+        'tab-cloud': 'btn-cloud',
+        'tab-clinical': 'btn-clinical'
+      };
+      const activeBtn = document.getElementById(btnMap[tabId]);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white/15', 'text-white');
+        activeBtn.classList.remove('text-white/70');
+      }
+
+      if (tabId === 'tab-designer') {
+        setTimeout(initOrUpdateChart, 50);
+      }
+      if (tabId === 'tab-quote') {
+        buildQuoteSheet();
+      }
+    }
+
+    // Initialize Designer Rows
+    function renderDesignerRows() {
+      const medContainer = document.getElementById('services-medical-container');
+      const nursingContainer = document.getElementById('services-nursing-container');
+      const therapyContainer = document.getElementById('services-therapy-container');
+      const suppliesContainer = document.getElementById('services-supplies-container');
+
+      medContainer.innerHTML = '';
+      nursingContainer.innerHTML = '';
+      therapyContainer.innerHTML = '';
+      suppliesContainer.innerHTML = '';
+
+      currentServices.forEach((srv, idx) => {
+        const itemHtml = `
+          <div class="p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-50/80 transition rounded-xl ${!srv.active ? 'opacity-50 bg-slate-50/50' : ''}">
+            
+            <!-- Toggle & Service Name -->
+            <div class="flex items-center space-x-3 flex-1">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" ${srv.active ? 'checked' : ''} onchange="toggleService(${idx}, this.checked)" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-optimus-teal"></div>
+              </label>
+              <div>
+                <span class="font-bold text-slate-800 block text-xs leading-tight">${srv.name}</span>
+                <span class="text-[10px] text-slate-500 font-mono">CUPS: ${srv.cups} &bull; ${srv.role}</span>
+              </div>
+            </div>
+
+            <!-- Freq & Unit Cost Controls -->
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Frec/Mes:</span>
+                <input type="number" step="0.01" min="0" value="${srv.defaultFreq}" onchange="updateFreq(${idx}, this.value)" class="w-16 p-1 text-center font-bold text-xs border border-slate-300 rounded-lg focus:border-optimus-cyan">
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Tarifa:</span>
+                <input type="number" step="500" min="0" value="${srv.unitCost}" onchange="updateUnitCost(${idx}, this.value)" class="w-24 p-1 text-right font-bold text-xs border border-slate-300 rounded-lg focus:border-optimus-cyan">
+              </div>
+              <div class="w-24 text-right">
+                <span class="text-xs font-bold text-optimus-navy block">${formatCOP(srv.active ? srv.defaultFreq * srv.unitCost : 0)}</span>
+              </div>
+            </div>
+
+          </div>
+        `;
+
+        if (srv.cat === 'med') medContainer.innerHTML += itemHtml;
+        else if (srv.cat === 'nursing') nursingContainer.innerHTML += itemHtml;
+        else if (srv.cat === 'therapy') therapyContainer.innerHTML += itemHtml;
+        else if (srv.cat === 'supplies') suppliesContainer.innerHTML += itemHtml;
+      });
+
+      recalculate();
+    }
+
+    // Toggle service state
+    function toggleService(idx, isChecked) {
+      currentServices[idx].active = isChecked;
+      renderDesignerRows();
+    }
+
+    // Update service frequency
+    function updateFreq(idx, val) {
+      currentServices[idx].defaultFreq = parseFloat(val) || 0;
+      recalculate();
+    }
+
+    // Update unit cost
+    function updateUnitCost(idx, val) {
+      currentServices[idx].unitCost = parseFloat(val) || 0;
+      recalculate();
+    }
+
+    // Margin Slider
+    function updateMargin(val) {
+      currentMargin = parseInt(val) / 100;
+      document.getElementById('margin-badge').innerText = val + '%';
+      recalculate();
+    }
+
+    // Financial Recalculation Engine
+    function recalculate() {
+      let laborCost = 0;
+      let suppliesCost = 0;
+      let labsCost = 0;
+      let adminCost = 0;
+
+      let subMed = 0;
+      let subNursing = 0;
+      let subTherapy = 0;
+      let subSupplies = 0;
+
+      currentServices.forEach(s => {
+        if (!s.active) return;
+        const rowCost = s.defaultFreq * s.unitCost;
+
+        if (s.cat === 'med') {
+          laborCost += rowCost;
+          subMed += rowCost;
+        } else if (s.cat === 'nursing') {
+          laborCost += rowCost;
+          subNursing += rowCost;
+        } else if (s.cat === 'therapy') {
+          laborCost += rowCost;
+          subTherapy += rowCost;
+        } else if (s.cat === 'supplies') {
+          if (s.id === 'srv_labs') labsCost += rowCost;
+          else if (s.id === 'srv_admin_tic') adminCost += rowCost;
+          else suppliesCost += rowCost;
+          subSupplies += rowCost;
+        }
+      });
+
+      const totalCost = laborCost + suppliesCost + labsCost + adminCost;
+      const finalPrice = currentMargin < 1.0 ? totalCost / (1 - currentMargin) : totalCost;
+      const unitProfit = finalPrice - totalCost;
+
+      const cohortCount = parseInt(document.getElementById('cfg-patients-count').value) || 100;
+      const cohortMonthly = finalPrice * cohortCount;
+      const cohortAnnual = cohortMonthly * 12;
+
+      // Update Badges & Displays
+      document.getElementById('subtotal-med-badge').innerText = formatCOP(subMed);
+      document.getElementById('subtotal-nursing-badge').innerText = formatCOP(subNursing);
+      document.getElementById('subtotal-therapy-badge').innerText = formatCOP(subTherapy);
+      document.getElementById('subtotal-supplies-badge').innerText = formatCOP(subSupplies);
+
+      document.getElementById('sum-labor').innerText = formatCOP(laborCost);
+      document.getElementById('sum-supplies').innerText = formatCOP(suppliesCost);
+      document.getElementById('sum-labs').innerText = formatCOP(labsCost);
+      document.getElementById('sum-admin').innerText = formatCOP(adminCost);
+      document.getElementById('sum-total-cost').innerText = formatCOP(totalCost);
+
+      document.getElementById('final-price-display').innerText = formatCOP(finalPrice);
+      document.getElementById('unit-profit-display').innerText = formatCOP(unitProfit);
+
+      document.getElementById('cohort-size-label').innerText = cohortCount;
+      document.getElementById('cohort-monthly-display').innerText = formatCOP(cohortMonthly);
+      document.getElementById('cohort-annual-display').innerText = formatCOP(cohortAnnual);
+
+      updateChartData(laborCost, suppliesCost, labsCost, adminCost, unitProfit);
+    }
+
+    // Chart.js instance management
+    function initOrUpdateChart() {
+      const ctx = document.getElementById('costBreakdownChart');
+      if (!ctx) return;
+
+      if (!costChartInstance) {
+        costChartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Talento Humano', 'Insumos/Meds', 'Laboratorios', 'Admin/TIC', 'Margen Bruto'],
+            datasets: [{
+              data: [50, 15, 5, 5, 25],
+              backgroundColor: ['#0B2545', '#0284C7', '#0D9488', '#94A3B8', '#10B981'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { font: { size: 10, family: 'Plus Jakarta Sans' }, boxWidth: 10 }
+              }
+            },
+            cutout: '65%'
+          }
+        });
+      }
+    }
+
+    function updateChartData(labor, supplies, labs, admin, profit) {
+      if (!costChartInstance) {
+        initOrUpdateChart();
+      }
+      if (costChartInstance) {
+        costChartInstance.data.datasets[0].data = [
+          Math.round(labor),
+          Math.round(supplies),
+          Math.round(labs),
+          Math.round(admin),
+          Math.round(profit)
+        ];
+        costChartInstance.update();
+      }
+    }
+
+    // Apply Presets
+    function applyPreset(presetKey) {
+      if (presetKey === 'custom') return;
+
+      // Reset all to false initially
+      currentServices.forEach(s => s.active = false);
+
+      if (presetKey === 'amb_media') {
+        document.getElementById('cfg-product-name').value = 'NewCare Ambulatorio Media Complejidad';
+        document.getElementById('cfg-modality').value = 'Ambulatoria';
+        setSrv('srv_specialist', true, 0.014, 150000);
+        setSrv('srv_internist', true, 0.34, 150000);
+        setSrv('srv_gen_med', true, 0.34, 50000);
+        setSrv('srv_nurse_head', true, 0.34, 30000);
+        setSrv('srv_social_worker', true, 0.34, 30000);
+        setSrv('srv_nurse_aux', true, 0.34, 30000);
+        setSrv('srv_telecare', true, 0.02, 15000);
+        setSrv('srv_meds_urg', true, 1.0, 25000);
+        setSrv('srv_supplies_basic', true, 1.0, 15000);
+        setSrv('srv_labs', true, 0.17, 60000);
+        setSrv('srv_admin_tic', true, 1.0, 15000);
+      } else if (presetKey === 'amb_alta') {
+        document.getElementById('cfg-product-name').value = 'NewCare Ambulatorio Alta Complejidad';
+        document.getElementById('cfg-modality').value = 'Ambulatoria';
+        setSrv('srv_specialist', true, 0.028, 150000);
+        setSrv('srv_internist', true, 0.68, 150000);
+        setSrv('srv_gen_med', true, 0.34, 50000);
+        setSrv('srv_nurse_head', true, 0.68, 30000);
+        setSrv('srv_social_worker', true, 0.68, 30000);
+        setSrv('srv_nurse_aux', true, 0.34, 30000);
+        setSrv('srv_telecare', true, 0.02, 15000);
+        setSrv('srv_meds_urg', true, 1.0, 35000);
+        setSrv('srv_supplies_basic', true, 1.0, 25000);
+        setSrv('srv_labs', true, 0.33, 60000);
+        setSrv('srv_admin_tic', true, 1.0, 20000);
+      } else if (presetKey === 'dom_media') {
+        document.getElementById('cfg-product-name').value = 'NewCare Domiciliario Media Complejidad';
+        document.getElementById('cfg-modality').value = 'Domiciliaria';
+        setSrv('srv_specialist', true, 0.014, 150000);
+        setSrv('srv_internist', true, 0.68, 150000);
+        setSrv('srv_gen_med', true, 0.34, 50000);
+        setSrv('srv_nurse_head', true, 0.68, 30000);
+        setSrv('srv_social_worker', true, 0.68, 30000);
+        setSrv('srv_nurse_aux', true, 0.34, 30000);
+        setSrv('srv_telecare', true, 1.0, 15000);
+        setSrv('srv_meds_urg', true, 1.0, 35000);
+        setSrv('srv_supplies_basic', true, 1.0, 25000);
+        setSrv('srv_labs', true, 0.33, 60000);
+        setSrv('srv_admin_tic', true, 1.0, 20000);
+      } else if (presetKey === 'dom_alta') {
+        document.getElementById('cfg-product-name').value = 'NewCare Domiciliario Alta Complejidad';
+        document.getElementById('cfg-modality').value = 'Domiciliaria';
+        setSrv('srv_specialist', true, 0.028, 150000);
+        setSrv('srv_internist', true, 1.36, 150000);
+        setSrv('srv_gen_med', true, 0.34, 50000);
+        setSrv('srv_nurse_head', true, 1.36, 30000);
+        setSrv('srv_social_worker', true, 1.36, 30000);
+        setSrv('srv_nurse_aux', true, 0.34, 30000);
+        setSrv('srv_telecare', true, 1.0, 15000);
+        setSrv('srv_pt', true, 2.0, 30000);
+        setSrv('srv_meds_urg', true, 1.0, 50000);
+        setSrv('srv_supplies_basic', true, 1.0, 35000);
+        setSrv('srv_labs', true, 0.33, 60000);
+        setSrv('srv_admin_tic', true, 1.0, 25000);
+      } else if (presetKey === 'cronico_terapias') {
+        document.getElementById('cfg-product-name').value = 'Paquete Crónico Domiciliario con Terapias (E985111)';
+        document.getElementById('cfg-modality').value = 'Domiciliaria';
+        setSrv('srv_internist', true, 0.17, 150000); // semestral
+        setSrv('srv_gen_med', true, 1.0, 50000);
+        setSrv('srv_nurse_head', true, 1.0, 30000);
+        setSrv('srv_social_worker', true, 0.33, 30000);
+        setSrv('srv_pt', true, 8.0, 30000);
+        setSrv('srv_resp', true, 4.0, 30000);
+        setSrv('srv_labs', true, 0.33, 60000);
+        setSrv('srv_admin_tic', true, 1.0, 20000);
+      } else if (presetKey === 'paliativo') {
+        document.getElementById('cfg-product-name').value = 'Paquete Crónico Paliativo Domiciliario (E890190-P)';
+        document.getElementById('cfg-modality').value = 'Domiciliaria';
+        setSrv('srv_internist', true, 1.0, 150000);
+        setSrv('srv_gen_med', true, 2.0, 50000);
+        setSrv('srv_nurse_head', true, 2.0, 30000);
+        setSrv('srv_nurse_aux', true, 4.0, 30000);
+        setSrv('srv_psychologist', true, 2.0, 30000);
+        setSrv('srv_social_worker', true, 1.0, 30000);
+        setSrv('srv_meds_urg', true, 1.0, 60000);
+        setSrv('srv_supplies_basic', true, 1.0, 35000);
+        setSrv('srv_admin_tic', true, 1.0, 25000);
+      } else if (presetKey === 'heridas') {
+        document.getElementById('cfg-product-name').value = 'Atención Integral Heridas Alta Complejidad VAC (E891864)';
+        document.getElementById('cfg-modality').value = 'Domiciliaria';
+        setSrv('srv_gen_med', true, 1.0, 50000);
+        setSrv('srv_nurse_head', true, 2.0, 30000);
+        setSrv('srv_nurse_aux', true, 8.0, 30000);
+        setSrv('srv_wound_vac', true, 1.0, 1600000);
+        setSrv('srv_supplies_basic', true, 1.0, 80000);
+        setSrv('srv_admin_tic', true, 1.0, 25000);
+      } else if (presetKey === 'traqueo') {
+        document.getElementById('cfg-product-name').value = 'Paquete de Traqueostomía Domiciliario (E985112)';
+        document.getElementById('cfg-modality').value = 'Domiciliaria';
+        setSrv('srv_gen_med', true, 1.0, 50000);
+        setSrv('srv_nurse_head', true, 2.0, 30000);
+        setSrv('srv_resp', true, 8.0, 30000);
+        setSrv('srv_nurse_aux', true, 4.0, 30000);
+        setSrv('srv_supplies_basic', true, 1.0, 90000);
+        setSrv('srv_admin_tic', true, 1.0, 25000);
+      }
+
+      renderDesignerRows();
+    }
+
+    function setSrv(id, active, freq, cost) {
+      const s = currentServices.find(x => x.id === id);
+      if (s) {
+        s.active = active;
+        if (freq !== undefined) s.defaultFreq = freq;
+        if (cost !== undefined) s.unitCost = cost;
+      }
+    }
+
+    function loadTemplateToDesigner(presetKey) {
+      switchTab('tab-designer');
+      document.getElementById('preset-selector').value = presetKey;
+      applyPreset(presetKey);
+    }
+
+    function loadContractedPackage(code) {
+      const codeMap = {
+        'E985110': 'dom_media',
+        'E985111': 'cronico_terapias',
+        'E890190-I': 'dom_alta',
+        'E890190-P': 'paliativo',
+        'E891864': 'heridas',
+        'E985112': 'traqueo'
+      };
+      const p = codeMap[code] || 'dom_media';
+      loadTemplateToDesigner(p);
+    }
+
+    // Render Catalog Table
+    function renderCatalog(items) {
+      const tbody = document.getElementById('catalog-table-body');
+      tbody.innerHTML = '';
+      items.forEach(it => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="py-3 px-4 font-semibold text-slate-500 text-[11px]">${it.cat}</td>
+            <td class="py-3 px-4 font-mono font-bold text-optimus-navy">${it.cups}</td>
+            <td class="py-3 px-4 font-bold text-slate-800">${it.name}</td>
+            <td class="py-3 px-4 text-slate-600">${it.amb}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">${it.tip}</span></td>
+            <td class="py-3 px-4 text-right font-extrabold text-emerald-600">${formatCOP(it.fee)}</td>
+            <td class="py-3 px-4 text-slate-500 text-[11px]">${it.obs}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterCatalog() {
+      const term = document.getElementById('catalog-search').value.toLowerCase();
+      const cat = document.getElementById('catalog-cat-filter').value;
+
+      const filtered = catalogData.filter(it => {
+        const matchesTerm = it.name.toLowerCase().includes(term) || it.cups.toLowerCase().includes(term) || it.obs.toLowerCase().includes(term);
+        const matchesCat = (cat === 'all') || (it.cat === cat);
+        return matchesTerm && matchesCat;
+      });
+
+      renderCatalog(filtered);
+    }
+
+    let currentQuoteVersion = 'client'; // 'client' or 'internal'
+
+    function setQuoteVersion(ver) {
+      currentQuoteVersion = ver;
+      const btnClient = document.getElementById('btn-ver-client');
+      const btnInternal = document.getElementById('btn-ver-internal');
+      const badge = document.getElementById('quote-badge-version');
+      const indicator = document.getElementById('quote-table-indicator');
+
+      if (ver === 'client') {
+        btnClient.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-optimus-navy shadow-sm flex items-center';
+        btnInternal.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 flex items-center';
+        badge.innerText = 'Propuesta Comercial';
+        badge.className = 'inline-block px-3 py-1 bg-optimus-navy text-white text-xs font-bold rounded-lg uppercase tracking-wider';
+        indicator.innerText = 'Vista: Aseguradora / Externa (Sin detalle de tarifas unitarias)';
+      } else {
+        btnInternal.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-optimus-navy shadow-sm flex items-center';
+        btnClient.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 flex items-center';
+        badge.innerText = 'Propuesta Técnica Interna';
+        badge.className = 'inline-block px-3 py-1 bg-purple-700 text-white text-xs font-bold rounded-lg uppercase tracking-wider';
+        indicator.innerText = 'Vista: Interna (Con desglose de frecuencias y tarifas base)';
+      }
+
+      buildQuoteSheet();
+    }
+
+    function syncQuoteMetadata() {
+      const client = document.getElementById('quote-client-input').value;
+      const contact = document.getElementById('quote-contact-input').value;
+      const ref = document.getElementById('quote-ref-input').value;
+      const date = document.getElementById('quote-date-input').value;
+
+      document.getElementById('quote-client-name').innerText = client;
+      document.getElementById('quote-contact-display').innerText = 'Atención: ' + contact;
+      document.getElementById('quote-ref-display').innerText = 'Ref: ' + ref;
+      document.getElementById('quote-date-display').innerText = 'Fecha: ' + date;
+    }
+
+    // Build Executive Quote Sheet for UI and Print
+    function buildQuoteSheet() {
+      syncQuoteMetadata();
+
+      const productName = document.getElementById('cfg-product-name').value;
+      const cohort = parseInt(document.getElementById('cfg-patients-count').value) || 100;
+
+      document.getElementById('quote-product-title').innerText = productName;
+      document.getElementById('quote-cohort-count').innerText = cohort;
+      document.getElementById('quote-cohort-label-2').innerText = cohort;
+
+      // Table Header based on version
+      const thead = document.getElementById('quote-table-head');
+      if (currentQuoteVersion === 'client') {
+        thead.innerHTML = `
+          <tr>
+            <th class="py-2.5 px-3">Componente / Servicio</th>
+            <th class="py-2.5 px-3">Profesional / Detalle del Alcance</th>
+            <th class="py-2.5 px-3 text-right">Valor Asignado en Paquete (Mes)</th>
+          </tr>
+        `;
+      } else {
+        thead.innerHTML = `
+          <tr>
+            <th class="py-2.5 px-3">Componente / Servicio</th>
+            <th class="py-2.5 px-3">Profesional / Detalle</th>
+            <th class="py-2.5 px-3 text-center">Frecuencia Mes</th>
+            <th class="py-2.5 px-3 text-right">Tarifa Base COP</th>
+            <th class="py-2.5 px-3 text-right">Costo Mes</th>
+          </tr>
+        `;
+      }
+
+      // Fill breakdown body
+      const tbody = document.getElementById('quote-breakdown-body');
+      tbody.innerHTML = '';
+
+      let totalCost = 0;
+      currentServices.forEach(s => {
+        if (!s.active) return;
+        const rowCost = s.defaultFreq * s.unitCost;
+        totalCost += rowCost;
+
+        if (currentQuoteVersion === 'client') {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="py-2 px-3 font-semibold text-slate-800">${s.name}</td>
+              <td class="py-2 px-3 text-slate-600">${s.role}</td>
+              <td class="py-2 px-3 text-right font-bold text-slate-900">${formatCOP(rowCost)}</td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="py-2 px-3 font-semibold text-slate-800">${s.name}</td>
+              <td class="py-2 px-3 text-slate-500">${s.role}</td>
+              <td class="py-2 px-3 text-center font-bold text-optimus-slate">${s.defaultFreq.toFixed(2)}</td>
+              <td class="py-2 px-3 text-right font-mono text-slate-600">${formatCOP(s.unitCost)}</td>
+              <td class="py-2 px-3 text-right font-bold text-slate-900">${formatCOP(rowCost)}</td>
+            </tr>
+          `;
+        }
+      });
+
+      const finalPrice = currentMargin < 1.0 ? totalCost / (1 - currentMargin) : totalCost;
+      const monthlyCohort = finalPrice * cohort;
+      const annualCohort = monthlyCohort * 12;
+
+      document.getElementById('quote-unit-price').innerText = formatCOP(finalPrice);
+      document.getElementById('quote-cohort-monthly').innerText = formatCOP(monthlyCohort);
+      document.getElementById('quote-cohort-annual').innerText = formatCOP(annualCohort);
+    }
+
+    // Export Proposal to Editable Word (.doc / .docx compatible)
+    function downloadQuoteWord() {
+      const client = document.getElementById('quote-client-input').value;
+      const contact = document.getElementById('quote-contact-input').value;
+      const ref = document.getElementById('quote-ref-input').value;
+      const date = document.getElementById('quote-date-input').value;
+      const productName = document.getElementById('cfg-product-name').value;
+      const cohort = parseInt(document.getElementById('cfg-patients-count').value) || 100;
+
+      let totalCost = 0;
+      currentServices.forEach(s => {
+        if (s.active) totalCost += s.defaultFreq * s.unitCost;
+      });
+
+      const finalPrice = currentMargin < 1.0 ? totalCost / (1 - currentMargin) : totalCost;
+      const monthlyCohort = finalPrice * cohort;
+      const annualCohort = monthlyCohort * 12;
+
+      // Build Table Rows for Word
+      let tableRows = '';
+      if (currentQuoteVersion === 'client') {
+        tableRows += `
+          <thead>
+            <tr style="background-color: #0B2545; color: #ffffff;">
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: left; font-size: 10pt;">Componente / Servicio</th>
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: left; font-size: 10pt;">Profesional / Detalle del Alcance</th>
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: right; font-size: 10pt;">Valor Asignado en Paquete (Mes)</th>
+            </tr>
+          </thead>
+          <tbody>
+        `;
+        currentServices.forEach(s => {
+          if (!s.active) return;
+          const cost = s.defaultFreq * s.unitCost;
+          tableRows += `
+            <tr>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; font-weight: bold; color: #0F172A;">${s.name}</td>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; color: #475569;">${s.role}</td>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; font-weight: bold; text-align: right; color: #0B2545;">${formatCOP(cost)}</td>
+            </tr>
+          `;
+        });
+        tableRows += `</tbody>`;
+      } else {
+        tableRows += `
+          <thead>
+            <tr style="background-color: #0B2545; color: #ffffff;">
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: left; font-size: 10pt;">Componente / Servicio</th>
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: left; font-size: 10pt;">Profesional / Detalle</th>
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: center; font-size: 10pt;">Frecuencia Mes</th>
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: right; font-size: 10pt;">Tarifa Base COP</th>
+              <th style="padding: 8px; border: 1px solid #CBD5E1; text-align: right; font-size: 10pt;">Costo Mes</th>
+            </tr>
+          </thead>
+          <tbody>
+        `;
+        currentServices.forEach(s => {
+          if (!s.active) return;
+          const cost = s.defaultFreq * s.unitCost;
+          tableRows += `
+            <tr>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; font-weight: bold; color: #0F172A;">${s.name}</td>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; color: #475569;">${s.role}</td>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; text-align: center; font-weight: bold; color: #133E87;">${s.defaultFreq.toFixed(2)}</td>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; text-align: right; color: #475569;">${formatCOP(s.unitCost)}</td>
+              <td style="padding: 6px 8px; border: 1px solid #CBD5E1; font-size: 9.5pt; font-weight: bold; text-align: right; color: #0B2545;">${formatCOP(cost)}</td>
+            </tr>
+          `;
+        });
+        tableRows += `</tbody>`;
+      }
+
+      const versionTitle = currentQuoteVersion === 'client' ? 'Propuesta Comercial' : 'Propuesta Técnica Interna';
+
+      const wordHTML = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>${versionTitle} - ${client}</title>
+          <style>
+            @page { size: letter; margin: 2.5cm 2.5cm 2.5cm 2.5cm; }
+            body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 11pt; color: #0F172A; line-height: 1.4; }
+            h1 { font-size: 16pt; color: #0B2545; margin-bottom: 2px; }
+            h2 { font-size: 12pt; color: #133E87; margin-top: 14pt; margin-bottom: 6pt; text-transform: uppercase; border-bottom: 1px solid #CBD5E1; padding-bottom: 3pt; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10pt; margin-bottom: 12pt; }
+            .meta-box { background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 10pt; margin-top: 12pt; margin-bottom: 14pt; border-radius: 4pt; }
+            .kpi-table { width: 100%; border-collapse: collapse; margin-top: 8pt; }
+            .kpi-card { background-color: #F1F5F9; border: 1px solid #CBD5E1; padding: 8pt; text-align: center; }
+            .kpi-title { font-size: 8.5pt; font-weight: bold; color: #475569; text-transform: uppercase; }
+            .kpi-value { font-size: 14pt; font-weight: bold; color: #0B2545; margin-top: 3pt; }
+            .footer-notes { font-size: 9pt; color: #475569; margin-top: 10pt; }
+            .sig-table { width: 100%; border: none; margin-top: 30pt; }
+            .sig-td { width: 50%; vertical-align: top; border: none; padding-top: 25pt; }
+            .sig-line { border-top: 1px solid #0F172A; width: 85%; margin-bottom: 4pt; }
+          </style>
+        </head>
+        <body>
+          <!-- Header Banner -->
+          <table style="width: 100%; border: none; margin-bottom: 10pt;">
+            <tr>
+              <td style="border: none; vertical-align: middle;">
+                <h1 style="margin: 0; color: #0B2545;">OPTIMUS HEALTH S.A.S. - IPS</h1>
+                <p style="margin: 2pt 0; font-size: 9.5pt; color: #64748B;">NIT: 900.892.412-1 | Sincelejo, Sucre, Colombia</p>
+                <p style="margin: 0; font-size: 9pt; color: #64748B;">Habilitación en Salud No. 7000100845 | Programa NewCare</p>
+              </td>
+              <td style="border: none; text-align: right; vertical-align: middle;">
+                <div style="background-color: #0B2545; color: #ffffff; padding: 6pt 12pt; font-weight: bold; font-size: 10pt; display: inline-block;">
+                  ` + versionTitle.toUpperCase() + `
+                </div>
+                <p style="margin: 4pt 0 0 0; font-size: 9pt; color: #64748B;">Fecha: ` + date + `</p>
+                <p style="margin: 2pt 0 0 0; font-size: 9pt; font-family: monospace; color: #64748B;">Ref: ` + ref + `</p>
+              </td>
+            </tr>
+          </table>
+
+          <div style="border-top: 2px solid #0B2545; margin-bottom: 12pt;"></div>
+
+          <!-- Metadata Client Box -->
+          <table class="meta-box">
+            <tr>
+              <td style="border: none; width: 50%; vertical-align: top;">
+                <span style="font-size: 8.5pt; color: #64748B; font-weight: bold; text-transform: uppercase;">Entidad Aseguradora / Cliente:</span><br>
+                <strong style="font-size: 12pt; color: #0B2545;">` + client + `</strong><br>
+                <span style="font-size: 9.5pt; color: #334155;">Atención: ` + contact + `</span>
+              </td>
+              <td style="border: none; width: 50%; vertical-align: top; text-align: right;">
+                <span style="font-size: 8.5pt; color: #64748B; font-weight: bold; text-transform: uppercase;">Producto Diseñado:</span><br>
+                <strong style="font-size: 11pt; color: #0284C7;">` + productName + `</strong><br>
+                <span style="font-size: 9.5pt; color: #334155;">Cohorte Proyectada: <strong>` + cohort + ` pacientes/mes</strong></span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Object & Scope -->
+          <h2>1. Objeto y Alcance del Modelo Asistencial</h2>
+          <p style="text-align: justify; font-size: 10pt;">
+            Optimus Health IPS presenta formalmente la presente propuesta para la contratación del <strong>Programa NEWCARE</strong> (modelo de excelencia avalado por la Fundación New Health), diseñado para la atención integral, domiciliaria y ambulatoria de usuarios con patologías crónicas complejas y dependientes (Enfermedad Renal Crónica, Insuficiencia Cardíaca NYHA II-IV, EPOC GOLD II-IV, Cirrosis Hepática y Secuelas Neurológicas). El modelo conjuga manejo clínico especializado, rehabilitación, intervención sociofamiliar a cuidadores, fármacos de rescate y monitoreo en tiempo real a través del software institucional <em>INFORMEX</em>.
+          </p>
+
+          <!-- Table of Services -->
+          <h2>2. Componentes y Recursos Incluidos en el Paquete</h2>
+          <table>
+            ` + tableRows + `
+          </table>
+
+          <!-- Economic Summary -->
+          <h2>3. Propuesta Económica y Condiciones de Contratación</h2>
+          <table class="kpi-table">
+            <tr>
+              <td class="kpi-card" style="width: 33%;">
+                <div class="kpi-title">Precio Mensual por Paciente</div>
+                <div class="kpi-value" style="color: #0B2545;">` + formatCOP(finalPrice) + `</div>
+                <div style="font-size: 8pt; color: #64748B; margin-top: 2pt;">Tarifa Paquete Integral (PBP)</div>
+              </td>
+              <td class="kpi-card" style="width: 34%;">
+                <div class="kpi-title">Facturación Mensual Cohorte (` + cohort + ` pac.)</div>
+                <div class="kpi-value" style="color: #065F46;">` + formatCOP(monthlyCohort) + `</div>
+                <div style="font-size: 8pt; color: #64748B; margin-top: 2pt;">Base Facturación Mensual</div>
+              </td>
+              <td class="kpi-card" style="width: 33%;">
+                <div class="kpi-title">Valor Proyectado Anual (12 Meses)</div>
+                <div class="kpi-value" style="color: #133E87;">` + formatCOP(annualCohort) + `</div>
+                <div style="font-size: 8pt; color: #64748B; margin-top: 2pt;">Vigencia Anual Estimada</div>
+              </td>
+            </tr>
+          </table>
+
+          <div class="footer-notes">
+            <p style="margin: 3pt 0;">&bull; <strong>Cumplimiento Contractual:</strong> Conforme a las normas operativas institucionales, se certifica el cumplimiento superior al 90% de las actividades descritas en el PAI para la procedencia del pago.</p>
+            <p style="margin: 3pt 0;">&bull; <strong>Modalidad de Prestación:</strong> Se avala teleconsulta en seguimientos médicos y de soporte; enfermería y terapias físicas/respiratorias se prestan 100% presenciales.</p>
+            <p style="margin: 3pt 0;">&bull; <strong>Ventana de Reevaluación:</strong> Paquetes autorizados con vigencia periódica de 3 a 6 meses para egreso o desescalonamiento clínico.</p>
+          </div>
+
+          <!-- Signatures Table -->
+          <table class="sig-table">
+            <tr>
+              <td class="sig-td" style="text-align: left;">
+                <div class="sig-line"></div>
+                <strong style="color: #0B2545; font-size: 11pt;">Dr. Julio Herrera</strong><br>
+                <span style="font-size: 9.5pt; color: #475569;">Director Médico & Líder del Programa NewCare</span><br>
+                <span style="font-size: 8.5pt; color: #64748B;">Optimus Health S.A.S. IPS</span>
+              </td>
+              <td class="sig-td" style="text-align: right;">
+                <div class="sig-line" style="margin-left: auto;"></div>
+                <strong style="color: #0B2545; font-size: 11pt;">Beatriz Monterroza</strong><br>
+                <span style="font-size: 9.5pt; color: #475569;">Gerencia General / Comercial</span><br>
+                <span style="font-size: 8.5pt; color: #64748B;">Optimus Health S.A.S. IPS</span>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const sanitizedClient = client.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = 'Propuesta_Comercial_' + sanitizedClient + '_' + currentQuoteVersion.toUpperCase() + '_NEWCARE.doc';
+
+      const blob = new Blob(['\ufeff' + wordHTML], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportDesignerJSON() {
+      const exportData = {
+        productName: document.getElementById('cfg-product-name').value,
+        modality: document.getElementById('cfg-modality').value,
+        cohort: parseInt(document.getElementById('cfg-patients-count').value) || 100,
+        margin: currentMargin,
+        services: currentServices
+      };
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `OptimusHealth_NewCare_${exportData.productName.replace(/\\s+/g, '_')}.json`;
+      a.click();
+    }
+
+    function exportExcelFilePrompt() {
+      alert('El archivo Excel institucional "Portafolio_NEWCARE_Optimus_Health.xlsx" ya ha sido generado y se encuentra disponible en la carpeta de trabajo del proyecto.');
+    }
+
+    // App Initialization on load
+    window.onload = () => {
+      renderDesignerRows();
+      renderCatalog(catalogData);
+      applyPreset('dom_alta');
+      initOrUpdateChart();
+      initSupabase();
+    };
+  
+    // =========================================================================
+    // MODULO SUPABASE CLOUD & MULTI-USUARIO REALTIME
+    // =========================================================================
+    const DEFAULT_SUPABASE_URL = "https://anradajzsjjrolmfzepv.supabase.co";
+    const DEFAULT_SUPABASE_KEY = "sb_publishable_2A-62cNjZl9ktbJSW90pVw_kjoxWPO_";
+    const SUPABASE_URL_KEY = "newcare_portafolio_supabase_url";
+    const SUPABASE_KEY_KEY = "newcare_portafolio_supabase_key";
+
+    let supabaseClient = null;
+    let cloudProposalsList = [];
+
+    function initSupabase() {
+      const savedUrl = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
+      const savedKey = localStorage.getItem(SUPABASE_KEY_KEY) || DEFAULT_SUPABASE_KEY;
+
+      if (window.supabase && window.supabase.createClient) {
+        try {
+          supabaseClient = window.supabase.createClient(savedUrl, savedKey);
+          console.log("Supabase Client initialized successfully.");
+          updateSupabasePillStatus(true);
+          fetchProposalsFromCloud();
+          setupRealtimeSubscription();
+        } catch (e) {
+          console.error("Error creating Supabase client:", e);
+          updateSupabasePillStatus(false);
+        }
+      } else {
+        console.warn("Supabase library not loaded yet.");
+      }
+    }
+
+    function updateSupabasePillStatus(isConnected) {
+      const pillText = document.getElementById('supabase-pill-text');
+      if (pillText) {
+        pillText.innerText = isConnected ? "Nube Supabase Conectada" : "Nube Desconectada (Local)";
+      }
+    }
+
+    function openSupabaseModal() {
+      const modal = document.getElementById('supabase-modal');
+      const urlInput = document.getElementById('supabase-url-input');
+      const keyInput = document.getElementById('supabase-key-input');
+
+      urlInput.value = localStorage.getItem(SUPABASE_URL_KEY) || DEFAULT_SUPABASE_URL;
+      keyInput.value = localStorage.getItem(SUPABASE_KEY_KEY) || DEFAULT_SUPABASE_KEY;
+      modal.classList.remove('hidden');
+    }
+
+    function closeSupabaseModal() {
+      document.getElementById('supabase-modal').classList.add('hidden');
+    }
+
+    function saveSupabaseSettings() {
+      const url = document.getElementById('supabase-url-input').value.trim();
+      const key = document.getElementById('supabase-key-input').value.trim();
+
+      localStorage.setItem(SUPABASE_URL_KEY, url);
+      localStorage.setItem(SUPABASE_KEY_KEY, key);
+
+      initSupabase();
+      closeSupabaseModal();
+      alert("Configuración de Supabase actualizada exitosamente.");
+    }
+
+    async function testSupabaseConnection() {
+      const feedback = document.getElementById('supabase-test-feedback');
+      feedback.classList.remove('hidden');
+      feedback.className = 'p-2.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700';
+      feedback.innerText = 'Probando conexión con Supabase...';
+
+      const url = document.getElementById('supabase-url-input').value.trim();
+      const key = document.getElementById('supabase-key-input').value.trim();
+
+      try {
+        const client = window.supabase.createClient(url, key);
+        const { data, error } = await client.from('newcare_propuestas').select('id').limit(1);
+
+        if (error && error.code !== 'PGRST116') {
+          feedback.className = 'p-2.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200';
+          feedback.innerText = 'Conectó a Supabase pero la tabla "newcare_propuestas" aún no ha sido creada o requiere ejecución del script SQL.';
+        } else {
+          feedback.className = 'p-2.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+          feedback.innerText = '¡Conexión exitosa a Supabase PostgreSQL!';
+        }
+      } catch (err) {
+        feedback.className = 'p-2.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
+        feedback.innerText = 'Error al conectar: ' + err.message;
+      }
+    }
+
+    // Save proposal to Supabase
+    async function saveProposalToCloud() {
+      const client = document.getElementById('quote-client-input')?.value || "EPS Coosalud";
+      const contact = document.getElementById('quote-contact-input')?.value || "Dirección de Contratación";
+      const ref = document.getElementById('quote-ref-input')?.value || ("OH-NC-" + Date.now().toString().slice(-4));
+      const date = document.getElementById('quote-date-input')?.value || new Date().toLocaleDateString('es-CO');
+      const productName = document.getElementById('cfg-product-name').value;
+      const modality = document.getElementById('cfg-modality').value;
+      const cohort = parseInt(document.getElementById('cfg-patients-count').value) || 100;
+
+      let totalCost = 0;
+      currentServices.forEach(s => {
+        if (s.active) totalCost += s.defaultFreq * s.unitCost;
+      });
+
+      const finalPrice = currentMargin < 1.0 ? totalCost / (1 - currentMargin) : totalCost;
+      const unitProfit = finalPrice - totalCost;
+      const monthlyCohort = finalPrice * cohort;
+      const annualCohort = monthlyCohort * 12;
+
+      const recordId = 'PROP-' + ref.replace(/[^a-zA-Z0-9]/g, '');
+
+      const payload = {
+        id: recordId,
+        numero_referencia: ref,
+        entidad_aseguradora: client,
+        atencion_destinatario: contact,
+        fecha_propuesta: date,
+        nombre_producto: productName,
+        modalidad: modality,
+        complejidad: 'Alta / Media',
+        poblacion_cohorte: cohort,
+        margen_comercial: currentMargin,
+        costo_tecnico_total: Math.round(totalCost * 100) / 100,
+        precio_sugerido_mes: Math.round(finalPrice * 100) / 100,
+        utilidad_unitaria: Math.round(unitProfit * 100) / 100,
+        facturacion_mensual: Math.round(monthlyCohort * 100) / 100,
+        facturacion_anual: Math.round(annualCohort * 100) / 100,
+        version_propuesta: currentQuoteVersion,
+        desglose_servicios: currentServices,
+        estado: 'Presentada',
+        creado_por: 'Optimus Health IPS',
+        updated_at: new Date().toISOString()
+      };
+
+      // 1. Always save in localStorage as backup
+      try {
+        const localList = JSON.parse(localStorage.getItem('newcare_local_proposals') || '[]');
+        const existingIdx = localList.findIndex(p => p.id === recordId);
+        if (existingIdx >= 0) localList[existingIdx] = payload;
+        else localList.unshift(payload);
+        localStorage.setItem('newcare_local_proposals', JSON.stringify(localList));
+      } catch (e) {
+        console.warn("Error saving to localStorage backup:", e);
+      }
+
+      // 2. Save in Supabase Cloud
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('newcare_propuestas').upsert(payload);
+          if (error) {
+            console.error("Supabase upsert error:", error);
+            alert("Guardado localmente. Para habilitar guardado en nube, asegúrate de haber ejecutado el script SQL 'schema_supabase_portafolio.sql' en Supabase.");
+          } else {
+            alert(`¡Propuesta "${ref} - ${client}" guardada exitosamente en la nube de Supabase!
+Disponible para todos los usuarios simultáneos.`);
+            fetchProposalsFromCloud();
+          }
+        } catch (err) {
+          console.error("Network error with Supabase:", err);
+          alert("Guardado en almacenamiento local (sin conexión con Supabase).");
+        }
+      } else {
+        alert("Propuesta guardada localmente.");
+      }
+    }
+
+    // Fetch Proposals from Supabase or localStorage
+    async function fetchProposalsFromCloud() {
+      const tbody = document.getElementById('cloud-proposals-tbody');
+      if (!tbody) return;
+
+      let proposals = [];
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('newcare_propuestas')
+            .select('*')
+            .order('updated_at', { ascending: false });
+
+          if (!error && data && data.length > 0) {
+            proposals = data;
+          }
+        } catch (e) {
+          console.warn("Could not fetch from Supabase, loading local fallback:", e);
+        }
+      }
+
+      // If no supabase data, load from localStorage
+      if (proposals.length === 0) {
+        try {
+          proposals = JSON.parse(localStorage.getItem('newcare_local_proposals') || '[]');
+        } catch (e) {
+          proposals = [];
+        }
+      }
+
+      cloudProposalsList = proposals;
+      renderCloudProposalsTable(proposals);
+    }
+
+    function renderCloudProposalsTable(items) {
+      const tbody = document.getElementById('cloud-proposals-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-8 text-slate-400">
+              Aún no hay propuestas registradas. Diseña una propuesta y presiona <strong>"Guardar en Supabase"</strong>.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      items.forEach(p => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-4">
+              <span class="font-bold text-optimus-navy font-mono block text-xs">${p.numero_referencia || p.id}</span>
+              <span class="text-[10px] text-slate-400">${p.fecha_propuesta || ''}</span>
+            </td>
+            <td class="py-3 px-4 font-bold text-slate-900">${p.entidad_aseguradora}</td>
+            <td class="py-3 px-4">
+              <span class="font-semibold text-optimus-slate block">${p.nombre_producto}</span>
+              <span class="text-[10px] text-slate-500">${p.modalidad || 'Domiciliaria'}</span>
+            </td>
+            <td class="py-3 px-4 text-center font-bold text-slate-800">${p.poblacion_cohorte || 100}</td>
+            <td class="py-3 px-4 text-right font-extrabold text-emerald-600">${formatCOP(p.precio_sugerido_mes)}</td>
+            <td class="py-3 px-4 text-right font-bold text-slate-900">${formatCOP(p.facturacion_mensual)}</td>
+            <td class="py-3 px-4 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">${p.estado || 'Presentada'}</span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div class="flex items-center justify-center space-x-1">
+                <button onclick="loadProposalFromCloud('${p.id}')" class="px-2.5 py-1 bg-optimus-cyan hover:bg-sky-600 text-white font-bold rounded-lg text-[10px] shadow-sm transition" title="Cargar en el Diseñador">
+                  Abrir
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterCloudProposals() {
+      const q = (document.getElementById('cloud-search-input')?.value || '').toLowerCase();
+      const filtered = cloudProposalsList.filter(p => 
+        (p.entidad_aseguradora || '').toLowerCase().includes(q) ||
+        (p.numero_referencia || '').toLowerCase().includes(q) ||
+        (p.nombre_producto || '').toLowerCase().includes(q)
+      );
+      renderCloudProposalsTable(filtered);
+    }
+
+    // Load a saved proposal from Cloud into the active Designer session
+    function loadProposalFromCloud(proposalId) {
+      const p = cloudProposalsList.find(x => x.id === proposalId);
+      if (!p) return;
+
+      document.getElementById('cfg-product-name').value = p.nombre_producto;
+      document.getElementById('cfg-modality').value = p.modalidad || 'Domiciliaria';
+      document.getElementById('cfg-patients-count').value = p.poblacion_cohorte || 100;
+
+      if (document.getElementById('quote-client-input')) {
+        document.getElementById('quote-client-input').value = p.entidad_aseguradora;
+      }
+      if (document.getElementById('quote-contact-input')) {
+        document.getElementById('quote-contact-input').value = p.atencion_destinatario || '';
+      }
+      if (document.getElementById('quote-ref-input')) {
+        document.getElementById('quote-ref-input').value = p.numero_referencia;
+      }
+      if (document.getElementById('quote-date-input')) {
+        document.getElementById('quote-date-input').value = p.fecha_propuesta;
+      }
+
+      if (p.margen_comercial) {
+        currentMargin = parseFloat(p.margen_comercial);
+        const slider = document.getElementById('margin-slider');
+        if (slider) slider.value = Math.round(currentMargin * 100);
+        const badge = document.getElementById('margin-badge');
+        if (badge) badge.innerText = Math.round(currentMargin * 100) + '%';
+      }
+
+      if (p.desglose_servicios && Array.isArray(p.desglose_servicios)) {
+        currentServices = p.desglose_servicios;
+        renderDesignerRows();
+      }
+
+      switchTab('tab-designer');
+      alert(`Propuesta "${p.numero_referencia} - ${p.entidad_aseguradora}" cargada exitosamente en el Diseñador.`);
+    }
+
+    // Setup Supabase Realtime WebSocket Listener for Multi-User Sync
+    function setupRealtimeSubscription() {
+      if (!supabaseClient) return;
+
+      try {
+        supabaseClient
+          .channel('newcare_propuestas_channel')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'newcare_propuestas' }, payload => {
+            console.log('Realtime change received from Supabase:', payload);
+            fetchProposalsFromCloud();
+          })
+          .subscribe();
+      } catch (e) {
+        console.warn("Realtime subscription could not be established:", e);
+      }
+    }
+
+  </script>
+</body>
+
+</html>
