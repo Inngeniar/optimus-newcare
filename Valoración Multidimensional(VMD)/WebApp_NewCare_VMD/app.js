@@ -303,6 +303,9 @@ function switchTab(tabId) {
   if (tabId === "tab-seguimiento") {
     renderSeguimientoTab();
   }
+  if (tabId === "tab-ruta-pizarra") {
+    renderRutaYPizarraTab();
+  }
   if (tabId === "tab-pai") {
     renderPrintablePAI();
   }
@@ -2926,6 +2929,16 @@ function ensurePatientTrackingStructure(p) {
     };
   }
 
+  // Garantizar Estado Oficial del Paciente (Apartado 5.3.2) y Ruta (5.6)
+  if (!p.estadoPrograma) {
+    p.estadoPrograma = (p.ingreso?.finalScore >= 1) ? "ACTIVO" : "SOSPECHOSO";
+  }
+  if (!p.rutaFase) {
+    p.rutaFase = (p.seguimientos && p.seguimientos.length > 0) ? 6 : (p.estadoPrograma === "ACTIVO" ? 5 : 4);
+  }
+  if (!Array.isArray(p.descompensaciones)) p.descompensaciones = [];
+  if (!Array.isArray(p.derivaciones)) p.derivaciones = [];
+
   // Garantizar arreglo de seguimientos
   if (!Array.isArray(p.seguimientos)) {
     p.seguimientos = [];
@@ -3146,6 +3159,21 @@ function renderSeguimientoTab() {
     );
   }
 
+  // Sincronizar Estado Oficial del Programa (5.3.2 / 5.3.5)
+  const estadoBadge = document.getElementById("seg-estado-programa-badge");
+  const estadoSelect = document.getElementById("seg-estado-programa-select");
+  const altaSelect = document.getElementById("seg-motivo-alta-select");
+  const estMeta = ESTADOS_PROGRAMA_NEWCARE[p.estadoPrograma] || ESTADOS_PROGRAMA_NEWCARE.ACTIVO;
+  if (estadoBadge) {
+    estadoBadge.textContent = `Estado: ${estMeta.label}`;
+    estadoBadge.className = `badge-estado-programa ${estMeta.cssClass}`;
+  }
+  if (estadoSelect) estadoSelect.value = p.estadoPrograma || "ACTIVO";
+  if (altaSelect) {
+    altaSelect.style.display = p.estadoPrograma === "ALTA" ? "inline-block" : "none";
+    altaSelect.value = p.motivoAlta || "";
+  }
+
   // 2. KPIs de Deltas
   const kpiDeltaT = document.getElementById("kpi-delta-t");
   const kpiDeltaBarthel = document.getElementById("kpi-delta-barthel");
@@ -3176,6 +3204,10 @@ function renderSeguimientoTab() {
 
   // 5. Timeline de Eventos
   renderTimeline(p);
+
+  // 6. Descompensaciones (5.3.4) y Derivaciones (5.3.3)
+  renderDescompensacionesList(p);
+  renderDerivacionesList(p);
 
   if (window.lucide) lucide.createIcons();
 }
@@ -3527,10 +3559,39 @@ function saveNewSeguimiento() {
       psicologicas: document.getElementById("mseg-meta-psi").value,
       sociales: document.getElementById("mseg-meta-soc").value
     },
+    herramientas_554: {
+      numMedicamentos: safeNum(document.getElementById("mseg-num-meds")?.value, 0),
+      redApoyoPersonas: safeNum(document.getElementById("mseg-red-personas")?.value, 0),
+      sindromesGeriatricos: Array.from(document.querySelectorAll(".mseg-sindrome-chk:checked")).map(c => c.value),
+      cribadoAfectivo: {
+        p1: safeNum(document.getElementById("mseg-afec-1")?.value, 0),
+        p2: safeNum(document.getElementById("mseg-afec-2")?.value, 0),
+        alterado: safeNum(document.getElementById("mseg-afec-1")?.value, 0) >= 2 || safeNum(document.getElementById("mseg-afec-2")?.value, 0) >= 2
+      },
+      cribadoSocialRapido: {
+        relacion: document.getElementById("mseg-soc-1")?.value || "SI",
+        ayuda: document.getElementById("mseg-soc-2")?.value || "SI",
+        recursos: document.getElementById("mseg-soc-3")?.value || "SI",
+        alterado: (document.getElementById("mseg-soc-1")?.value === "NO" || document.getElementById("mseg-soc-2")?.value === "NO" || document.getElementById("mseg-soc-3")?.value === "NO")
+      },
+      eq5d5l: {
+        nivel: document.getElementById("mseg-eq5d-nivel")?.value || "NO_APLICA",
+        eva: document.getElementById("mseg-eq5d-eva")?.value || ""
+      },
+      satisfaccion: {
+        general: document.getElementById("mseg-satisfaccion")?.value || "NO_APLICA",
+        informado: !!document.getElementById("mseg-sat-info")?.checked,
+        tiempos: !!document.getElementById("mseg-sat-tiempo")?.checked,
+        participacion: !!document.getElementById("mseg-sat-plan")?.checked,
+        equipo: !!document.getElementById("mseg-sat-equipo")?.checked,
+        calidadVida: !!document.getElementById("mseg-sat-calidad")?.checked
+      }
+    },
     observaciones: obs
   };
 
   p.seguimientos.push(newSeg);
+  if ((p.rutaFase || 1) < 6) p.rutaFase = 6;
 
   // Guardar en Storage y sincronizar
   saveToStorage();
@@ -3800,4 +3861,495 @@ function filterSeguimientoChart(mode, btnEl) {
   chart.data.datasets[2].hidden = (mode !== "all" && mode !== "mna");
   chart.data.datasets[2].fill = (mode === "mna");
   chart.update();
+}
+
+// ============================================================================
+// CAPÍTULO 5 NEW CARE: ESTADOS (5.3.2), DERIVACIONES (5.3.3),
+// DESCOMPENSACIONES (5.3.4), PIZARRA (5.5.4) Y RUTA DEL PACIENTE (5.6)
+// ============================================================================
+
+const ESTADOS_PROGRAMA_NEWCARE = {
+  REMITIDO: { label: "Remitido sin evaluación", cssClass: "estado-remitido" },
+  SOSPECHOSO: { label: "Sospechoso (Baja complejidad / Anual)", cssClass: "estado-sospechoso" },
+  DESESTIMADO: { label: "Desestimado", cssClass: "estado-desestimado" },
+  RECHAZO: { label: "Rechazo a valoración / programa", cssClass: "estado-rechazo" },
+  ACTIVO: { label: "Activo", cssClass: "estado-activo" },
+  DERIVADO: { label: "Derivado a Cuidados Paliativos", cssClass: "estado-derivado" },
+  FALLECIDO: { label: "Fallecido", cssClass: "estado-fallecido" },
+  RENUNCIA: { label: "Renuncia Voluntaria", cssClass: "estado-renuncia" },
+  ALTA: { label: "Alta del Programa", cssClass: "estado-alta" }
+};
+
+function changePatientProgramStatus(newStatus) {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  p.estadoPrograma = newStatus;
+  if (newStatus === "DERIVADO") p.rutaFase = 8;
+  if (newStatus === "ALTA" || newStatus === "RENUNCIA" || newStatus === "FALLECIDO") p.rutaFase = 9;
+  saveToStorage();
+  renderSeguimientoTab();
+  renderPatientsTable();
+  if (document.getElementById("tab-ruta-pizarra")?.style.display === "block") {
+    renderRutaYPizarraTab();
+  }
+}
+
+function changePatientAltaReason(reason) {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  p.motivoAlta = reason;
+  saveToStorage();
+}
+
+// --- 5.3.4 DESCOMPENSACIONES CLÍNICAS POR PATOLOGÍA Y ALTERACIONES SOCIALES ---
+const DESCOMPENSACIONES_CLINICAS = {
+  IC: {
+    nombre: "Insuficiencia Cardíaca (IC)",
+    aguda: [
+      "Disnea de reposo de aparición aguda",
+      "Crisis de Disnea Paroxística Nocturna",
+      "Dolor torácico intenso de aparición aguda",
+      "Crisis hipertensiva (TAs > 200 o TAd > 100 mmHg)",
+      "Palpitaciones con pulso irregular (>150 lpm) y/o repercusión hemodinámica",
+      "Síncope (pérdida aguda del conocimiento)"
+    ],
+    progresiva: [
+      "Disnea progresiva hasta mínimos esfuerzos",
+      "Crisis hipertensiva progresiva (TAs > 180 o TAd > 90 mmHg)",
+      "Edemas en MMII de aparición progresiva",
+      "Taquicardia rítmica sin repercusión hemodinámica",
+      "Fiebre (infecciones concurrentes)",
+      "Cansancio fácil y progresivo"
+    ]
+  },
+  EPOC: {
+    nombre: "Insuficiencia Respiratoria (EPOC)",
+    aguda: [
+      "Disnea de reposo de aparición aguda",
+      "Dolor torácico agudo e intenso",
+      "Síntomas de hipercapnia aguda (cefalea, somnolencia, flapping, cianosis)"
+    ],
+    progresiva: [
+      "Disnea de aparición progresiva",
+      "Fiebre (infecciones concurrentes)",
+      "Tos en aumento, persistente y nocturna",
+      "Mayor producción de mucosidad, más espesa o verdosa/purulenta"
+    ]
+  },
+  CIRROSIS: {
+    nombre: "Insuficiencia Hepática (Cirrosis)",
+    aguda: [
+      "Encefalopatía hepática grado III–IV",
+      "Ascitis a tensión vs. Anasarca",
+      "Hemorragia digestiva aguda"
+    ],
+    progresiva: [
+      "Encefalopatía hepática grado I–II",
+      "Ascitis no a tensión",
+      "Ictericia",
+      "Fiebre",
+      "Edemas progresivos"
+    ]
+  },
+  ERC: {
+    nombre: "Insuficiencia Renal Crónica (ERC)",
+    aguda: [
+      "Disnea de aparición aguda",
+      "Signos de uremia (náuseas/vómitos, asterixis, letargia, fetor urémico)",
+      "Oligo-Anuria",
+      "Signos de hiperpotasemia (arritmias, debilidad muscular en MMII)",
+      "Crisis hipertensiva (TAs > 200 o TAd > 100 mmHg)"
+    ],
+    progresiva: [
+      "Disnea progresiva",
+      "Prurito",
+      "Calambres musculares",
+      "Anorexia",
+      "Edemas",
+      "Insomnio",
+      "Subida de TA (TAs > 140 y/o TAd > 80 mmHg)",
+      "Cansancio y palidez cutánea (anemia)"
+    ]
+  }
+};
+
+const ALTERACIONES_SOCIALES = {
+  urgentes: [
+    "Cuidador con síntomas graves de sobrecarga",
+    "Falta de recursos económicos por interrupción repentina de ingresos",
+    "Cambio de domicilio con infraestructuras no acondicionadas",
+    "Enfermedad repentina y grave del cuidador principal",
+    "Aparición repentina de necesidades de cuidado en otro familiar",
+    "Fallecimiento del cuidador principal sin red de apoyo"
+  ],
+  progresivas: [
+    "Cambios progresivos en los roles familiares",
+    "Edad avanzada del cuidador principal",
+    "Problemática emocional del paciente (afecta adherencia/autocuidado)",
+    "Problemática emocional del cuidador principal",
+    "Cuidador principal con síntomas leves de sobrecarga",
+    "Falta de información o conocimiento sobre manejo del paciente"
+  ]
+};
+
+function openDescompensacionModal() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  const dateEl = document.getElementById("desc-fecha");
+  if (dateEl) dateEl.value = new Date().toISOString().split("T")[0];
+  const patEl = document.getElementById("desc-patologia");
+  if (patEl) patEl.value = p.crit || "IC";
+  const condEl = document.getElementById("desc-conducta");
+  if (condEl) condEl.value = "";
+  renderDescompensacionChecklists();
+  openModal("modal-descompensacion");
+}
+
+function renderDescompensacionChecklists() {
+  const pat = document.getElementById("desc-patologia")?.value || "IC";
+  const cfg = DESCOMPENSACIONES_CLINICAS[pat] || DESCOMPENSACIONES_CLINICAS.IC;
+  const cont = document.getElementById("desc-checklists-container");
+  if (!cont) return;
+
+  cont.innerHTML = `
+    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px;">
+      <div style="font-weight:800; font-size:12px; color:#991b1b; margin-bottom:6px;">
+        🔴 DESCOMPENSACIÓN AGUDA — ${cfg.nombre} (Derivación urgente hospitalaria / Respuesta 24–48 h)
+      </div>
+      <div class="checklist-grid-compact">
+        ${cfg.aguda.map(s => `<label><input type="checkbox" class="desc-chk desc-aguda" value="${s}" onchange="updateDescompensacionConductaBanner()"> ${s}</label>`).join("")}
+      </div>
+    </div>
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px;">
+      <div style="font-weight:800; font-size:12px; color:#92400e; margin-bottom:6px;">
+        🟡 DESCOMPENSACIÓN PROGRESIVA — ${cfg.nombre} (Intervención temprana no urgente)
+      </div>
+      <div class="checklist-grid-compact">
+        ${cfg.progresiva.map(s => `<label><input type="checkbox" class="desc-chk desc-progresiva" value="${s}" onchange="updateDescompensacionConductaBanner()"> ${s}</label>`).join("")}
+      </div>
+    </div>
+    <div style="background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:10px;">
+      <div style="font-weight:800; font-size:12px; color:#5b21b6; margin-bottom:6px;">
+        🤝 ALTERACIONES SOCIALES (Urgentes y Progresivas — Trabajo Social / Promotor Comunitario)
+      </div>
+      <div class="checklist-grid-compact">
+        ${ALTERACIONES_SOCIALES.urgentes.map(s => `<label><input type="checkbox" class="desc-chk desc-social-urg" value="[Social Urgente] ${s}" onchange="updateDescompensacionConductaBanner()"> <strong>[Urgente]</strong> ${s}</label>`).join("")}
+        ${ALTERACIONES_SOCIALES.progresivas.map(s => `<label><input type="checkbox" class="desc-chk desc-social-prog" value="[Social Progresiva] ${s}" onchange="updateDescompensacionConductaBanner()"> ${s}</label>`).join("")}
+      </div>
+    </div>
+  `;
+  updateDescompensacionConductaBanner();
+}
+
+function updateDescompensacionConductaBanner() {
+  const banner = document.getElementById("desc-conducta-banner");
+  if (!banner) return;
+  const agudas = document.querySelectorAll(".desc-aguda:checked").length;
+  const prog = document.querySelectorAll(".desc-progresiva:checked").length;
+  const socUrg = document.querySelectorAll(".desc-social-urg:checked").length;
+  const socProg = document.querySelectorAll(".desc-social-prog:checked").length;
+
+  if (agudas > 0) {
+    banner.style.background = "#fef2f2";
+    banner.style.borderColor = "#dc2626";
+    banner.style.color = "#991b1b";
+    banner.innerHTML = `<strong>🚨 RUTA DE DESCOMPENSACIÓN AGUDA ACTIVADA (${agudas} signo(s) agudo(s)):</strong> Requiere valoración médica inmediata, articulación con EPS para traslado a nivel hospitalario si aplica y respuesta máxima en <strong>24–48 horas</strong>.`;
+  } else if (socUrg > 0) {
+    banner.style.background = "#faf5ff";
+    banner.style.borderColor = "#7c3aed";
+    banner.style.color = "#5b21b6";
+    banner.innerHTML = `<strong>⚠️ ALTERACIÓN SOCIAL URGENTE (${socUrg}):</strong> Activar de inmediato a Trabajo Social / Promotor Comunitario para provisión de apoyos en domicilio o centro especializado.`;
+  } else if (prog > 0 || socProg > 0) {
+    banner.style.background = "#fffbeb";
+    banner.style.borderColor = "#d97706";
+    banner.style.color = "#92400e";
+    banner.innerHTML = `<strong>🟡 RUTA DE DESCOMPENSACIÓN PROGRESIVA (${prog + socProg} hallazgo(s)):</strong> Intervenir tan pronto se detecte mediante consulta prioritaria o reajuste terapéutico para evitar progresión a cuadro agudo.`;
+  } else {
+    banner.style.background = "#f8fafc";
+    banner.style.borderColor = "#cbd5e1";
+    banner.style.color = "#475569";
+    banner.innerHTML = "Seleccione los signos de alarma presentes para determinar la ruta de respuesta (Aguda 24–48 h vs. Progresiva).";
+  }
+}
+
+function saveDescompensacion() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  ensurePatientTrackingStructure(p);
+
+  const fecha = document.getElementById("desc-fecha")?.value;
+  const fuente = document.getElementById("desc-fuente")?.value || "EQUIPO";
+  const patologia = document.getElementById("desc-patologia")?.value || p.crit || "IC";
+  const conducta = document.getElementById("desc-conducta")?.value.trim() || "";
+  const signos = Array.from(document.querySelectorAll(".desc-chk:checked")).map(c => c.value);
+
+  if (!fecha || signos.length === 0) {
+    alert("Seleccione la fecha y al menos un signo de alarma o alteración social.");
+    return;
+  }
+
+  const esAguda = document.querySelectorAll(".desc-aguda:checked").length > 0;
+  const esSocUrg = document.querySelectorAll(".desc-social-urg:checked").length > 0;
+  const severidad = esAguda ? "AGUDA" : (esSocUrg ? "SOCIAL_URGENTE" : "PROGRESIVA");
+
+  p.descompensaciones.push({
+    id: `DESC-${Date.now()}`,
+    fecha,
+    fuente,
+    patologia,
+    severidad,
+    signos,
+    conducta,
+    registradoPor: currentUser?.name || "Equipo New Care"
+  });
+  p.rutaFase = 7;
+  saveToStorage();
+  closeModal("modal-descompensacion");
+  renderSeguimientoTab();
+  alert(`✅ Descompensación (${severidad}) registrada en Historia Clínica.`);
+}
+
+function renderDescompensacionesList(p) {
+  const cont = document.getElementById("seg-descompensaciones-list");
+  if (!cont) return;
+  const list = p.descompensaciones || [];
+  if (list.length === 0) {
+    cont.innerHTML = `<div style="padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; text-align:center;">Sin episodios de descompensación registrados.</div>`;
+    return;
+  }
+  cont.innerHTML = list.slice().reverse().map(d => {
+    const isUrg = d.severidad === "AGUDA" || d.severidad === "SOCIAL_URGENTE";
+    return `
+      <div style="padding:10px; border-radius:6px; border-left:4px solid ${isUrg ? "#dc2626" : "#d97706"}; background:${isUrg ? "#fef2f2" : "#fffbeb"};">
+        <div style="display:flex; justify-content:space-between; font-weight:700; color:${isUrg ? "#991b1b" : "#92400e"}; margin-bottom:4px;">
+          <span>${isUrg ? "🔴" : "🟡"} ${d.severidad} (${d.patologia})</span>
+          <span>📅 ${d.fecha}</span>
+        </div>
+        <div style="margin-bottom:4px;"><strong>Signos:</strong> ${d.signos.join(", ")}</div>
+        ${d.conducta ? `<div><strong>Conducta:</strong> ${d.conducta}</div>` : ""}
+      </div>`;
+  }).join("");
+}
+
+// --- 5.3.3 CRITERIOS DE DERIVACIÓN ENTRE NIVELES ---
+const CRITERIOS_DERIVACION = {
+  AMBULATORIO_A_DOMICILIO: [
+    "Pérdida de funcionalidad y capacidad de movilización",
+    "Dificultades para acudir a consulta ambulatoria",
+    "Control de síntomas complejos en domicilio",
+    "Necesidades sociales adversas",
+    "Reajuste de tratamiento supervisado",
+    "Continuidad post hospitalización"
+  ],
+  DOMICILIO_A_AMBULATORIO: [
+    "Resolución del cuadro agudo",
+    "Paciente puede desplazarse con seguridad",
+    "Adecuada red de cuidados",
+    "Condiciones del entorno adecuadas"
+  ],
+  A_HOSPITAL_URGENCIAS: [
+    "Descompensación aguda que requiere soporte hospitalario",
+    "Administración de fármacos o procedimientos complejos intrahospitalarios",
+    "Coordinación activa con EPS y red de urgencias"
+  ],
+  HOSPITAL_A_DOMICILIO: [
+    "Egreso hospitalario con dependencia funcional (Barthel ≤ 60)",
+    "Requiere seguimiento post-alta en primeras 48–72 h"
+  ],
+  HOSPITAL_A_AMBULATORIO: [
+    "Egreso hospitalario con movilidad conservada y red estable"
+  ],
+  A_CUIDADOS_PALIATIVOS: [
+    "Criterios NECPAL positivos / enfermedad orgánica terminal avanzada",
+    "Consenso en Junta de Cronicidad y articulación con familia y EPS"
+  ],
+  A_CENTRO_SOCIAL: [
+    "Alteración social urgente sin soporte familiar suficiente en domicilio"
+  ]
+};
+
+function openDerivacionModal() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  const dateEl = document.getElementById("deriv-fecha");
+  if (dateEl) dateEl.value = new Date().toISOString().split("T")[0];
+  const respEl = document.getElementById("deriv-responsable");
+  if (respEl) respEl.value = currentUser?.name || "Médico / EPA New Care";
+  const recEl = document.getElementById("deriv-receptor");
+  if (recEl) recEl.value = p.eps || "EPS / Red Prestadora";
+  const resEl = document.getElementById("deriv-resumen");
+  if (resEl) resEl.value = "";
+  renderDerivacionCriterios();
+  openModal("modal-derivacion");
+}
+
+function renderDerivacionCriterios() {
+  const tipo = document.getElementById("deriv-tipo")?.value || "AMBULATORIO_A_DOMICILIO";
+  const list = CRITERIOS_DERIVACION[tipo] || [];
+  const cont = document.getElementById("deriv-criterios-container");
+  if (!cont) return;
+  cont.innerHTML = list.map(c => `<label><input type="checkbox" class="deriv-crit-chk" value="${c}"> ${c}</label>`).join("");
+}
+
+function saveDerivacion() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  ensurePatientTrackingStructure(p);
+
+  const fecha = document.getElementById("deriv-fecha")?.value;
+  const tipoEl = document.getElementById("deriv-tipo");
+  const tipo = tipoEl?.value || "AMBULATORIO_A_DOMICILIO";
+  const tipoTexto = tipoEl?.selectedOptions[0]?.text || tipo;
+  const responsable = document.getElementById("deriv-responsable")?.value.trim() || "";
+  const receptor = document.getElementById("deriv-receptor")?.value.trim() || "";
+  const resumen = document.getElementById("deriv-resumen")?.value.trim() || "";
+  const criterios = Array.from(document.querySelectorAll(".deriv-crit-chk:checked")).map(c => c.value);
+
+  if (!fecha || criterios.length === 0) {
+    alert("Seleccione la fecha y verifique al menos un criterio normativo de derivación.");
+    return;
+  }
+
+  p.derivaciones.push({
+    id: `DERIV-${Date.now()}`,
+    fecha,
+    tipo,
+    tipoTexto,
+    criterios,
+    responsable,
+    receptor,
+    resumen
+  });
+
+  if (tipo === "A_CUIDADOS_PALIATIVOS") {
+    p.estadoPrograma = "DERIVADO";
+    p.rutaFase = 8;
+  }
+  saveToStorage();
+  closeModal("modal-derivacion");
+  renderSeguimientoTab();
+  alert(`✅ Derivación registrada (${tipoTexto}).`);
+}
+
+function renderDerivacionesList(p) {
+  const cont = document.getElementById("seg-derivaciones-list");
+  if (!cont) return;
+  const list = p.derivaciones || [];
+  if (list.length === 0) {
+    cont.innerHTML = `<div style="padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; text-align:center;">Sin derivaciones registradas entre niveles asistenciales.</div>`;
+    return;
+  }
+  cont.innerHTML = list.slice().reverse().map(d => `
+    <div style="padding:10px; border-radius:6px; border-left:4px solid #1e3a8a; background:#eff6ff;">
+      <div style="display:flex; justify-content:space-between; font-weight:700; color:#1e3a8a; margin-bottom:4px;">
+        <span>🔀 ${d.tipoTexto}</span>
+        <span>📅 ${d.fecha}</span>
+      </div>
+      <div style="margin-bottom:4px;"><strong>Criterios:</strong> ${d.criterios.join(" • ")}</div>
+      <div style="font-size:11px; color:#475569;"><strong>Responsable:</strong> ${d.responsable} | <strong>Receptor/EPS:</strong> ${d.receptor}</div>
+      ${d.resumen ? `<div style="margin-top:4px;"><strong>Resumen:</strong> ${d.resumen}</div>` : ""}
+    </div>`).join("");
+}
+
+// --- 5.6 RUTA DEL PACIENTE (9 ETAPAS) & 5.5.4 PIZARRA OPERATIVA ---
+const RUTA_PACIENTE_ETAPAS = [
+  { num: 1, title: "Identificación EPS", sla: "Masiva mensual / Remisión", resp: "Aseguradora + Enlace IPS", desc: "Recepción de datos mínimos desde la EPS (identificación, contacto, diagnóstico IOCC y cuidador)." },
+  { num: 2, title: "Contacto y Agendamiento", sla: "≤ 5 días hábiles", resp: "Aux. Admisiones / Enfermería", desc: "Contacto telefónico con paciente/familia y agendamiento de la Valoración Multidimensional." },
+  { num: 3, title: "VMD y Estratificación", sla: "Día 0 del proceso", resp: "Médico / EPA / Trabajo Social", desc: "Aplicación de escalas oficiales, cálculo de complejidad New Care y asignación del Estado del Paciente (5.3.2)." },
+  { num: 4, title: "Ingreso o Seguimiento Anual", sla: "Decisión inmediata", resp: "Jefe Programa / Médico", desc: "Si Media/Alta Complejidad → Estado ACTIVO. Si Baja Complejidad → Estado SOSPECHOSO (control anual)." },
+  { num: 5, title: "VI y Emisión de PAI", sla: "Máx. 30 días desde VMD", resp: "Equipo Interdisciplinario", desc: "Valoración Integral y concertación de metas sanitarias, nutricionales, psicoafectivas y sociales con familia." },
+  { num: 6, title: "Seguimientos Periódicos", sla: "Mensual Dom / 3–6M Amb", resp: "Médico, Enfermería, TS", desc: "Controles según complejidad, escalas trimestrales (MNA, Zarit, Gijón, Red) y semestrales (EQ-5D-5L, Satisfacción)." },
+  { num: 7, title: "Descompensaciones 24/7", sla: "24–48 h Agudos", resp: "Jefe Programa + Médico", desc: "Atención de novedades por canal WhatsApp 24/7, ruta de descompensación aguda/progresiva y derivación EPS." },
+  { num: 8, title: "Juntas y Transición CP", sla: "Junta mensual / NECPAL+", resp: "Junta de Cronicidad", desc: "Revisión interdisciplinaria, Asamblea de Pacientes y transición articulada a Cuidados Paliativos si aplica." },
+  { num: 9, title: "Egreso / Alta del Programa", sla: "Cierre documentado en HC", resp: "Médico Tratante + EPS", desc: "Alta por objetivos, traslado de prestador, alta voluntaria (formato firmado) o fallecimiento." }
+];
+
+function renderRutaYPizarraTab() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (p) {
+    ensurePatientTrackingStructure(p);
+    const nameEl = document.getElementById("ruta-patient-name");
+    const estEl = document.getElementById("ruta-patient-estado");
+    const estMeta = ESTADOS_PROGRAMA_NEWCARE[p.estadoPrograma] || ESTADOS_PROGRAMA_NEWCARE.ACTIVO;
+    if (nameEl) nameEl.textContent = p.name;
+    if (estEl) estEl.textContent = estMeta.label;
+
+    const flowCont = document.getElementById("ruta-flujograma-container");
+    const detCont = document.getElementById("ruta-etapa-detalle");
+    const activeNum = p.rutaFase || 5;
+
+    if (flowCont) {
+      flowCont.innerHTML = RUTA_PACIENTE_ETAPAS.map(et => {
+        const cls = et.num < activeNum ? "done" : (et.num === activeNum ? "active" : "");
+        return `
+          <button type="button" class="ruta-step ${cls}" onclick="setPatientRutaFase(${et.num})">
+            <div class="ruta-step-num">Paso ${et.num} ${et.num < activeNum ? "✓" : (et.num === activeNum ? "• Actual" : "")}</div>
+            <div class="ruta-step-title">${et.title}</div>
+            <div class="ruta-step-sla">⏱️ ${et.sla}</div>
+          </button>`;
+      }).join("");
+    }
+    if (detCont) {
+      const curr = RUTA_PACIENTE_ETAPAS.find(x => x.num === activeNum) || RUTA_PACIENTE_ETAPAS[0];
+      detCont.innerHTML = `
+        <div style="font-weight:800; color:#1e3a8a; margin-bottom:4px;">Etapa Actual (${curr.num}/9): ${curr.title}</div>
+        <div><strong>Responsable:</strong> ${curr.resp} &bull; <strong>Tiempo Normativo:</strong> ${curr.sla}</div>
+        <div style="margin-top:4px; color:#334155;">${curr.desc}</div>`;
+    }
+  }
+  renderPizarraOperativa();
+  if (window.lucide) lucide.createIcons();
+}
+
+function setPatientRutaFase(num) {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  p.rutaFase = num;
+  saveToStorage();
+  renderRutaYPizarraTab();
+}
+
+function renderPizarraOperativa() {
+  const tbody = document.getElementById("pizarra-table-body");
+  if (!tbody) return;
+  const filterEst = document.getElementById("pizarra-filter-estado")?.value || "ALL";
+
+  const rows = patients.filter(p => {
+    ensurePatientTrackingStructure(p);
+    if (filterEst !== "ALL" && p.estadoPrograma !== filterEst) return false;
+    return true;
+  });
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:#94a3b8; padding:18px;">No hay pacientes en el estado seleccionado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(p => {
+    const res = evaluatePatient(p);
+    const estMeta = ESTADOS_PROGRAMA_NEWCARE[p.estadoPrograma] || ESTADOS_PROGRAMA_NEWCARE.ACTIVO;
+    const fase = p.rutaFase || 4;
+    const hasSeg = (p.seguimientos && p.seguimientos.length > 0);
+    const hasDesc = (p.descompensaciones && p.descompensaciones.length > 0);
+    const hasDeriv = (p.derivaciones && p.derivaciones.length > 0);
+    const ok = `<span class="pizarra-mark-ok">✓</span>`;
+    const dash = `<span style="color:#cbd5e1;">—</span>`;
+
+    return `
+      <tr onclick="loadPatient('${p.id}'); switchTab('tab-seguimiento');" style="cursor:pointer;" title="Clic para abrir seguimiento de ${p.name}">
+        <td style="font-weight:700; color:#0f172a;">${p.name}</td>
+        <td><span class="badge-estado-programa ${estMeta.cssClass}">${estMeta.label}</span></td>
+        <td><strong>${res.complexityText}</strong></td>
+        <td>${ok}</td>
+        <td>${p.estadoPrograma === "ACTIVO" || fase >= 4 ? ok : dash}</td>
+        <td>${fase >= 5 ? ok : dash}</td>
+        <td>${fase >= 5 ? ok : dash}</td>
+        <td>${hasSeg ? ok : dash}</td>
+        <td>${hasSeg ? ok : dash}</td>
+        <td>${hasSeg ? ok : dash}</td>
+        <td>${hasDesc ? `<span class="pizarra-mark-alert">${p.descompensaciones.length}</span>` : dash}</td>
+        <td>${hasDeriv ? `<span class="pizarra-mark-ok">${p.derivaciones.length}</span>` : dash}</td>
+        <td style="font-size:11px; color:#475569;">${hasSeg ? `Seg #${p.seguimientos.length} (${p.seguimientos[p.seguimientos.length - 1].fecha})` : (p.vmdDate || "Ingreso pendiente")}</td>
+      </tr>`;
+  }).join("");
 }

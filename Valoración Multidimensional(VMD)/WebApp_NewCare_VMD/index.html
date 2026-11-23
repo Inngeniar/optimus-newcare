@@ -76,6 +76,9 @@
     <div class="nav-tab" onclick="switchTab('tab-seguimiento')">
       <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i> Seguimiento & Trazabilidad
     </div>
+    <div class="nav-tab" onclick="switchTab('tab-ruta-pizarra')">
+      <i data-lucide="route" style="width: 16px; height: 16px;"></i> Ruta del Paciente & Pizarra
+    </div>
     <div class="nav-tab" onclick="switchTab('tab-risk')">
       <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Suite de Riesgo Clínico
     </div>
@@ -2337,9 +2340,10 @@
       <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%); border-left: 5px solid #0d9488;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <span class="badge-registro-seguimiento">Módulo de Seguimiento Longitudinal</span>
               <span id="seg-status-badge" class="badge-complex complex-media">Cargando estado...</span>
+              <span id="seg-estado-programa-badge" class="badge-estado-programa estado-activo">Estado: Activo</span>
             </div>
             <h2 id="seg-patient-name" style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 4px;">Seleccione un paciente</h2>
             <div style="display: flex; gap: 16px; font-size: 12px; color: #475569; margin-top: 4px; flex-wrap: wrap;">
@@ -2349,10 +2353,40 @@
               <span><strong>Ingreso al Programa:</strong> <span id="seg-patient-ingreso-date">-</span></span>
               <span><strong>Seguimientos Realizados:</strong> <span id="seg-patient-count-badge" class="badge badge-primary">0</span></span>
             </div>
+            <!-- Selector rápido de Estado Oficial del Paciente (5.3.2 / 5.3.5) -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+              <label for="seg-estado-programa-select" style="font-size: 11.5px; font-weight: 700; color: #334155;">Estado Oficial (5.3.2):</label>
+              <select id="seg-estado-programa-select" class="form-control" style="width: auto; min-width: 210px; padding: 4px 8px; font-size: 12px;" onchange="changePatientProgramStatus(this.value)">
+                <option value="REMITIDO">Remitido sin evaluación</option>
+                <option value="SOSPECHOSO">Sospechoso (Baja complejidad / Anual)</option>
+                <option value="DESESTIMADO">Desestimado</option>
+                <option value="RECHAZO">Rechazo a valoración / al programa</option>
+                <option value="ACTIVO">Activo (En Programa New Care)</option>
+                <option value="DERIVADO">Derivado a Cuidados Paliativos</option>
+                <option value="FALLECIDO">Fallecido</option>
+                <option value="RENUNCIA">Renuncia Voluntaria</option>
+                <option value="ALTA">Alta del Programa</option>
+              </select>
+              <select id="seg-motivo-alta-select" class="form-control" style="display: none; width: auto; min-width: 220px; padding: 4px 8px; font-size: 12px;" onchange="changePatientAltaReason(this.value)">
+                <option value="">-- Seleccione motivo de Alta (5.3.5) --</option>
+                <option value="CUMPLIMIENTO_OBJETIVOS">Alta por cumplimiento de objetivos</option>
+                <option value="TRASLADO_PRESTADOR">Alta por traslado a otro prestador</option>
+                <option value="OTROS">Otros motivos de egreso</option>
+              </select>
+            </div>
           </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-teal" onclick="openNewSeguimientoModal()">
               <i data-lucide="plus-circle" style="width: 15px; height: 15px;"></i> Registrar Nuevo Seguimiento
+            </button>
+            <button class="btn btn-danger" onclick="openDescompensacionModal()" style="background: #dc2626; color: #fff;">
+              <i data-lucide="alert-triangle" style="width: 15px; height: 15px;"></i> Descompensación (5.3.4)
+            </button>
+            <button class="btn btn-primary" onclick="openDerivacionModal()">
+              <i data-lucide="arrow-left-right" style="width: 15px; height: 15px;"></i> Derivación (5.3.3)
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('tab-ruta-pizarra')">
+              <i data-lucide="route" style="width: 15px; height: 15px;"></i> Ver Ruta 5.6
             </button>
             <button class="btn btn-secondary" onclick="switchTab('tab-vmd')">
               <i data-lucide="clipboard-check" style="width: 15px; height: 15px;"></i> Ver Ficha de Ingreso
@@ -2473,6 +2507,33 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Panel de Trazabilidad de Descompensaciones (5.3.4) y Derivaciones (5.3.3) -->
+      <div class="grid-2" style="margin-top: 18px; align-items: start;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="alert-triangle" style="color: #dc2626;"></i> Registro de Descompensaciones Clínicas y Sociales (5.3.4)
+            </div>
+            <button class="btn btn-sm" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;" onclick="openDescompensacionModal()">+ Registrar</button>
+          </div>
+          <div id="seg-descompensaciones-list" style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #475569;">
+            <!-- Poblado dinámicamente por JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="arrow-left-right" style="color: #1e3a8a;"></i> Historial de Derivaciones entre Niveles (5.3.3)
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="openDerivacionModal()">+ Derivar</button>
+          </div>
+          <div id="seg-derivaciones-list" style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #475569;">
+            <!-- Poblado dinámicamente por JS -->
+          </div>
+        </div>
       </div>
 
     </section>
@@ -2620,11 +2681,344 @@
             <textarea id="mseg-obs" class="form-control" rows="3" placeholder="Describa los avances logrados por el equipo interdisciplinario, ajustes al tratamiento o requerimientos adicionales..."></textarea>
           </div>
 
+          <!-- 3. Herramientas Obligatorias de Seguimiento (Instructivo 5.5.4) -->
+          <div style="border-top: 2px solid #e2e8f0; margin-top: 16px; padding-top: 14px;">
+            <div style="font-weight: 800; font-size: 13px; color: #0f766e; margin-bottom: 10px;">
+              3. Control Integral New Care (Instructivo Oficial 5.5.4)
+            </div>
+
+            <div class="grid-2" style="gap: 10px; margin-bottom: 12px;">
+              <div class="form-group">
+                <label class="form-label">N.º de Medicamentos Activos (Polifarmacia)</label>
+                <input type="number" id="mseg-num-meds" class="form-control" min="0" max="40" value="5">
+                <small style="font-size: 10px; color: #64748b;">Registrar en cada ajuste terapéutico</small>
+              </div>
+              <div class="form-group">
+                <label class="form-label">N.º de Personas en Red de Cuidados (Trimestral)</label>
+                <input type="number" id="mseg-red-personas" class="form-control" min="0" max="20" value="2">
+                <small style="font-size: 10px; color: #64748b;">Familiares / cuidadores / voluntarios implicados</small>
+              </div>
+            </div>
+
+            <!-- Síndromes Geriátricos / Fragilidad -->
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label class="form-label">Síndromes Geriátricos y Signos de Fragilidad Detectados</label>
+              <div class="checklist-grid-compact">
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Caídas"> Caídas</label>
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Alteración de la marcha"> Alteración marcha</label>
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Úlceras por presión (UPP)"> UPP / Lesiones</label>
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Disfagia"> Disfagia</label>
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Polifarmacia"> Polifarmacia (≥5)</label>
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Trastornos comportamiento"> Trast. comportamiento</label>
+                <label><input type="checkbox" class="mseg-sindrome-chk" value="Infecciones repetición"> Infecciones repetición</label>
+              </div>
+            </div>
+
+            <!-- Cribado Afectivo y Social Rápido (Anexo 5.5.4) -->
+            <div class="grid-2" style="gap: 10px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div>
+                <div style="font-weight: 700; font-size: 11.5px; color: #1e3a8a; margin-bottom: 6px;">Cribado Afectivo Breve (Último mes)</div>
+                <div class="form-group" style="margin-bottom: 6px;">
+                  <label style="font-size: 11px;">1. ¿Se ha sentido decaído, desesperado o deprimido?</label>
+                  <select id="mseg-afec-1" class="form-control" style="font-size: 11.5px; padding: 4px;">
+                    <option value="0">En absoluto</option>
+                    <option value="1">Algunos días</option>
+                    <option value="2">Más de la mitad de los días (Alterado)</option>
+                    <option value="3">Casi todos los días (Alterado)</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px;">2. ¿Aburrido, sin interés o placer por hacer cosas?</label>
+                  <select id="mseg-afec-2" class="form-control" style="font-size: 11.5px; padding: 4px;">
+                    <option value="0">En absoluto</option>
+                    <option value="1">Algunos días</option>
+                    <option value="2">Más de la mitad de los días (Alterado)</option>
+                    <option value="3">Casi todos los días (Alterado)</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 11.5px; color: #1e3a8a; margin-bottom: 6px;">Cribado Social Rápido (Anexo 5.5.4)</div>
+                <div class="form-group" style="margin-bottom: 6px;">
+                  <label style="font-size: 11px;">1. ¿Relación habitual con familia/amigos?</label>
+                  <select id="mseg-soc-1" class="form-control" style="font-size: 11.5px; padding: 4px;">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No (Alerta social)</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 6px;">
+                  <label style="font-size: 11px;">2. ¿Si necesita ayuda, se la pueden prestar?</label>
+                  <select id="mseg-soc-2" class="form-control" style="font-size: 11.5px; padding: 4px;">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No (Alerta social)</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px;">3. ¿Recursos económicos y vivienda adecuados?</label>
+                  <select id="mseg-soc-3" class="form-control" style="font-size: 11.5px; padding: 4px;">
+                    <option value="SI">Sí</option>
+                    <option value="NO">No (Alerta social)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evaluación Semestral Obligatoria: EQ-5D-5L + Satisfacción -->
+            <details style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px;">
+              <summary style="cursor: pointer; font-weight: 700; font-size: 12px; color: #166534;">
+                📊 Evaluación Semestral Obligatoria (5.5.4): Calidad de Vida EQ-5D-5L y Encuesta de Satisfacción
+              </summary>
+              <div class="grid-3" style="gap: 8px; margin-top: 10px;">
+                <div class="form-group">
+                  <label style="font-size: 11px;">EQ-5D-5L Índice / Estado (1-5)</label>
+                  <select id="mseg-eq5d-nivel" class="form-control" style="font-size: 11.5px;">
+                    <option value="NO_APLICA">No aplica en este control</option>
+                    <option value="1_SIN_PROBLEMAS">Nivel 1: Sin problemas</option>
+                    <option value="2_LEVES">Nivel 2: Problemas leves</option>
+                    <option value="3_MODERADOS">Nivel 3: Problemas moderados</option>
+                    <option value="4_GRAVES">Nivel 4: Problemas graves</option>
+                    <option value="5_EXTREMOS">Nivel 5: Incapacidad / Problemas extremos</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 11px;">EQ-5D EVA Salud Hoy (0–100)</label>
+                  <input type="number" id="mseg-eq5d-eva" class="form-control" min="0" max="100" placeholder="0 a 100">
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 11px;">Satisfacción General (1–5)</label>
+                  <select id="mseg-satisfaccion" class="form-control" style="font-size: 11.5px;">
+                    <option value="NO_APLICA">No aplicada en este control</option>
+                    <option value="5">5 - Muy Satisfecho</option>
+                    <option value="4">4 - Satisfecho</option>
+                    <option value="3">3 - Aceptable</option>
+                    <option value="2">2 - Insatisfecho</option>
+                    <option value="1">1 - Muy Insatisfecho</option>
+                  </select>
+                </div>
+              </div>
+              <div class="checklist-grid-compact" style="margin-top: 6px; font-size: 11px;">
+                <label><input type="checkbox" id="mseg-sat-info" checked> Informado con claridad</label>
+                <label><input type="checkbox" id="mseg-sat-tiempo" checked> Tiempos de espera adecuados</label>
+                <label><input type="checkbox" id="mseg-sat-plan" checked> Participó en su PAI</label>
+                <label><input type="checkbox" id="mseg-sat-equipo" checked> Acompañamiento MI/Enf/TS</label>
+                <label><input type="checkbox" id="mseg-sat-calidad" checked> Mejoró su calidad de vida</label>
+              </div>
+            </details>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" onclick="closeModal('modal-new-seguimiento')">Cancelar</button>
           <button class="btn btn-teal" onclick="saveNewSeguimiento()">
             <i data-lucide="save" style="width: 14px; height: 14px;"></i> Guardar Registro de Seguimiento
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB: RUTA DEL PACIENTE (5.6) & PIZARRA OPERATIVA (5.5.4) -->
+    <!-- ======================================================== -->
+    <section id="tab-ruta-pizarra" class="tab-content" style="display: none;">
+
+      <!-- 1. Ruta del Paciente y Flujograma Interactivo (Apartado 5.6) -->
+      <div class="card" style="margin-bottom: 18px;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div class="card-title">
+              <i data-lucide="route" style="color: #1e3a8a;"></i> Ruta del Paciente y Flujograma Asistencial New Care (Apartado 5.6)
+            </div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+              Recorrido integral del paciente y su familia desde la identificación por la EPS hasta la transición a Paliativos o Alta. Paciente activo: <strong id="ruta-patient-name">-</strong> (<span id="ruta-patient-estado">-</span>)
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-primary" style="font-size: 11px;">📞 Canal 24/7 Jefe Programa (WhatsApp Novedades)</span>
+            <span class="badge badge-warning" style="font-size: 11px;">⏱️ Regla 30 días VI/PAI &bull; 24–48 h Agudos</span>
+          </div>
+        </div>
+
+        <!-- Flujograma Visual de 9 Etapas (Clicables para actualizar fase del paciente) -->
+        <div id="ruta-flujograma-container" class="ruta-flowchart">
+          <!-- Renderizado dinámicamente por JS -->
+        </div>
+
+        <div id="ruta-etapa-detalle" style="margin-top: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1e3a8a; border-radius: 8px; padding: 12px; font-size: 12.5px; color: #1e293b;">
+          <!-- Detalle operativo de la fase seleccionada -->
+        </div>
+      </div>
+
+      <!-- 2. Pizarra Operativa de Seguimiento de Cohorte (Instructivo 5.5.4 Modelo Pizarra) -->
+      <div class="card">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div class="card-title">
+              <i data-lucide="kanban" style="color: #0d9488;"></i> Pizarra Operativa de Seguimiento New Care (Modelo 5.5.4)
+            </div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+              Tablero transversal de cohorte por Estado Oficial (5.3.2), Complejidad y Fase de Atención activa.
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <select id="pizarra-filter-estado" class="form-control" style="width: auto; font-size: 12px; padding: 5px 10px;" onchange="renderPizarraOperativa()">
+              <option value="ALL">Todos los Estados (5.3.2)</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="SOSPECHOSO">Sospechoso (Anual)</option>
+              <option value="REMITIDO">Remitido sin evaluación</option>
+              <option value="DERIVADO">Derivado a Paliativos</option>
+              <option value="ALTA">Alta</option>
+              <option value="RENUNCIA">Renuncia</option>
+              <option value="FALLECIDO">Fallecido</option>
+              <option value="DESESTIMADO">Desestimado</option>
+              <option value="RECHAZO">Rechazo</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table pizarra-table">
+            <thead>
+              <tr>
+                <th>Nombre del Paciente</th>
+                <th>Estado (5.3.2)</th>
+                <th>Complejidad</th>
+                <th title="Valoración Multidimensional">VMD</th>
+                <th title="Ingreso al Programa">Ingreso</th>
+                <th title="Valoración Inicial">VI</th>
+                <th title="Plan de Atención Individualizado">PAI</th>
+                <th title="Seguimiento Médico">Seg. Méd</th>
+                <th title="Seguimiento Enfermería">Seg. Enf</th>
+                <th title="Seguimiento Trabajo Social">Seg. TS</th>
+                <th title="Consulta Prioritaria / Descompensación">Descomp.</th>
+                <th title="Derivación a otro nivel">Derivación</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody id="pizarra-table-body">
+              <!-- Poblado dinámicamente por JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: DETECCIÓN DE DESCOMPENSACIÓN CLÍNICA/SOCIAL (5.3.4) -->
+    <!-- ======================================================== -->
+    <div id="modal-descompensacion" class="modal-overlay">
+      <div class="modal-container" style="max-width: 760px;">
+        <div class="modal-header" style="background: #fef2f2; border-bottom: 1px solid #fecaca;">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px; color: #991b1b;">
+            <i data-lucide="alert-triangle" style="color: #dc2626;"></i> Alerta y Registro de Descompensación (Apartado 5.3.4)
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-descompensacion')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="grid-3" style="margin-bottom: 12px;">
+            <div class="form-group">
+              <label class="form-label">Fecha de Detección</label>
+              <input type="date" id="desc-fecha" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fuente de Notificación</label>
+              <select id="desc-fuente" class="form-control">
+                <option value="EQUIPO">Equipo Asistencial en Visita/Control</option>
+                <option value="WHATSAPP_24_7">WhatsApp 24/7 Jefe del Programa (Paciente/Cuidador)</option>
+                <option value="TELEMEDICINA">Telemedicina / Llamada Quincenal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Patología IOCC Evaluada</label>
+              <select id="desc-patologia" class="form-control" onchange="renderDescompensacionChecklists()">
+                <option value="IC">Insuficiencia Cardíaca (IC)</option>
+                <option value="EPOC">Insuficiencia Respiratoria (EPOC)</option>
+                <option value="CIRROSIS">Insuficiencia Hepática (Cirrosis)</option>
+                <option value="ERC">Insuficiencia Renal (ERC)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="desc-checklists-container" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Renderizado dinámicamente según patología + alteraciones sociales -->
+          </div>
+
+          <div id="desc-conducta-banner" style="margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #f8fafc; border: 1px solid #cbd5e1; font-size: 12px;">
+            Seleccione los signos de alarma presentes para determinar la ruta de respuesta (Aguda 24–48 h vs. Progresiva).
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label class="form-label">Conducta Médica, Articulación con EPS y Seguimiento</label>
+            <textarea id="desc-conducta" class="form-control" rows="2" placeholder="Ej: Valoración médica prioritaria, ajuste diurético, notificación a EPS para traslado..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('modal-descompensacion')">Cancelar</button>
+          <button class="btn btn-danger" style="background: #dc2626; color: #fff;" onclick="saveDescompensacion()">
+            <i data-lucide="save" style="width: 14px; height: 14px;"></i> Registrar Descompensación en HC
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: CRITERIOS DE DERIVACIÓN ENTRE NIVELES (5.3.3) -->
+    <!-- ======================================================== -->
+    <div id="modal-derivacion" class="modal-overlay">
+      <div class="modal-container" style="max-width: 700px;">
+        <div class="modal-header">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="arrow-left-right" style="color: #1e3a8a;"></i> Registro de Derivación entre Niveles (Apartado 5.3.3)
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-derivacion')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="grid-2" style="margin-bottom: 12px;">
+            <div class="form-group">
+              <label class="form-label">Fecha de Derivación</label>
+              <input type="date" id="deriv-fecha" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de Transición / Derivación</label>
+              <select id="deriv-tipo" class="form-control" onchange="renderDerivacionCriterios()">
+                <option value="AMBULATORIO_A_DOMICILIO">De Ambulatorio → Domicilio</option>
+                <option value="DOMICILIO_A_AMBULATORIO">De Domicilio → Ambulatorio</option>
+                <option value="A_HOSPITAL_URGENCIAS">De Ambulatorio/Domicilio → Hospital / Urgencias</option>
+                <option value="HOSPITAL_A_DOMICILIO">De Hospital → Domicilio (Post-Egreso)</option>
+                <option value="HOSPITAL_A_AMBULATORIO">De Hospital → Ambulatorio</option>
+                <option value="A_CUIDADOS_PALIATIVOS">Transición a Programa de Cuidados Paliativos</option>
+                <option value="A_CENTRO_SOCIAL">Derivación a Centro Social / Red Comunitaria</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="font-weight: 700; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px;">
+            Criterios Normativos Verificados:
+          </div>
+          <div id="deriv-criterios-container" class="checklist-grid-compact" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+            <!-- Poblado dinámicamente -->
+          </div>
+
+          <div class="grid-2" style="margin-bottom: 10px;">
+            <div class="form-group">
+              <label class="form-label">Profesional Responsable</label>
+              <input type="text" id="deriv-responsable" class="form-control" placeholder="Médico / Enfermera EPA">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Coordinación con EPS / Receptor</label>
+              <input type="text" id="deriv-receptor" class="form-control" placeholder="Ej: Referencia EPS / Clínica / Domicilio">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Resumen Clínico Entregado para Continuidad</label>
+            <textarea id="deriv-resumen" class="form-control" rows="2" placeholder="Condición clínica, medicación activa, plan de manejo y canal de retorno..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('modal-derivacion')">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveDerivacion()">
+            <i data-lucide="check" style="width: 14px; height: 14px;"></i> Confirmar Derivación
           </button>
         </div>
       </div>

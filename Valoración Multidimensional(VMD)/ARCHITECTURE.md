@@ -258,3 +258,44 @@ CREATE INDEX IF NOT EXISTS idx_seguimientos_fecha ON public.seguimientos(fecha_s
 2. **Cálculo Automático de Deltas:** La UI debe comparar automáticamente el seguimiento actual con el ingreso basal y con el seguimiento inmediato anterior.
 3. **Persistencia Dual:** Guardado simultáneo en `localStorage` (offline) y Supabase (PostgreSQL en tiempo real).
 4. **Compatibilidad con Exportación:** El archivo de 51 columnas reglamentarias de New Care debe poder exportarse tanto para ingresos como para la última evolución de seguimiento.
+
+---
+
+## 7. EXTENSIÓN NORMATIVA CAPÍTULO 5 (NEW CARE RECURSOS 2.1 & MANUAL INTERNO)
+
+### 7.1. Estados Oficiales del Paciente (5.3.2 / 5.3.5 / 5.5.4)
+Cada paciente (`p.estadoPrograma`) adopta uno de los estados oficiales definidos en el Manual Interno y el Modelo Pizarra:
+- `REMITIDO`: Remitido sin evaluación.
+- `SOSPECHOSO`: VMD de baja complejidad; no ingresa y queda bajo seguimiento anual.
+- `DESESTIMADO`: No cumple criterios clínicos de inclusión.
+- `RECHAZO`: Rechazo a valoración o al programa previo al ingreso.
+- `ACTIVO`: Paciente ingresado en programa con PAI vigente.
+- `DERIVADO`: Paciente activo remitido al programa de Cuidados Paliativos.
+- `FALLECIDO`: Egreso por fallecimiento.
+- `RENUNCIA`: Retiro voluntario posterior al ingreso (con Formato de Alta Voluntaria).
+- `ALTA`: Egreso por cumplimiento de objetivos, traslado a otro prestador u otros motivos (`p.motivoAlta`).
+
+### 7.2. Criterios de Derivación y Transiciones entre Niveles (5.3.3)
+Registro estructurado en `p.derivaciones[]` con:
+- **Transiciones oficiales:** `AMBULATORIO_A_DOMICILIO`, `DOMICILIO_A_AMBULATORIO`, `A_HOSPITAL_URGENCIAS`, `HOSPITAL_A_DOMICILIO`, `HOSPITAL_A_AMBULATORIO`, `A_CUIDADOS_PALIATIVOS`, `A_CENTRO_SOCIAL`.
+- **Checklists normativos:**
+  - *Ambulatorio → Domicilio (6 criterios):* Pérdida de funcionalidad/movilización, dificultad de desplazamiento, control de síntomas, necesidades sociales adversas, reajuste de tratamiento, continuidad post-hospitalización.
+  - *Domicilio → Ambulatorio (4 criterios):* Resolución del cuadro agudo, paciente puede desplazarse, adecuada red de cuidados, condiciones del entorno adecuadas.
+
+### 7.3. Factores de Descompensación Clínica y Social (5.3.4)
+Registro en `p.descompensaciones[]`:
+- **Descompensación Aguda (Respuesta 24–48 h / Derivación urgente hospitalaria):** Signos de alarma específicos por patología (`IC`, `EPOC`, `CIRROSIS`, `ERC`).
+- **Descompensación Progresiva (Intervención temprana no urgente):** Signos de progresión subaguda por patología.
+- **Alteraciones Sociales Urgentes (6 criterios)** y **Progresivas (11 criterios)** con activación obligatoria de Trabajo Social / Promotor Comunitario.
+
+### 7.4. Herramientas de Seguimiento Obligatorias y Modelo Pizarra (5.5.4)
+- **Extensión del registro de seguimiento (`seg`):**
+  - `numMedicamentos` (conteo en cada ajuste) y `sindromesGeriatricos[]` (caídas, UPP, alteración de marcha, disfagia, polifarmacia, trastornos del comportamiento, infecciones de repetición).
+  - `redApoyoPersonas` (n.º de personas implicadas en el cuidado, mínimo trimestral).
+  - `cribadoAfectivo`: 2 preguntas oficiales de alteración afectiva (frecuencia en el último mes).
+  - `cribadoSocialRapido`: 3 preguntas oficiales de red y recursos.
+  - `eq5d5l` (Calidad de vida `EQ-5D-5L`, mínimo semestral) y `satisfaccion` (7 ítems oficiales, mínimo semestral).
+- **Pizarra Operativa New Care:** Tabla transversal por cohorte que cruza *Paciente*, *Estado Oficial*, *Complejidad* y *Fase de Atención* (`VMD`, `Ingreso`, `VI`, `PAI`, `Seg. Médico`, `Seg. Enfermería`, `Seg. Trabajo Social`, `Consulta Prioritaria`, `Derivación`).
+
+### 7.5. Ruta del Paciente y Flujograma Interactivo (5.6)
+Tracker de 9 etapas (`p.rutaFase` del 1 al 9) con responsables, tiempos de respuesta normativos (`≤ 30 días` para VI/PAI, `24–48 h` descompensación aguda), canal 24/7 Jefe de Programa, Juntas de Cronicidad, transición a Cuidados Paliativos y vías de alta.

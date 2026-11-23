@@ -806,3 +806,116 @@ html {
     font-size: 11px;
   }
 }
+
+/* Estados Oficiales del Paciente (Apartado 5.3.2) */
+.badge-estado-programa {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.estado-activo { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.estado-sospechoso { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.estado-remitido { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+.estado-derivado { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+.estado-alta { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.estado-fallecido, .estado-renuncia, .estado-desestimado, .estado-rechazo {
+  background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;
+}
+
+/* Checklists Compactos (5.3.3, 5.3.4, 5.5.4) */
+.checklist-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px 12px;
+  font-size: 11.5px;
+  color: #1e293b;
+}
+.checklist-grid-compact label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* Flujograma Ruta del Paciente (Apartado 5.6) */
+.ruta-flowchart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.ruta-step {
+  position: relative;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+.ruta-step:hover {
+  border-color: #1e3a8a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+}
+.ruta-step.done {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.ruta-step.active {
+  background: #eff6ff;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.18);
+}
+.ruta-step-num {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 3px;
+}
+.ruta-step.active .ruta-step-num { color: #1e3a8a; }
+.ruta-step.done .ruta-step-num { color: #15803d; }
+.ruta-step-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+}
+.ruta-step-sla {
+  font-size: 10.5px;
+  color: #475569;
+  margin-top: 4px;
+}
+
+/* Pizarra Operativa (Modelo 5.5.4) */
+.pizarra-table th, .pizarra-table td {
+  font-size: 11.5px;
+  padding: 7px 8px;
+  text-align: center;
+}
+.pizarra-table th:first-child, .pizarra-table td:first-child,
+.pizarra-table th:last-child, .pizarra-table td:last-child {
+  text-align: left;
+}
+.pizarra-mark-ok {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 700;
+}
+.pizarra-mark-alert {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+}
