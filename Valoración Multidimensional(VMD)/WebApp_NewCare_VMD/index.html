@@ -18,6 +18,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- SheetJS para Importacion y Exportacion Masiva en Excel (.xlsx) y CSV -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js para Gráfica Evolutiva Longitudinal Interactiva -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -2380,6 +2382,35 @@
           <div class="kpi-title">Δ Sobrecarga Cuidador (Zarit)</div>
           <div id="kpi-delta-zarit" class="kpi-value" style="font-size: 20px; color: #7c3aed;">-0 pts</div>
           <div id="kpi-desc-zarit" class="kpi-desc">Alivio sobrecarga familiar</div>
+        </div>
+      </div>
+
+      <!-- Gráfica Evolutiva Longitudinal Interactiva (Barthel, MNA-SF, Zarit) -->
+      <div class="card" style="margin-bottom: 18px;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div class="card-title">
+              <i data-lucide="trending-up" style="color: #0d9488;"></i> Curva Evolutiva Longitudinal (Barthel, MNA-SF y Zarit)
+            </div>
+            <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+              Eje izquierdo (0–100): Barthel (↑ mejor) y Zarit (↓ mejor) &bull; Eje derecho (0–14): MNA-SF (↑ mejor). Toque o pase el cursor sobre cada punto para ver el detalle.
+            </div>
+          </div>
+          <div class="chart-filter-group" id="seg-chart-filters">
+            <button type="button" class="btn btn-sm chart-filter-btn active" onclick="filterSeguimientoChart('all', this)">Todas</button>
+            <button type="button" class="btn btn-sm chart-filter-btn" onclick="filterSeguimientoChart('barthel', this)">Barthel</button>
+            <button type="button" class="btn btn-sm chart-filter-btn" onclick="filterSeguimientoChart('mna', this)">MNA-SF</button>
+            <button type="button" class="btn btn-sm chart-filter-btn" onclick="filterSeguimientoChart('zarit', this)">Zarit</button>
+          </div>
+        </div>
+        <div class="seg-chart-wrapper">
+          <canvas id="seg-evolution-chart" aria-label="Gráfica evolutiva de Barthel, MNA-SF y Zarit"></canvas>
+          <div id="seg-chart-fallback" style="display: none; padding: 24px; text-align: center; color: #64748b; font-size: 12.5px;"></div>
+        </div>
+        <div class="chart-clinical-thresholds">
+          <span><strong style="color:#059669;">● Barthel:</strong> ≤ 60 pts indica dependencia severa (criterio domiciliario)</span>
+          <span><strong style="color:#d97706;">● MNA-SF:</strong> ≤ 7 desnutrición | 8–11 riesgo | 12–14 normal</span>
+          <span><strong style="color:#7c3aed;">● Zarit:</strong> ≥ 56 pts indica sobrecarga intensa del cuidador</span>
         </div>
       </div>
 

@@ -3165,6 +3165,9 @@ function renderSeguimientoTab() {
     kpiDeltaZarit.innerHTML = deltas.deltaZarit < 0 ? `<span style="color:#16a34a;">${deltas.deltaZarit} pts (Alivio)</span>` : (deltas.deltaZarit > 0 ? `<span style="color:#dc2626;">+${deltas.deltaZarit} pts (Mayor carga)</span>` : `<span style="color:#64748b;">0 pts</span>`);
   }
 
+  // 2.5. Gráfica Evolutiva Interactiva (Barthel, MNA-SF, Zarit)
+  renderSeguimientoChart(p);
+
   // 3. Matriz Comparativa en Paralelo
   renderComparisonTable(p, baseline, latest, deltas);
 
@@ -3586,4 +3589,215 @@ async function syncSeguimientoToSupabase(paciente, seg) {
 
 function printSeguimientoReport() {
   window.print();
+}
+
+// ============================================================================
+// GRÁFICA EVOLUTIVA LONGITUDINAL INTERACTIVA (CHART.JS — EJES DUALES)
+// ============================================================================
+window.segEvolutionChartInstance = null;
+window.segChartActiveFilter = "all";
+
+function renderSeguimientoChart(p) {
+  const canvas = document.getElementById("seg-evolution-chart");
+  const fallback = document.getElementById("seg-chart-fallback");
+  if (!canvas) return;
+
+  if (typeof window.Chart === "undefined") {
+    canvas.style.display = "none";
+    if (fallback) {
+      fallback.style.display = "block";
+      fallback.textContent = "La gráfica interactiva requiere conexión para cargar Chart.js. Los datos numéricos siguen disponibles en la matriz comparativa.";
+    }
+    return;
+  }
+
+  canvas.style.display = "block";
+  if (fallback) fallback.style.display = "none";
+
+  const base = p.ingreso || {};
+  const segs = Array.isArray(p.seguimientos) ? p.seguimientos : [];
+  const points = [
+    {
+      label: `Ingreso (${base.fecha || p.vmdDate || "Base"})`,
+      barthel: safeNum(base.barthel, 100),
+      mna: safeNum(base.mnaSf, 14),
+      zarit: safeNum(base.zarit, 22),
+      meta: "Valoración Basal (Ingreso VMD)"
+    },
+    ...segs.map(s => ({
+      label: `Seg #${s.numero} (${s.fecha || "-"})`,
+      barthel: safeNum(s.barthel, 100),
+      mna: safeNum(s.mnaSf, 14),
+      zarit: safeNum(s.zarit, 22),
+      meta: `${s.motivoTexto || s.motivo || "Seguimiento"} — ${s.evaluadorNombre || "Equipo New Care"}`
+    }))
+  ];
+
+  const labels = points.map(pt => pt.label);
+  const dataBarthel = points.map(pt => pt.barthel);
+  const dataMna = points.map(pt => pt.mna);
+  const dataZarit = points.map(pt => pt.zarit);
+
+  const b0 = dataBarthel[0];
+  const m0 = dataMna[0];
+  const z0 = dataZarit[0];
+
+  if (window.segEvolutionChartInstance) {
+    window.segEvolutionChartInstance.destroy();
+    window.segEvolutionChartInstance = null;
+  }
+
+  const mode = window.segChartActiveFilter || "all";
+
+  const ctx = canvas.getContext("2d");
+  window.segEvolutionChartInstance = new window.Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Barthel (0–100, ↑ mejor)",
+          data: dataBarthel,
+          yAxisID: "y",
+          borderColor: "#059669",
+          backgroundColor: "rgba(5, 150, 105, 0.12)",
+          borderWidth: 2.8,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: "#059669",
+          tension: 0.25,
+          fill: mode === "barthel",
+          hidden: mode !== "all" && mode !== "barthel"
+        },
+        {
+          label: "Zarit (22–88, ↓ mejor)",
+          data: dataZarit,
+          yAxisID: "y",
+          borderColor: "#7c3aed",
+          backgroundColor: "rgba(124, 58, 237, 0.10)",
+          borderWidth: 2.5,
+          borderDash: [6, 4],
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: "#7c3aed",
+          tension: 0.25,
+          fill: mode === "zarit",
+          hidden: mode !== "all" && mode !== "zarit"
+        },
+        {
+          label: "MNA-SF (0–14, ↑ mejor)",
+          data: dataMna,
+          yAxisID: "yMna",
+          borderColor: "#d97706",
+          backgroundColor: "rgba(217, 119, 6, 0.12)",
+          borderWidth: 2.8,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointStyle: "rectRot",
+          pointBackgroundColor: "#d97706",
+          tension: 0.25,
+          fill: mode === "mna",
+          hidden: mode !== "all" && mode !== "mna"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            boxWidth: 10,
+            font: { size: 11.5, weight: "600" }
+          }
+        },
+        tooltip: {
+          backgroundColor: "rgba(15, 23, 42, 0.94)",
+          padding: 10,
+          titleFont: { size: 12, weight: "700" },
+          bodyFont: { size: 11.5 },
+          callbacks: {
+            afterTitle: (items) => {
+              const idx = items[0]?.dataIndex ?? 0;
+              return points[idx]?.meta || "";
+            },
+            label: (ctxItem) => {
+              const idx = ctxItem.dataIndex;
+              const val = ctxItem.parsed.y;
+              if (ctxItem.datasetIndex === 0) {
+                const d = val - b0;
+                const dStr = idx === 0 ? "Base" : `Δ ${d >= 0 ? "+" + d : d} pts`;
+                return ` Barthel: ${val} / 100 pts (${dStr})`;
+              }
+              if (ctxItem.datasetIndex === 1) {
+                const d = val - z0;
+                const dStr = idx === 0 ? "Base" : `Δ ${d >= 0 ? "+" + d : d} pts`;
+                return ` Zarit: ${val} / 88 pts (${dStr})`;
+              }
+              const d = val - m0;
+              const dStr = idx === 0 ? "Base" : `Δ ${d >= 0 ? "+" + d : d} pts`;
+              return ` MNA-SF: ${val} / 14 pts (${dStr})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: "rgba(226, 232, 240, 0.6)" },
+          ticks: { font: { size: 11 }, color: "#334155" }
+        },
+        y: {
+          type: "linear",
+          position: "left",
+          min: 0,
+          max: 100,
+          title: {
+            display: true,
+            text: "Barthel (0–100) / Zarit (22–88)",
+            color: "#334155",
+            font: { size: 11, weight: "700" }
+          },
+          grid: { color: "rgba(226, 232, 240, 0.7)" },
+          ticks: { stepSize: 20, font: { size: 11 }, color: "#475569" }
+        },
+        yMna: {
+          type: "linear",
+          position: "right",
+          min: 0,
+          max: 14,
+          title: {
+            display: true,
+            text: "MNA-SF (0–14)",
+            color: "#b45309",
+            font: { size: 11, weight: "700" }
+          },
+          grid: { drawOnChartArea: false },
+          ticks: { stepSize: 2, font: { size: 11 }, color: "#b45309" }
+        }
+      }
+    }
+  });
+}
+
+function filterSeguimientoChart(mode, btnEl) {
+  window.segChartActiveFilter = mode;
+  const btns = document.querySelectorAll("#seg-chart-filters .chart-filter-btn");
+  btns.forEach(b => b.classList.remove("active"));
+  if (btnEl) btnEl.classList.add("active");
+
+  if (!window.segEvolutionChartInstance) return;
+  const chart = window.segEvolutionChartInstance;
+  chart.data.datasets[0].hidden = (mode !== "all" && mode !== "barthel");
+  chart.data.datasets[0].fill = (mode === "barthel");
+  chart.data.datasets[1].hidden = (mode !== "all" && mode !== "zarit");
+  chart.data.datasets[1].fill = (mode === "zarit");
+  chart.data.datasets[2].hidden = (mode !== "all" && mode !== "mna");
+  chart.data.datasets[2].fill = (mode === "mna");
+  chart.update();
 }
