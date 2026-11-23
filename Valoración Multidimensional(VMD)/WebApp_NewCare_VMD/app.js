@@ -2374,6 +2374,53 @@ async function syncAllWithSupabase() {
         nombre: p.nombre,
         documento: p.documento
       }));
+
+      // 3. Hidratar tabla relacional de seguimientos (multi-dispositivo)
+      try {
+        const { data: segs, error: errSeg } = await window.supabaseClient
+          .from("seguimientos")
+          .select("*")
+          .order("numero_seguimiento", { ascending: true });
+        if (!errSeg && segs && segs.length > 0) {
+          const byPac = {};
+          segs.forEach(s => {
+            const pid = s.paciente_id;
+            if (!byPac[pid]) byPac[pid] = [];
+            byPac[pid].push(s.datos_completos || {
+              id: s.id,
+              numero: s.numero_seguimiento,
+              fecha: s.fecha_seguimiento,
+              motivo: s.motivo_seguimiento,
+              evaluadorId: s.evaluador_id,
+              evaluadorNombre: s.evaluador_nombre,
+              evaluadorRol: s.evaluador_rol,
+              score_t: s.score_t,
+              score_z: s.score_z,
+              score_al: s.score_al,
+              score_af: s.score_af,
+              score_ar: s.score_ar,
+              finalScore: s.score_final,
+              complejidad: s.complejidad,
+              modalidad: s.modalidad_sugerida,
+              metas_pai: s.metas_pai
+            });
+          });
+          patients.forEach(pt => {
+            const remoteSegs = byPac[pt.id] || byPac[pt.doc];
+            if (remoteSegs && remoteSegs.length > 0) {
+              const existingIds = new Set((pt.seguimientos || []).map(x => x.id));
+              pt.seguimientos = pt.seguimientos || [];
+              remoteSegs.forEach(rs => {
+                if (!existingIds.has(rs.id)) pt.seguimientos.push(rs);
+              });
+              pt.seguimientos.sort((a, b) => (a.numero || 0) - (b.numero || 0));
+            }
+          });
+        }
+      } catch (eSeg) {
+        console.warn("Tabla seguimientos aún no inicializada en Supabase:", eSeg);
+      }
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
       renderPatientsTable();
       if (patients.length > 0) loadPatient(patients[0].id);
@@ -2840,10 +2887,16 @@ function openTechManualScale(keyword) {
 /**
  * Normaliza y garantiza que cada paciente tenga estructura de Ingreso y Seguimientos
  */
+function safeNum(val, fallback) {
+  if (val === undefined || val === null || val === "") return fallback;
+  const n = Number(val);
+  return isNaN(n) ? fallback : n;
+}
+
 function ensurePatientTrackingStructure(p) {
   if (!p) return;
   
-  // Garantizar ingreso basal
+  // Garantizar ingreso basal (preservando estrictamente valores 0 clínicos como Barthel=0)
   if (!p.ingreso) {
     const res = evaluatePatient(p);
     p.ingreso = {
@@ -2856,15 +2909,15 @@ function ensurePatientTrackingStructure(p) {
       cp: p.cp || "No aplica",
       erc: p.erc || "No aplica",
       score_t: res.T,
-      barthel: Number(p.barthel) || 100,
-      lawton: Number(p.lawton) || 8,
+      barthel: safeNum(p.barthel, 100),
+      lawton: safeNum(p.lawton, 8),
       score_z: res.Z,
-      mnaSf: Number(p.mnaSf) || 14,
+      mnaSf: safeNum(p.mnaSf, 14),
       score_al: res.AL,
-      pfeiffer: Number(p.pfeiffer) || 0,
+      pfeiffer: safeNum(p.pfeiffer, 0),
       score_af: res.AF,
-      gijon: Number(p.gijon) || 5,
-      zarit: Number(p.zarit) || 22,
+      gijon: safeNum(p.gijon, 5),
+      zarit: safeNum(p.zarit, 22),
       score_ar: res.AR,
       finalScore: res.finalScore,
       complejidad: res.complexityText,
@@ -2953,19 +3006,34 @@ function calculateDeltas(baseline, current) {
   const cFinal = Number(c.finalScore) || 0;
   const deltaFinal = cFinal - bFinal;
 
-  // Estado global cualitativo de la evolución
+  // Estado global cualitativo de la evolución (Principio de Seguridad Clínica: Alert-First)
+  const alerts = [];
+  if (deltaFinal > 0) alerts.push(`Aumento de complejidad global (+${deltaFinal})`);
+  if (deltaT > 0) alerts.push(`Descompensación orgánica (ΔT=+${deltaT})`);
+  if (deltaBarthel <= -15) alerts.push(`Pérdida funcional severa (ΔBarthel=${deltaBarthel} pts)`);
+  if (deltaMna <= -3) alerts.push(`Deterioro nutricional agudo (ΔMNA=${deltaMna} pts)`);
+  if (deltaPfeiffer >= 2) alerts.push(`Deterioro cognitivo / sospecha delirium (ΔPfeiffer=+${deltaPfeiffer} err)`);
+  if (deltaZarit >= 12 || (cZarit >= 56 && bZarit < 56)) alerts.push(`Claudicación del cuidador (Zarit=${cZarit} pts)`);
+
+  const hasDeterioro = alerts.length > 0;
+  const hasMejoria = (deltaFinal < 0 || deltaT < 0 || deltaBarthel >= 10 || deltaZarit <= -10 || deltaMna >= 3);
+
   let globalStatus = "ESTABILIDAD";
-  let statusText = "Estabilidad Clínica";
+  let statusText = "🟡 Estabilidad Clínica";
   let badgeClass = "delta-estabilidad";
 
-  if (deltaFinal < 0 || deltaBarthel >= 10 || deltaZarit <= -10 || deltaMna >= 3) {
-    globalStatus = "MEJORIA";
-    statusText = "🟢 Avance Favorable (Mejoría)";
-    badgeClass = "delta-mejoria";
-  } else if (deltaFinal > 0 || deltaBarthel <= -15 || deltaZarit >= 12 || deltaMna <= -3) {
+  if (hasDeterioro && hasMejoria) {
+    globalStatus = "DETERIORO_MIXTO";
+    statusText = "🟠 Alerta Mixta (Deterioro Clínico + Alivio Parcial)";
+    badgeClass = "delta-deterioro";
+  } else if (hasDeterioro) {
     globalStatus = "DETERIORO";
     statusText = "🔴 Alerta Clínica (Deterioro)";
     badgeClass = "delta-deterioro";
+  } else if (hasMejoria) {
+    globalStatus = "MEJORIA";
+    statusText = "🟢 Avance Favorable (Mejoría)";
+    badgeClass = "delta-mejoria";
   }
 
   return {
@@ -2979,8 +3047,61 @@ function calculateDeltas(baseline, current) {
     deltaFinal,
     globalStatus,
     statusText,
-    badgeClass
+    badgeClass,
+    alerts
   };
+}
+
+/**
+ * Motor Predictivo de Trayectorias Longitudinales (30-90 días)
+ * Detecta deterioro progresivo escalonado, cruce de umbral domiciliario y riesgo de claudicación.
+ */
+function analyzePatientTrajectory(p) {
+  const series = [p.ingreso, ...(p.seguimientos || [])].filter(Boolean);
+  const signals = [];
+  if (series.length < 2) {
+    return { riskLevel: "BAJO", signals: ["Sin seguimientos suficientes para análisis de tendencia."] };
+  }
+
+  const first = series[0];
+  const last = series[series.length - 1];
+  const cumDeltaBarthel = safeNum(last.barthel, 0) - safeNum(first.barthel, 0);
+
+  // 1. Detección de caída funcional consecutiva (deterioro escalonado silencioso)
+  let consecutiveBarthelDrops = 0;
+  for (let i = 1; i < series.length; i++) {
+    if (safeNum(series[i].barthel, 0) < safeNum(series[i - 1].barthel, 0)) {
+      consecutiveBarthelDrops++;
+    } else {
+      consecutiveBarthelDrops = 0;
+    }
+  }
+  if (consecutiveBarthelDrops >= 2) {
+    signals.push(`Tendencia descendente sostenida en Barthel (${consecutiveBarthelDrops} controles consecutivos; acumulado ${cumDeltaBarthel} pts).`);
+  }
+
+  // 2. Cruce de umbral de modalidad asistencial (<= 60 pts Barthel)
+  if (safeNum(first.barthel, 100) > 60 && safeNum(last.barthel, 100) <= 60) {
+    signals.push("Cruce crítico de umbral funcional (Barthel ≤ 60): requiere escalamiento a Modalidad Domiciliaria.");
+  }
+
+  // 3. Tendencia de sobrecarga del cuidador
+  if (safeNum(last.zarit, 0) >= 56) {
+    signals.push(`Sobrecarga intensa del cuidador (Zarit = ${last.zarit} pts): alto riesgo de claudicación familiar y reingreso.`);
+  }
+
+  // 4. Deterioro nutricional o cognitivo acumulado
+  const cumDeltaMna = safeNum(last.mnaSf, 14) - safeNum(first.mnaSf, 14);
+  if (cumDeltaMna <= -3 || safeNum(last.mnaSf, 14) <= 7) {
+    signals.push(`Riesgo nutricional crítico acumulado (MNA-SF = ${last.mnaSf}, Δ=${cumDeltaMna}).`);
+  }
+  const cumDeltaPfeiffer = safeNum(last.pfeiffer, 0) - safeNum(first.pfeiffer, 0);
+  if (cumDeltaPfeiffer >= 2) {
+    signals.push(`Progresión de deterioro cognitivo / delirium (+${cumDeltaPfeiffer} errores en Pfeiffer).`);
+  }
+
+  const riskLevel = signals.length >= 2 ? "ALTO" : (signals.length === 1 ? "MODERADO" : "BAJO");
+  return { riskLevel, signals };
 }
 
 /**
@@ -3020,7 +3141,8 @@ function renderSeguimientoTab() {
   if (statusBadgeEl) {
     statusBadgeEl.textContent = hasSeg ? deltas.statusText : "Línea Base Inicial (Ingreso)";
     statusBadgeEl.className = "badge-complex " + (
-      deltas.globalStatus === "MEJORIA" ? "complex-baja" : (deltas.globalStatus === "DETERIORO" ? "complex-alta" : "complex-media")
+      deltas.globalStatus === "MEJORIA" ? "complex-baja" :
+      ((deltas.globalStatus === "DETERIORO" || deltas.globalStatus === "DETERIORO_MIXTO") ? "complex-alta" : "complex-media")
     );
   }
 
@@ -3170,6 +3292,20 @@ function renderMetasTracking(p, latest) {
       <div style="margin-top:6px; padding:8px 12px; background:#eff6ff; border-left:3px solid #3b82f6; border-radius:4px; font-size:11.5px; color:#1e40af;">
         <strong>Evolución del Equipo:</strong> ${latest.observaciones}
       </div>` : ''}
+    ${(() => {
+      const traj = analyzePatientTrajectory(p);
+      if (traj.riskLevel === "BAJO") return "";
+      const bg = traj.riskLevel === "ALTO" ? "#fef2f2" : "#fffbeb";
+      const bd = traj.riskLevel === "ALTO" ? "#dc2626" : "#d97706";
+      const fg = traj.riskLevel === "ALTO" ? "#991b1b" : "#92400e";
+      return `
+        <div style="margin-top:8px; padding:10px 12px; background:${bg}; border-left:4px solid ${bd}; border-radius:6px; font-size:11.5px; color:${fg};">
+          <div style="font-weight:700; margin-bottom:4px;">⚠️ Alerta Predictiva de Trayectoria (Riesgo ${traj.riskLevel}):</div>
+          <ul style="margin:0; padding-left:16px;">
+            ${traj.signals.map(s => `<li>${s}</li>`).join("")}
+          </ul>
+        </div>`;
+    })()}
   `;
 }
 
@@ -3348,7 +3484,14 @@ function saveNewSeguimiento() {
   }
 
   const complejidad = finalScore === 2 ? "Alta Complejidad" : (finalScore === 1 ? "Media Complejidad" : "Baja Complejidad");
-  const modalidad = (finalScore >= 2 && barthel <= 60) ? "DOMICILIARIO" : "AMBULATORIO";
+  let modalidad = "ATENCIÓN PRIMARIA / PREVENTIVO";
+  if (finalScore >= 2) {
+    modalidad = (barthel <= 60 || score_z === 2)
+      ? "DOMICILIARIO (Dependencia Funcional Severa)"
+      : "AMBULATORIO (Alta Complejidad con Movilidad)";
+  } else if (finalScore === 1) {
+    modalidad = "AMBULATORIO (Media Complejidad)";
+  }
 
   const numSeg = p.seguimientos.length + 1;
   const newSeg = {
