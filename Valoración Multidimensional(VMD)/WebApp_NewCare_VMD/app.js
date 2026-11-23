@@ -26,6 +26,7 @@ const defaultPatients = [
     name: "GÓMEZ PÉREZ, CARLOS ALBERTO",
     birthdate: "1950-05-12",
     age: 74,
+    sex: "M",
     vmdDate: "2026-11-05",
     vmdType: "VMD inicial",
     eps: "Sura",
@@ -61,6 +62,7 @@ const defaultPatients = [
     name: "RODRÍGUEZ SILVA, MARÍA ELENA",
     birthdate: "1948-11-20",
     age: 76,
+    sex: "F",
     vmdDate: "2026-11-04",
     vmdType: "VMD tras hospitalización",
     eps: "Nueva EPS",
@@ -96,6 +98,7 @@ const defaultPatients = [
     name: "MARTÍNEZ LÓPEZ, HERNANDO",
     birthdate: "1955-08-04",
     age: 69,
+    sex: "M",
     vmdDate: "2026-11-03",
     vmdType: "VMD inicial",
     eps: "Sanitas",
@@ -131,6 +134,7 @@ const defaultPatients = [
     name: "TORRES CASTRO, LUZ MARINA",
     birthdate: "1942-01-15",
     age: 82,
+    sex: "F",
     vmdDate: "2026-11-02",
     vmdType: "VMD inicial",
     eps: "Sura",
@@ -166,6 +170,7 @@ const defaultPatients = [
     name: "DÍAZ MORALES, JUAN CARLOS",
     birthdate: "1960-09-30",
     age: 64,
+    sex: "M",
     vmdDate: "2026-11-01",
     vmdType: "VMD de seguimiento",
     eps: "Sura",
@@ -678,6 +683,8 @@ function loadPatient(id) {
   document.getElementById("vmd-name").value = p.name;
   document.getElementById("vmd-birthdate").value = p.birthdate || "";
   document.getElementById("vmd-age").value = p.age || "";
+  const inferredSex = inferPatientSex(p);
+  if (document.getElementById("vmd-sex")) document.getElementById("vmd-sex").value = inferredSex;
   document.getElementById("vmd-date").value = p.vmdDate || "";
   document.getElementById("vmd-type").value = p.vmdType || "VMD inicial";
   document.getElementById("vmd-eps").value = p.eps || "";
@@ -763,6 +770,7 @@ function updateCurrentFromForm() {
   p.name = document.getElementById("vmd-name").value.trim() || p.name;
   p.birthdate = document.getElementById("vmd-birthdate").value;
   p.age = Number(document.getElementById("vmd-age").value) || p.age;
+  if (document.getElementById("vmd-sex")) p.sex = document.getElementById("vmd-sex").value;
   p.vmdDate = document.getElementById("vmd-date").value;
   p.vmdType = document.getElementById("vmd-type").value;
   p.eps = document.getElementById("vmd-eps").value.trim();
@@ -4380,6 +4388,20 @@ function renderPizarraOperativa() {
 // ============================================================================
 // INTEGRACIÓN DE SUITE DE RIESGO CLÍNICO CON FICHA DEL PACIENTE Y PAI
 // ============================================================================
+function inferPatientSex(p) {
+  if (p && p.sex) {
+    const s = String(p.sex).trim().toUpperCase();
+    if (s.startsWith("F") || s.startsWith("M") && s.includes("MUJ")) return "F";
+    if (s === "F" || s === "FEMALE" || s === "FEMENINO" || s === "MUJER") return "F";
+    return "M";
+  }
+  const n = (p?.name || "").toUpperCase();
+  if (/\b(MAR[ÍI]A|LUZ|ANA|ROSA|ELENA|CARMEN|MARCELA|SANDRA|LAURA|MARTHA|CLARA|SOF[ÍI]A|DIANA|PATRICIA|BLANCA|GLORIA)\b/.test(n)) {
+    return "F";
+  }
+  return "M";
+}
+
 function syncRiskTabWithPatient() {
   const p = patients.find(item => item.id === currentPatientId) || patients[0];
   const nameEl = document.getElementById("risk-patient-banner-name");
@@ -4388,15 +4410,38 @@ function syncRiskTabWithPatient() {
     if (nameEl) nameEl.textContent = "Ninguno seleccionado";
     return;
   }
+  currentPatientId = p.id;
   if (nameEl) nameEl.textContent = `${p.name} (C.C. ${p.doc || p.id})`;
 
-  // Precargar edad y sexo del paciente activo
-  const ageInput = document.getElementById("calc-age");
-  if (ageInput && p.age) ageInput.value = p.age;
-  const sexInput = document.getElementById("calc-sex");
-  if (sexInput && p.sex) {
-    sexInput.value = (String(p.sex).toUpperCase().startsWith("F")) ? "female" : "male";
+  // Precargar edad y sexo del paciente activo (desde p.age / vmd-age / p.birthdate y p.sex / vmd-sex)
+  let resolvedAge = Number(p.age) || Number(document.getElementById("vmd-age")?.value) || 0;
+  if (!resolvedAge && p.birthdate) {
+    const b = new Date(p.birthdate);
+    if (!isNaN(b)) {
+      const now = new Date();
+      resolvedAge = now.getFullYear() - b.getFullYear();
+    }
   }
+  const ageInput = document.getElementById("calc-age");
+  if (ageInput && resolvedAge > 0) ageInput.value = resolvedAge;
+
+  const sexVal = inferPatientSex(p);
+  p.sex = sexVal;
+  const vmdSex = document.getElementById("vmd-sex");
+  if (vmdSex) vmdSex.value = sexVal;
+  const sexInput = document.getElementById("calc-sex");
+  if (sexInput) sexInput.value = sexVal === "F" ? "female" : "male";
+
+  if (p.risk) {
+    if (document.getElementById("calc-scr") && p.risk.scr) document.getElementById("calc-scr").value = p.risk.scr;
+    if (document.getElementById("calc-creat") && p.risk.scr) document.getElementById("calc-creat").value = p.risk.scr;
+    if (document.getElementById("calc-bili") && p.risk.bili) document.getElementById("calc-bili").value = p.risk.bili;
+    if (document.getElementById("calc-inr") && p.risk.inr) document.getElementById("calc-inr").value = p.risk.inr;
+    if (document.getElementById("calc-na") && p.risk.na) document.getElementById("calc-na").value = p.risk.na;
+    if (document.getElementById("calc-bode-imc") && p.risk.imc) document.getElementById("calc-bode-imc").value = p.risk.imc;
+    if (document.getElementById("calc-bode-fev1") && p.risk.fev1) document.getElementById("calc-bode-fev1").value = p.risk.fev1;
+  }
+
   if (typeof runRiskCalculators === "function") runRiskCalculators();
 
   if (badgeEl) {
