@@ -284,29 +284,31 @@ function saveUserRole() {
 // -------------------------------------------------------------
 function switchTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
-  document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
   
   const target = document.getElementById(tabId);
   if (target) {
     target.style.display = "block";
   }
   
-  // Highlight nav
-  const tabs = document.querySelectorAll(".nav-tab");
-  if (tabId === "tab-padron") tabs[0]?.classList.add("active");
-  if (tabId === "tab-vmd") tabs[1]?.classList.add("active");
-  if (tabId === "tab-risk") tabs[2]?.classList.add("active");
-  if (tabId === "tab-red") tabs[3]?.classList.add("active");
+  // Resaltado dinámico y robusto de la pestaña activa en la barra de navegación
+  document.querySelectorAll(".nav-tab").forEach(t => {
+    const clickAttr = t.getAttribute("onclick") || "";
+    if (clickAttr.includes(`'${tabId}'`) || clickAttr.includes(`"${tabId}"`)) {
+      t.classList.add("active");
+    } else {
+      t.classList.remove("active");
+    }
+  });
+
+  if (tabId === "tab-seguimiento") {
+    renderSeguimientoTab();
+  }
   if (tabId === "tab-pai") {
-    tabs[4]?.classList.add("active");
     renderPrintablePAI();
   }
   if (tabId === "tab-equipo") {
-    tabs[5]?.classList.add("active");
     renderTeamDirectory();
   }
-  if (tabId === "tab-guia") tabs[6]?.classList.add("active");
-  if (tabId === "tab-manual-tecnico") tabs[7]?.classList.add("active");
 
   if (window.lucide) lucide.createIcons();
 }
@@ -2828,4 +2830,617 @@ function openTechManualScale(keyword) {
     searchInput.value = keyword;
     searchTechManual(keyword);
   }
+}
+
+
+// ============================================================================
+// MÓDULO DE SEGUIMIENTO LONGITUDINAL, DELTAS Y TRAZABILIDAD (NEW CARE)
+// ============================================================================
+
+/**
+ * Normaliza y garantiza que cada paciente tenga estructura de Ingreso y Seguimientos
+ */
+function ensurePatientTrackingStructure(p) {
+  if (!p) return;
+  
+  // Garantizar ingreso basal
+  if (!p.ingreso) {
+    const res = evaluatePatient(p);
+    p.ingreso = {
+      id: "ING-" + (p.id || p.doc || "000"),
+      tipo: "INGRESO",
+      fecha: p.vmdDate || "2026-11-05",
+      crit: p.crit || "IC",
+      nyha: p.nyha || "No aplica",
+      gold: p.gold || "No aplica",
+      cp: p.cp || "No aplica",
+      erc: p.erc || "No aplica",
+      score_t: res.T,
+      barthel: Number(p.barthel) || 100,
+      lawton: Number(p.lawton) || 8,
+      score_z: res.Z,
+      mnaSf: Number(p.mnaSf) || 14,
+      score_al: res.AL,
+      pfeiffer: Number(p.pfeiffer) || 0,
+      score_af: res.AF,
+      gijon: Number(p.gijon) || 5,
+      zarit: Number(p.zarit) || 22,
+      score_ar: res.AR,
+      finalScore: res.finalScore,
+      complejidad: res.complexityText,
+      modalidad: res.modalidad,
+      pai: p.pai ? { ...p.pai } : {}
+    };
+  }
+
+  // Garantizar arreglo de seguimientos
+  if (!Array.isArray(p.seguimientos)) {
+    p.seguimientos = [];
+    
+    // Si es el primer paciente demo (Carlos Alberto), creamos 1 seguimiento previo para demostración inmediata
+    if (p.id === "1020304050") {
+      p.seguimientos.push({
+        id: "SEG-1020304050-001",
+        numero: 1,
+        fecha: "2027-05-04",
+        motivo: "PERIODICO_6M",
+        motivoTexto: "Control Periódico Semestral (6 Meses)",
+        evaluadorNombre: "Enf. Laura Restrepo",
+        evaluadorRol: "Enfermera de Práctica Avanzada (EPA)",
+        crit: "IC",
+        score_t: 1, // Mejoró de NYHA III a NYHA II
+        barthel: 70, // Ganó 15 pts
+        score_z: 1,
+        lawton: 4,
+        mnaSf: 12, // Recuperó nutrición
+        score_al: 0,
+        pfeiffer: 2,
+        score_af: 0,
+        gijon: 9,
+        zarit: 36, // Redujo sobrecarga de 48 a 36 pts
+        score_ar: 0,
+        finalScore: 1,
+        complejidad: "Media Complejidad",
+        modalidad: "AMBULATORIO",
+        metas_pai: {
+          sanitarias: "LOGRADA",
+          nutricionales: "LOGRADA",
+          psicologicas: "EN_PROGRESO",
+          sociales: "LOGRADA"
+        },
+        observaciones: "Notable mejoría funcional y clínica. La hija reporta alivio del estrés gracias al relevo de cuidador de la parroquia. Menor disnea en reposo."
+      });
+    }
+  }
+}
+
+/**
+ * Calcula los Deltas de avance entre la Línea Base y una Evaluación de Seguimiento
+ */
+function calculateDeltas(baseline, current) {
+  const b = baseline || {};
+  const c = current || {};
+
+  const bT = b.score_t !== undefined ? b.score_t : 0;
+  const cT = c.score_t !== undefined ? c.score_t : 0;
+  const deltaT = cT - bT; // Negativo = Menor severidad (Mejoría)
+
+  const bBarthel = Number(b.barthel) || 0;
+  const cBarthel = Number(c.barthel) || 0;
+  const deltaBarthel = cBarthel - bBarthel; // Positivo = Mayor independencia (Mejoría)
+
+  const bLawton = Number(b.lawton) || 0;
+  const cLawton = Number(c.lawton) || 0;
+  const deltaLawton = cLawton - bLawton;
+
+  const bMna = Number(b.mnaSf) || 0;
+  const cMna = Number(c.mnaSf) || 0;
+  const deltaMna = cMna - bMna; // Positivo = Mejor nutrición (Mejoría)
+
+  const bPfeiffer = Number(b.pfeiffer) || 0;
+  const cPfeiffer = Number(c.pfeiffer) || 0;
+  const deltaPfeiffer = cPfeiffer - bPfeiffer; // Negativo = Menos errores (Mejoría)
+
+  const bGijon = Number(b.gijon) || 0;
+  const cGijon = Number(c.gijon) || 0;
+  const deltaGijon = cGijon - bGijon;
+
+  const bZarit = Number(b.zarit) || 0;
+  const cZarit = Number(c.zarit) || 0;
+  const deltaZarit = cZarit - bZarit; // Negativo = Menor sobrecarga (Mejoría)
+
+  const bFinal = Number(b.finalScore) || 0;
+  const cFinal = Number(c.finalScore) || 0;
+  const deltaFinal = cFinal - bFinal;
+
+  // Estado global cualitativo de la evolución
+  let globalStatus = "ESTABILIDAD";
+  let statusText = "Estabilidad Clínica";
+  let badgeClass = "delta-estabilidad";
+
+  if (deltaFinal < 0 || deltaBarthel >= 10 || deltaZarit <= -10 || deltaMna >= 3) {
+    globalStatus = "MEJORIA";
+    statusText = "🟢 Avance Favorable (Mejoría)";
+    badgeClass = "delta-mejoria";
+  } else if (deltaFinal > 0 || deltaBarthel <= -15 || deltaZarit >= 12 || deltaMna <= -3) {
+    globalStatus = "DETERIORO";
+    statusText = "🔴 Alerta Clínica (Deterioro)";
+    badgeClass = "delta-deterioro";
+  }
+
+  return {
+    deltaT,
+    deltaBarthel,
+    deltaLawton,
+    deltaMna,
+    deltaPfeiffer,
+    deltaGijon,
+    deltaZarit,
+    deltaFinal,
+    globalStatus,
+    statusText,
+    badgeClass
+  };
+}
+
+/**
+ * Renderiza la pestaña completa de Seguimiento & Trazabilidad
+ */
+function renderSeguimientoTab() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) {
+    alert("Por favor seleccione un paciente en el padrón para consultar o registrar seguimientos.");
+    switchTab("tab-padron");
+    return;
+  }
+
+  ensurePatientTrackingStructure(p);
+
+  // 1. Banner
+  const nameEl = document.getElementById("seg-patient-name");
+  const idEl = document.getElementById("seg-patient-id");
+  const ageEl = document.getElementById("seg-patient-age");
+  const epsEl = document.getElementById("seg-patient-eps");
+  const ingresoDateEl = document.getElementById("seg-patient-ingreso-date");
+  const countBadgeEl = document.getElementById("seg-patient-count-badge");
+  const statusBadgeEl = document.getElementById("seg-status-badge");
+
+  if (nameEl) nameEl.textContent = p.name;
+  if (idEl) idEl.textContent = p.doc || p.id;
+  if (ageEl) ageEl.textContent = (p.age || "-") + " años";
+  if (epsEl) epsEl.textContent = p.eps || "Optimus Salud";
+  if (ingresoDateEl) ingresoDateEl.textContent = p.ingreso?.fecha || p.vmdDate || "No definida";
+  if (countBadgeEl) countBadgeEl.textContent = `${p.seguimientos.length} controles`;
+
+  const baseline = p.ingreso;
+  const hasSeg = p.seguimientos.length > 0;
+  const latest = hasSeg ? p.seguimientos[p.seguimientos.length - 1] : baseline;
+  const deltas = calculateDeltas(baseline, latest);
+
+  if (statusBadgeEl) {
+    statusBadgeEl.textContent = hasSeg ? deltas.statusText : "Línea Base Inicial (Ingreso)";
+    statusBadgeEl.className = "badge-complex " + (
+      deltas.globalStatus === "MEJORIA" ? "complex-baja" : (deltas.globalStatus === "DETERIORO" ? "complex-alta" : "complex-media")
+    );
+  }
+
+  // 2. KPIs de Deltas
+  const kpiDeltaT = document.getElementById("kpi-delta-t");
+  const kpiDeltaBarthel = document.getElementById("kpi-delta-barthel");
+  const kpiDeltaMna = document.getElementById("kpi-delta-mna");
+  const kpiDeltaZarit = document.getElementById("kpi-delta-zarit");
+
+  if (kpiDeltaT) {
+    kpiDeltaT.innerHTML = deltas.deltaT < 0 ? `<span style="color:#16a34a;">-${Math.abs(deltas.deltaT)} grado (Mejoría)</span>` : (deltas.deltaT > 0 ? `<span style="color:#dc2626;">+${deltas.deltaT} (Aumento)</span>` : `<span style="color:#64748b;">0 (Estable)</span>`);
+  }
+  if (kpiDeltaBarthel) {
+    kpiDeltaBarthel.innerHTML = deltas.deltaBarthel > 0 ? `<span style="color:#16a34a;">+${deltas.deltaBarthel} pts (Ganancia)</span>` : (deltas.deltaBarthel < 0 ? `<span style="color:#dc2626;">${deltas.deltaBarthel} pts (Pérdida)</span>` : `<span style="color:#64748b;">0 pts</span>`);
+  }
+  if (kpiDeltaMna) {
+    kpiDeltaMna.innerHTML = deltas.deltaMna > 0 ? `<span style="color:#16a34a;">+${deltas.deltaMna} pts</span>` : (deltas.deltaMna < 0 ? `<span style="color:#dc2626;">${deltas.deltaMna} pts</span>` : `<span style="color:#64748b;">0 pts</span>`);
+  }
+  if (kpiDeltaZarit) {
+    kpiDeltaZarit.innerHTML = deltas.deltaZarit < 0 ? `<span style="color:#16a34a;">${deltas.deltaZarit} pts (Alivio)</span>` : (deltas.deltaZarit > 0 ? `<span style="color:#dc2626;">+${deltas.deltaZarit} pts (Mayor carga)</span>` : `<span style="color:#64748b;">0 pts</span>`);
+  }
+
+  // 3. Matriz Comparativa en Paralelo
+  renderComparisonTable(p, baseline, latest, deltas);
+
+  // 4. Metas PAI
+  renderMetasTracking(p, latest);
+
+  // 5. Timeline de Eventos
+  renderTimeline(p);
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function renderComparisonTable(p, baseline, latest, deltas) {
+  const tbody = document.getElementById("comparison-table-body");
+  if (!tbody) return;
+
+  const b = baseline || {};
+  const c = latest || {};
+
+  const rows = [
+    {
+      dim: "Severidad Clínica (Eje T)",
+      baseVal: `T = ${b.score_t ?? 0}`,
+      actVal: `T = ${c.score_t ?? 0}`,
+      deltaHtml: deltas.deltaT < 0 ? `<span class="delta-badge delta-mejoria">↓ -${Math.abs(deltas.deltaT)} (Mejoría)</span>` : (deltas.deltaT > 0 ? `<span class="delta-badge delta-deterioro">↑ +${deltas.deltaT} (Aumento)</span>` : `<span class="delta-badge delta-estabilidad">= Estable</span>`)
+    },
+    {
+      dim: "Funcionalidad ABVD (Barthel)",
+      baseVal: `${b.barthel ?? 100} pts (Z=${b.score_z ?? 0})`,
+      actVal: `${c.barthel ?? 100} pts (Z=${c.score_z ?? 0})`,
+      deltaHtml: deltas.deltaBarthel > 0 ? `<span class="delta-badge delta-mejoria">↑ +${deltas.deltaBarthel} pts</span>` : (deltas.deltaBarthel < 0 ? `<span class="delta-badge delta-deterioro">↓ ${deltas.deltaBarthel} pts</span>` : `<span class="delta-badge delta-estabilidad">= 0 pts</span>`)
+    },
+    {
+      dim: "Instrumentales AIVD (Lawton)",
+      baseVal: `${b.lawton ?? 8} / 8 pts`,
+      actVal: `${c.lawton ?? 8} / 8 pts`,
+      deltaHtml: deltas.deltaLawton > 0 ? `<span class="delta-badge delta-mejoria">↑ +${deltas.deltaLawton}</span>` : (deltas.deltaLawton < 0 ? `<span class="delta-badge delta-deterioro">↓ ${deltas.deltaLawton}</span>` : `<span class="delta-badge delta-estabilidad">= 0</span>`)
+    },
+    {
+      dim: "Estado Nutricional (MNA-SF)",
+      baseVal: `${b.mnaSf ?? 14} / 14 pts (AL=${b.score_al ?? 0})`,
+      actVal: `${c.mnaSf ?? 14} / 14 pts (AL=${c.score_al ?? 0})`,
+      deltaHtml: deltas.deltaMna > 0 ? `<span class="delta-badge delta-mejoria">↑ +${deltas.deltaMna} pts</span>` : (deltas.deltaMna < 0 ? `<span class="delta-badge delta-deterioro">↓ ${deltas.deltaMna} pts</span>` : `<span class="delta-badge delta-estabilidad">= 0 pts</span>`)
+    },
+    {
+      dim: "Estado Cognitivo (Pfeiffer)",
+      baseVal: `${b.pfeiffer ?? 0} errores (AF=${b.score_af ?? 0})`,
+      actVal: `${c.pfeiffer ?? 0} errores (AF=${c.score_af ?? 0})`,
+      deltaHtml: deltas.deltaPfeiffer < 0 ? `<span class="delta-badge delta-mejoria">↓ -${Math.abs(deltas.deltaPfeiffer)} err</span>` : (deltas.deltaPfeiffer > 0 ? `<span class="delta-badge delta-deterioro">↑ +${deltas.deltaPfeiffer} err</span>` : `<span class="delta-badge delta-estabilidad">= 0 err</span>`)
+    },
+    {
+      dim: "Situación Sociofamiliar (Gijón)",
+      baseVal: `${b.gijon ?? 5} / 25 pts (AR=${b.score_ar ?? 0})`,
+      actVal: `${c.gijon ?? 5} / 25 pts (AR=${c.score_ar ?? 0})`,
+      deltaHtml: deltas.deltaGijon < 0 ? `<span class="delta-badge delta-mejoria">↓ -${Math.abs(deltas.deltaGijon)} pts</span>` : (deltas.deltaGijon > 0 ? `<span class="delta-badge delta-deterioro">↑ +${deltas.deltaGijon} pts</span>` : `<span class="delta-badge delta-estabilidad">= 0 pts</span>`)
+    },
+    {
+      dim: "Sobrecarga del Cuidador (Zarit)",
+      baseVal: `${b.zarit ?? 22} / 88 pts`,
+      actVal: `${c.zarit ?? 22} / 88 pts`,
+      deltaHtml: deltas.deltaZarit < 0 ? `<span class="delta-badge delta-mejoria">↓ ${deltas.deltaZarit} pts (Alivio)</span>` : (deltas.deltaZarit > 0 ? `<span class="delta-badge delta-deterioro">↑ +${deltas.deltaZarit} pts</span>` : `<span class="delta-badge delta-estabilidad">= 0 pts</span>`)
+    },
+    {
+      dim: "Complejidad Global New Care",
+      baseVal: `<strong>${b.complejidad || "Alta Complejidad"}</strong> (${b.finalScore ?? 2})`,
+      actVal: `<strong>${c.complejidad || "Media Complejidad"}</strong> (${c.finalScore ?? 1})`,
+      deltaHtml: deltas.deltaFinal < 0 ? `<span class="delta-badge delta-mejoria">Evolución Favorable</span>` : (deltas.deltaFinal > 0 ? `<span class="delta-badge delta-deterioro">Mayor Complejidad</span>` : `<span class="delta-badge delta-estabilidad">Sin Cambio de Grado</span>`)
+    },
+    {
+      dim: "Modalidad Asistencial PAI",
+      baseVal: b.modalidad || "Domiciliario",
+      actVal: c.modalidad || "Ambulatorio",
+      deltaHtml: `<span style="font-size:11px; font-weight:700; color:#0f766e;">${c.modalidad === b.modalidad ? "Mantiene Modalidad" : "Transición Asistencial"}</span>`
+    }
+  ];
+
+  tbody.innerHTML = "";
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-weight: 600; color: #1e293b;">${r.dim}</td>
+      <td style="text-align: center; background: #f8fafc; font-family: monospace;">${r.baseVal}</td>
+      <td style="text-align: center; background: #ffffff; font-family: monospace; font-weight: 700;">${r.actVal}</td>
+      <td style="text-align: center;">${r.deltaHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderMetasTracking(p, latest) {
+  const container = document.getElementById("pai-metas-tracking-container");
+  if (!container) return;
+
+  const metas = latest.metas_pai || {
+    sanitarias: "EN_PROGRESO",
+    nutricionales: "EN_PROGRESO",
+    psicologicas: "EN_PROGRESO",
+    sociales: "EN_PROGRESO"
+  };
+
+  const getStatusBadge = (st) => {
+    if (st === "LOGRADA") return '<span class="badge badge-success" style="font-size:11px;">✅ Lograda</span>';
+    if (st === "NO_LOGRADA") return '<span class="badge badge-danger" style="font-size:11px;">❌ No Alcanzada</span>';
+    return '<span class="badge badge-warning" style="font-size:11px;">🟡 En Progreso</span>';
+  };
+
+  container.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+      <span style="font-size:12px; font-weight:600; color:#1e293b;">🩺 Meta Sanitaria / Médica:</span>
+      ${getStatusBadge(metas.sanitarias)}
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+      <span style="font-size:12px; font-weight:600; color:#1e293b;">🥗 Meta Nutricional:</span>
+      ${getStatusBadge(metas.nutricionales)}
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+      <span style="font-size:12px; font-weight:600; color:#1e293b;">🧠 Meta Psicoafectiva / Cognitiva:</span>
+      ${getStatusBadge(metas.psicologicas)}
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+      <span style="font-size:12px; font-weight:600; color:#1e293b;">🤝 Meta Social y Apoyo al Cuidador:</span>
+      ${getStatusBadge(metas.sociales)}
+    </div>
+    ${latest.observaciones ? `
+      <div style="margin-top:6px; padding:8px 12px; background:#eff6ff; border-left:3px solid #3b82f6; border-radius:4px; font-size:11.5px; color:#1e40af;">
+        <strong>Evolución del Equipo:</strong> ${latest.observaciones}
+      </div>` : ''}
+  `;
+}
+
+function renderTimeline(p) {
+  const container = document.getElementById("timeline-events-container");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  // Hito 0: Valoración de Ingreso
+  const base = p.ingreso || {};
+  const itemBase = document.createElement("div");
+  itemBase.className = "timeline-item";
+  itemBase.innerHTML = `
+    <div class="timeline-dot timeline-dot-ingreso"></div>
+    <div class="timeline-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:6px;">
+        <span class="badge-registro-ingreso">Valoración de Ingreso (Línea Base)</span>
+        <span style="font-size:11px; color:#64748b; font-weight:600;">📅 ${base.fecha || p.vmdDate || "2026-11-05"}</span>
+      </div>
+      <div style="font-size:12.5px; font-weight:700; color:#1e3a8a; margin-bottom:4px;">
+        Dictamen de Ingreso: ${base.complejidad || "Alta Complejidad"} (${base.modalidad || "Domiciliario"})
+      </div>
+      <div style="font-size:11.5px; color:#475569;">
+        Severidad T: <strong>${base.score_t ?? 2}</strong> | Barthel: <strong>${base.barthel ?? 55}</strong> | MNA-SF: <strong>${base.mnaSf ?? 9}</strong> | Zarit: <strong>${base.zarit ?? 48} pts</strong>
+      </div>
+    </div>
+  `;
+  container.appendChild(itemBase);
+
+  // Hitos 1..N: Seguimientos
+  if (p.seguimientos && p.seguimientos.length > 0) {
+    p.seguimientos.forEach((seg, idx) => {
+      const prev = idx === 0 ? base : p.seguimientos[idx - 1];
+      const d = calculateDeltas(prev, seg);
+
+      const itemSeg = document.createElement("div");
+      itemSeg.className = "timeline-item";
+
+      const dotClass = seg.motivo === "POST_ALTA" || seg.motivo === "DESCOMPENSACION" ? "timeline-dot-alerta" : "timeline-dot-seguimiento";
+      const badgeClass = seg.motivo === "POST_ALTA" ? "badge-registro-post-alta" : "badge-registro-seguimiento";
+
+      itemSeg.innerHTML = `
+        <div class="timeline-dot ${dotClass}"></div>
+        <div class="timeline-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:6px;">
+            <span class="${badgeClass}">Seguimiento N° ${seg.numero} &bull; ${seg.motivoTexto || seg.motivo}</span>
+            <span style="font-size:11px; color:#64748b; font-weight:600;">📅 ${seg.fecha}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div style="font-size:12.5px; font-weight:700; color:#0f766e;">
+              ${seg.complejidad} (${seg.modalidad})
+            </div>
+            <span class="delta-badge ${d.badgeClass}" style="font-size:10.5px;">${d.statusText}</span>
+          </div>
+          <div style="font-size:11.5px; color:#475569; margin-bottom:6px;">
+            Barthel: <strong>${seg.barthel} pts</strong> (${d.deltaBarthel >= 0 ? "+" + d.deltaBarthel : d.deltaBarthel}) | Zarit: <strong>${seg.zarit} pts</strong> (${d.deltaZarit}) | MNA: <strong>${seg.mnaSf}</strong>
+          </div>
+          <div style="font-size:11px; color:#64748b;">
+            👨‍⚕️ Evaluador: <strong>${seg.evaluadorNombre || "Equipo New Care"}</strong> (${seg.evaluadorRol || "EPA"})
+          </div>
+          ${seg.observaciones ? `<div style="margin-top:6px; font-size:11.5px; color:#334155; font-style:italic;">"${seg.observaciones}"</div>` : ''}
+        </div>
+      `;
+      container.appendChild(itemSeg);
+    });
+  } else {
+    const emptyNotice = document.createElement("div");
+    emptyNotice.style.padding = "12px";
+    emptyNotice.style.background = "#f8fafc";
+    emptyNotice.style.border = "1px dashed #cbd5e1";
+    emptyNotice.style.borderRadius = "6px";
+    emptyNotice.style.fontSize = "12px";
+    emptyNotice.style.color = "#64748b";
+    emptyNotice.style.textAlign = "center";
+    emptyNotice.textContent = "Aún no se han registrado controles periódicos para este paciente. Pulse 'Registrar Nuevo Seguimiento' para añadir el primero.";
+    container.appendChild(emptyNotice);
+  }
+}
+
+/**
+ * Abre el modal para registrar un nuevo seguimiento clínico
+ */
+function openNewSeguimientoModal() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+
+  ensurePatientTrackingStructure(p);
+
+  const baseline = p.ingreso || {};
+  const hasSeg = p.seguimientos.length > 0;
+  const latest = hasSeg ? p.seguimientos[p.seguimientos.length - 1] : baseline;
+
+  // Llenar evaluadores
+  const selEval = document.getElementById("mseg-evaluador");
+  if (selEval) {
+    selEval.innerHTML = "";
+    stateProfesionales.forEach(prof => {
+      const opt = document.createElement("option");
+      opt.value = prof.id;
+      opt.textContent = `${prof.nombre} (${prof.rolNombre || prof.rol})`;
+      selEval.appendChild(opt);
+    });
+  }
+
+  // Prellenar fecha con hoy
+  const dateInput = document.getElementById("mseg-date");
+  if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+
+  // Prellenar badges de línea base
+  document.getElementById("mseg-base-barthel").textContent = `${baseline.barthel ?? 100} pts`;
+  document.getElementById("mseg-base-lawton").textContent = `${baseline.lawton ?? 8} pts`;
+  document.getElementById("mseg-base-mna").textContent = `${baseline.mnaSf ?? 14} pts`;
+  document.getElementById("mseg-base-pfeiffer").textContent = `${baseline.pfeiffer ?? 0} err`;
+  document.getElementById("mseg-base-gijon").textContent = `${baseline.gijon ?? 5} pts`;
+  document.getElementById("mseg-base-zarit").textContent = `${baseline.zarit ?? 22} pts`;
+
+  // Precargar con los últimos valores conocidos para que el clínico solo ajuste variaciones
+  document.getElementById("mseg-barthel").value = latest.barthel ?? 100;
+  document.getElementById("mseg-lawton").value = latest.lawton ?? 8;
+  document.getElementById("mseg-mna").value = latest.mnaSf ?? 14;
+  document.getElementById("mseg-pfeiffer").value = latest.pfeiffer ?? 0;
+  document.getElementById("mseg-gijon").value = latest.gijon ?? 5;
+  document.getElementById("mseg-zarit").value = latest.zarit ?? 22;
+  document.getElementById("mseg-crit-val").value = latest.score_t ?? 1;
+  document.getElementById("mseg-ambit").value = latest.modalidad === "DOMICILIARIO" || latest.modalidad === "Domiciliario" ? "Domiciliario" : "Ambulatorio";
+  document.getElementById("mseg-obs").value = "";
+
+  openModal("modal-new-seguimiento");
+}
+
+/**
+ * Guarda el nuevo seguimiento clínico y actualiza la trazabilidad
+ */
+function saveNewSeguimiento() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+
+  const fecha = document.getElementById("mseg-date").value;
+  const motivoVal = document.getElementById("mseg-motivo").value;
+  const motivoTexto = document.getElementById("mseg-motivo").selectedOptions[0]?.text || motivoVal;
+  const evaluadorId = document.getElementById("mseg-evaluador").value;
+  const prof = stateProfesionales.find(x => x.id === evaluadorId) || {};
+
+  const barthel = Number(document.getElementById("mseg-barthel").value);
+  const lawton = Number(document.getElementById("mseg-lawton").value);
+  const mna = Number(document.getElementById("mseg-mna").value);
+  const pfeiffer = Number(document.getElementById("mseg-pfeiffer").value);
+  const gijon = Number(document.getElementById("mseg-gijon").value);
+  const zarit = Number(document.getElementById("mseg-zarit").value);
+  const score_t = Number(document.getElementById("mseg-crit-val").value);
+  const ambit = document.getElementById("mseg-ambit").value;
+  const obs = document.getElementById("mseg-obs").value.trim();
+
+  if (!fecha) {
+    alert("Por favor seleccione la fecha del seguimiento.");
+    return;
+  }
+
+  // Calcular dimensiones según reglas New Care
+  const sBarthel = getScoreBarthel(barthel);
+  const sLawton = getScoreLawton(lawton);
+  const score_z = Math.max(sBarthel, sLawton);
+
+  const score_al = getScoreMNA_SF(mna);
+  const score_af = getScorePfeiffer(pfeiffer);
+
+  const sGijon = getScoreGijon(gijon);
+  const sZarit = getScoreZarit(zarit);
+  const score_ar = Math.max(sGijon, sZarit);
+
+  // Algoritmo New Care: Si Z=2 o AF=2 o AL=2 o AR=2 => min(2, T + 1)
+  let finalScore = score_t;
+  if (score_z === 2 || score_af === 2 || score_al === 2 || score_ar === 2) {
+    finalScore = Math.min(2, score_t + 1);
+  }
+
+  const complejidad = finalScore === 2 ? "Alta Complejidad" : (finalScore === 1 ? "Media Complejidad" : "Baja Complejidad");
+  const modalidad = (finalScore >= 2 && barthel <= 60) ? "DOMICILIARIO" : "AMBULATORIO";
+
+  const numSeg = p.seguimientos.length + 1;
+  const newSeg = {
+    id: `SEG-${p.id || p.doc}-${String(numSeg).padStart(3, "0")}`,
+    numero: numSeg,
+    fecha,
+    motivo: motivoVal,
+    motivoTexto,
+    evaluadorId,
+    evaluadorNombre: prof.nombre || currentUser.name,
+    evaluadorRol: prof.rolNombre || prof.rol || "Profesional de Salud",
+    crit: p.crit || "IC",
+    score_t,
+    barthel,
+    score_z,
+    lawton,
+    mnaSf: mna,
+    score_al,
+    pfeiffer,
+    score_af,
+    gijon,
+    zarit,
+    score_ar,
+    finalScore,
+    complejidad,
+    modalidad,
+    metas_pai: {
+      sanitarias: document.getElementById("mseg-meta-san").value,
+      nutricionales: document.getElementById("mseg-meta-nut").value,
+      psicologicas: document.getElementById("mseg-meta-psi").value,
+      sociales: document.getElementById("mseg-meta-soc").value
+    },
+    observaciones: obs
+  };
+
+  p.seguimientos.push(newSeg);
+
+  // Guardar en Storage y sincronizar
+  saveToStorage();
+  if (window.supabaseClient) {
+    syncSeguimientoToSupabase(p, newSeg);
+  }
+
+  closeModal("modal-new-seguimiento");
+  renderSeguimientoTab();
+  renderPatientsTable();
+
+  const deltas = calculateDeltas(p.ingreso, newSeg);
+  alert(`✅ Seguimiento N° ${numSeg} registrado exitosamente:
+
+` +
+        `• Nivel de Avance: ${deltas.statusText}
+` +
+        `• Nueva Complejidad: ${complejidad} (${modalidad})
+` +
+        `• Variación Barthel: ${deltas.deltaBarthel >= 0 ? "+" + deltas.deltaBarthel : deltas.deltaBarthel} pts
+` +
+        `• Variación Zarit: ${deltas.deltaZarit} pts`);
+}
+
+/**
+ * Sincroniza un seguimiento específico contra Supabase en tiempo real
+ */
+async function syncSeguimientoToSupabase(paciente, seg) {
+  if (!window.supabaseClient) return;
+  try {
+    await window.supabaseClient.from("seguimientos").upsert({
+      id: seg.id,
+      paciente_id: paciente.id || paciente.doc,
+      numero_seguimiento: seg.numero,
+      fecha_seguimiento: seg.fecha,
+      motivo_seguimiento: seg.motivo,
+      evaluador_id: seg.evaluadorId,
+      evaluador_nombre: seg.evaluadorNombre,
+      evaluador_rol: seg.evaluadorRol,
+      score_t: seg.score_t,
+      score_z: seg.score_z,
+      score_al: seg.score_al,
+      score_af: seg.score_af,
+      score_ar: seg.score_ar,
+      score_final: seg.finalScore,
+      complejidad: seg.complejidad,
+      modalidad_sugerida: seg.modalidad,
+      metas_pai: seg.metas_pai,
+      datos_completos: seg,
+      updated_at: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Error sincronizando seguimiento en Supabase", e);
+  }
+}
+
+function printSeguimientoReport() {
+  window.print();
 }

@@ -69,7 +69,10 @@
       <i data-lucide="users" style="width: 16px; height: 16px;"></i> Padrón de Pacientes
     </div>
     <div class="nav-tab" onclick="switchTab('tab-vmd')">
-      <i data-lucide="clipboard-check" style="width: 16px; height: 16px;"></i> Ficha de Valoración VMD
+      <i data-lucide="clipboard-check" style="width: 16px; height: 16px;"></i> Ficha VMD (Ingreso)
+    </div>
+    <div class="nav-tab" onclick="switchTab('tab-seguimiento')">
+      <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i> Seguimiento & Trazabilidad
     </div>
     <div class="nav-tab" onclick="switchTab('tab-risk')">
       <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Suite de Riesgo Clínico
@@ -1317,6 +1320,9 @@
         <!-- ======================================================== -->
     <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
     <!-- ======================================================== -->
+        <!-- ======================================================== -->
+    <!-- TAB: GUÍA METODOLÓGICA Y MANUAL OFICIAL NEW CARE (COMPLETO) -->
+    <!-- ======================================================== -->
     <section id="tab-guia" class="tab-content" style="display: none;">
       <div class="card">
         <div class="card-header" style="flex-wrap: wrap; gap: 12px; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px;">
@@ -2318,6 +2324,280 @@
         </div>
       </div>
     </section>
+
+  
+    <!-- ======================================================== -->
+    <!-- TAB: MÓDULO DE SEGUIMIENTO LONGITUDINAL & TRAZABILIDAD -->
+    <!-- ======================================================== -->
+    <section id="tab-seguimiento" class="tab-content" style="display: none;">
+      
+      <!-- Banner de Paciente y Control de Seguimiento -->
+      <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%); border-left: 5px solid #0d9488;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge-registro-seguimiento">Módulo de Seguimiento Longitudinal</span>
+              <span id="seg-status-badge" class="badge-complex complex-media">Cargando estado...</span>
+            </div>
+            <h2 id="seg-patient-name" style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 4px;">Seleccione un paciente</h2>
+            <div style="display: flex; gap: 16px; font-size: 12px; color: #475569; margin-top: 4px; flex-wrap: wrap;">
+              <span><strong>Cédula:</strong> <span id="seg-patient-id">-</span></span>
+              <span><strong>Edad:</strong> <span id="seg-patient-age">-</span></span>
+              <span><strong>Aseguradora:</strong> <span id="seg-patient-eps">-</span></span>
+              <span><strong>Ingreso al Programa:</strong> <span id="seg-patient-ingreso-date">-</span></span>
+              <span><strong>Seguimientos Realizados:</strong> <span id="seg-patient-count-badge" class="badge badge-primary">0</span></span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-teal" onclick="openNewSeguimientoModal()">
+              <i data-lucide="plus-circle" style="width: 15px; height: 15px;"></i> Registrar Nuevo Seguimiento
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('tab-vmd')">
+              <i data-lucide="clipboard-check" style="width: 15px; height: 15px;"></i> Ver Ficha de Ingreso
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen de Nivel de Avance Clínico (Deltas Globales) -->
+      <div class="grid-4" style="margin-bottom: 16px;">
+        <div class="kpi-card" style="border-top: 3px solid #1e3a8a;">
+          <div class="kpi-title">Δ Severidad Clínica (T)</div>
+          <div id="kpi-delta-t" class="kpi-value" style="font-size: 20px; color: #1e3a8a;">0</div>
+          <div id="kpi-desc-t" class="kpi-desc">Línea base vs actual</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #0d9488;">
+          <div class="kpi-title">Δ Funcionalidad (Barthel)</div>
+          <div id="kpi-delta-barthel" class="kpi-value" style="font-size: 20px; color: #0d9488;">+0 pts</div>
+          <div id="kpi-desc-barthel" class="kpi-desc">Autonomía física</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #f59e0b;">
+          <div class="kpi-title">Δ Nutrición (MNA-SF)</div>
+          <div id="kpi-delta-mna" class="kpi-value" style="font-size: 20px; color: #f59e0b;">+0 pts</div>
+          <div id="kpi-desc-mna" class="kpi-desc">Estado nutricional</div>
+        </div>
+        <div class="kpi-card" style="border-top: 3px solid #7c3aed;">
+          <div class="kpi-title">Δ Sobrecarga Cuidador (Zarit)</div>
+          <div id="kpi-delta-zarit" class="kpi-value" style="font-size: 20px; color: #7c3aed;">-0 pts</div>
+          <div id="kpi-desc-zarit" class="kpi-desc">Alivio sobrecarga familiar</div>
+        </div>
+      </div>
+
+      <!-- Contenedor Dividido: Comparador en Paralelo + Línea de Tiempo -->
+      <div class="grid-2" style="align-items: start;">
+        
+        <!-- COLUMNA IZQUIERDA: Matriz Comparativa (Ingreso vs Último Seguimiento) -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="git-compare" style="color: #0d9488;"></i> Matriz Comparativa de Avance por Dimensión
+            </div>
+            <span id="comp-period-label" class="badge badge-primary" style="font-size: 11px;">Comparativo Oficial</span>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Dimensión / Escala</th>
+                  <th style="text-align: center; background: #eff6ff; color: #1e40af;">Línea Base (Ingreso)</th>
+                  <th style="text-align: center; background: #f0fdf4; color: #166534;">Seguimiento Actual</th>
+                  <th style="text-align: center;">Nivel de Avance (Δ)</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-table-body">
+                <!-- Poblado dinámicamente por JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Evaluación del Plan de Atención Individualizado (Metas PAI) -->
+          <div style="margin-top: 18px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+            <div style="font-weight: 800; font-size: 13.5px; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="check-circle-2" style="width: 16px; height: 16px; color: #16a34a;"></i>
+              Trazabilidad y Cumplimiento de Metas PAI
+            </div>
+            <div id="pai-metas-tracking-container" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Poblado dinámicamente por JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Línea de Tiempo Cronológica (Timeline) -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="calendar-clock" style="color: #1e3a8a;"></i> Historial Longitudinal de Atenciones
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="printSeguimientoReport()" title="Imprimir informe de trazabilidad">
+              <i data-lucide="printer" style="width: 13px; height: 13px;"></i> Imprimir Informe
+            </button>
+          </div>
+          <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
+            Trazabilidad histórica de todos los ingresos, controles periódicos (6M / 12M) y eventos extraordinarios post-alta hospitalaria.
+          </p>
+
+          <div class="timeline-container" id="timeline-events-container">
+            <!-- Eventos generados dinámicamente por JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: REGISTRAR NUEVO SEGUIMIENTO CLÍNICO -->
+    <!-- ======================================================== -->
+    <div id="modal-new-seguimiento" class="modal-overlay">
+      <div class="modal-container" style="max-width: 780px;">
+        <div class="modal-header">
+          <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="trending-up" style="color: #0d9488;"></i> Registrar Nuevo Control de Seguimiento Clínico
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-new-seguimiento')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 12.5px; color: #475569; margin-bottom: 14px;">
+            Diligencie la reevaluación clínica del paciente. Los datos de la última valoración han sido precargados como referencia para que el equipo ajuste únicamente los cambios observados.
+          </p>
+
+          <!-- Metadatos del Seguimiento -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Fecha del Seguimiento</label>
+                <input type="date" id="mseg-date" class="form-control">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Motivo de la Valoración</label>
+                <select id="mseg-motivo" class="form-control">
+                  <option value="PERIODICO_6M">Control Periódico Semestral (6 Meses)</option>
+                  <option value="PERIODICO_12M">Control Periódico Anual (12 Meses)</option>
+                  <option value="POST_ALTA">Reevaluación Extraordinaria Post-Egreso Hospitalario</option>
+                  <option value="DESCOMPENSACION">Valoración por Descompensación Aguda en Domicilio</option>
+                  <option value="CAMBIO_SITUACION">Cambio Significativo en Red de Apoyo / Cuidador</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Evaluador Responsable</label>
+                <select id="mseg-evaluador" class="form-control">
+                  <!-- Poblado dinámicamente -->
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reevaluación de Escalas Clave -->
+          <div style="font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 8px;">
+            1. Reevaluación de Escalas Multidimensionales
+          </div>
+          <div class="grid-3" style="margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Barthel (ABVD 0-100)</label>
+              <input type="number" id="mseg-barthel" class="form-control" min="0" max="100" step="5">
+              <small style="font-size: 10px; color: #64748b;">Ingreso: <span id="mseg-base-barthel">-</span></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Lawton & Brody (AIVD 0-8)</label>
+              <input type="number" id="mseg-lawton" class="form-control" min="0" max="8">
+              <small style="font-size: 10px; color: #64748b;">Ingreso: <span id="mseg-base-lawton">-</span></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">MNA-SF (Nutrición 0-14)</label>
+              <input type="number" id="mseg-mna" class="form-control" min="0" max="14">
+              <small style="font-size: 10px; color: #64748b;">Ingreso: <span id="mseg-base-mna">-</span></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pfeiffer (Errores 0-10)</label>
+              <input type="number" id="mseg-pfeiffer" class="form-control" min="0" max="10">
+              <small style="font-size: 10px; color: #64748b;">Ingreso: <span id="mseg-base-pfeiffer">-</span></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gijón (Social 5-25)</label>
+              <input type="number" id="mseg-gijon" class="form-control" min="5" max="25">
+              <small style="font-size: 10px; color: #64748b;">Ingreso: <span id="mseg-base-gijon">-</span></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Zarit (Cuidador 0-88)</label>
+              <input type="number" id="mseg-zarit" class="form-control" min="0" max="88">
+              <small style="font-size: 10px; color: #64748b;">Ingreso: <span id="mseg-base-zarit">-</span></small>
+            </div>
+          </div>
+
+          <!-- Severidad de Órgano Actual -->
+          <div class="grid-2" style="margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Severidad Clínica Actual (Criterio IOCC)</label>
+              <select id="mseg-crit-val" class="form-control">
+                <option value="0">Baja Severidad (NYHA I / GOLD A / Child A / ERC G1-G2)</option>
+                <option value="1">Severidad Moderada (NYHA II / GOLD B / Child B / ERC G3)</option>
+                <option value="2">Alta Severidad (NYHA III-IV / GOLD C-D / Child C / ERC G4-G5)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ámbito / Modalidad de Manejo Recomendada</label>
+              <select id="mseg-ambit" class="form-control">
+                <option value="Domiciliario">Modalidad Domiciliaria (Seguimiento mensual presencial)</option>
+                <option value="Ambulatorio">Modalidad Ambulatoria Especializada (Seguimiento semestral)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Evaluación de Metas del PAI -->
+          <div style="font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 8px;">
+            2. Nivel de Avance en Metas del Plan de Atención (PAI)
+          </div>
+          <div class="grid-2" style="gap: 10px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Meta Sanitaria / Médica</label>
+              <select id="mseg-meta-san" class="form-control">
+                <option value="LOGRADA">✅ Lograda (Compensación clínica óptima)</option>
+                <option value="EN_PROGRESO" selected>🟡 En Progreso (Titulación o ajuste en curso)</option>
+                <option value="NO_LOGRADA">❌ No Alcanzada (Persiste descompensación)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Meta Nutricional</label>
+              <select id="mseg-meta-nut" class="form-control">
+                <option value="LOGRADA">✅ Lograda (Recuperación / peso estable)</option>
+                <option value="EN_PROGRESO" selected>🟡 En Progreso</option>
+                <option value="NO_LOGRADA">❌ No Alcanzada (Continúa pérdida de peso)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Meta Psicoafectiva / Cognitiva</label>
+              <select id="mseg-meta-psi" class="form-control">
+                <option value="LOGRADA">✅ Lograda (Adherencia y estabilidad emocional)</option>
+                <option value="EN_PROGRESO" selected>🟡 En Progreso</option>
+                <option value="NO_LOGRADA">❌ No Alcanzada (Síntomas depresivos / desorientación)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Meta Social / Apoyo al Cuidador</label>
+              <select id="mseg-meta-soc" class="form-control">
+                <option value="LOGRADA">✅ Lograda (Red activa / respiro garantizado)</option>
+                <option value="EN_PROGRESO" selected>🟡 En Progreso</option>
+                <option value="NO_LOGRADA">❌ No Alcanzada (Sobrecarga persistente)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notas de Evolución -->
+          <div class="form-group">
+            <label class="form-label">Observaciones y Resumen de la Evolución Asistencial</label>
+            <textarea id="mseg-obs" class="form-control" rows="3" placeholder="Describa los avances logrados por el equipo interdisciplinario, ajustes al tratamiento o requerimientos adicionales..."></textarea>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('modal-new-seguimiento')">Cancelar</button>
+          <button class="btn btn-teal" onclick="saveNewSeguimiento()">
+            <i data-lucide="save" style="width: 14px; height: 14px;"></i> Guardar Registro de Seguimiento
+          </button>
+        </div>
+      </div>
+    </div>
 
   </main>
 

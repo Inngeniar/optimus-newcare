@@ -81,9 +81,57 @@ with check (true);
 -- 4. Insercion de Miembros Iniciales del Equipo de Salud Optimus Health
 insert into public.profesionales (id, nombre, rol, rol_nombre, cedula, registro, especialidad, telefono, email, estado)
 values
-  ('EQ-001', 'Dr. Carlos Restrepo Mendoza', 'MED', 'Médico Internista / Evaluador Senior', '71234567', 'RM-98432-COL', 'Medicina Interna y Cronicidad IOCC', '+57 310 456 7890', 'carlos.restrepo@optimushealth.co', 'Activo'),
+  ('EQ-001', 'Dr. Carlos Restrepo Mendoza', 'MED', 'Médico Internista / Geriatra', '71234567', 'RM-98432-COL', 'Medicina Interna y Cronicidad IOCC', '+57 310 456 7890', 'carlos.restrepo@optimushealth.co', 'Activo'),
   ('EQ-002', 'Dra. Valentina Gómez', 'MED', 'Médica General / Gestora de Casos', '1023456789', 'RM-112345-COL', 'Atención Primaria y Enlace Ambulatorio', '+57 311 234 5678', 'valentina.gomez@optimushealth.co', 'Activo'),
   ('EQ-003', 'Enf. Laura Restrepo', 'ENF', 'Enfermera de Práctica Avanzada (EPA)', '43567890', 'TE-54321-COL', 'Cuidados Continuos, Fragilidad y Adherencia', '+57 315 876 5432', 'laura.restrepo@optimushealth.co', 'Activo'),
   ('EQ-004', 'Lic. Diana Patricia Morales', 'TS', 'Trabajadora Social Sociosanitaria', '32456781', 'TS-33211-COL', 'Redes de Apoyo y Sobrecarga del Cuidador', '+57 318 654 3210', 'diana.morales@optimushealth.co', 'Activo'),
   ('EQ-005', 'Dr. Roberto Mejía', 'COORD', 'Coordinador Junta de Cronicidad New Care', '9876543', 'RM-44332-COL', 'Dirección Médica y Aseguramiento de Calidad', '+57 300 112 2334', 'roberto.mejia@optimushealth.co', 'Activo')
 on conflict (id) do nothing;
+
+-- ==============================================================================
+-- 5. Tabla Relacional: Seguimientos Longitudinales y Trazabilidad VMD
+-- ==============================================================================
+create table if not exists public.seguimientos (
+    id text primary key,
+    paciente_id text not null references public.pacientes(id) on delete cascade,
+    numero_seguimiento integer not null,
+    fecha_seguimiento date not null,
+    motivo_seguimiento text not null, -- PERIODICO_6M, PERIODICO_12M, POST_ALTA, DESCOMPENSACION
+    evaluador_id text,
+    evaluador_nombre text,
+    evaluador_rol text,
+    
+    -- Severidad y Escalas Clinicas
+    score_t integer not null default 0,
+    score_z integer not null default 0,
+    score_al integer not null default 0,
+    score_af integer not null default 0,
+    score_ar integer not null default 0,
+    score_final integer not null default 0,
+    complejidad text not null,
+    modalidad_sugerida text not null,
+    
+    -- Deltas y Evaluacion Metas PAI
+    delta_resumen jsonb,
+    metas_pai jsonb,
+    datos_completos jsonb not null,
+    
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+);
+
+-- Habilitar RLS
+alter table public.seguimientos enable row level security;
+
+create policy "Permitir lectura publica a seguimientos"
+on public.seguimientos for select
+using (true);
+
+create policy "Permitir insercion y actualizacion publica a seguimientos"
+on public.seguimientos for all
+using (true)
+with check (true);
+
+create index if not exists idx_seguimientos_paciente on public.seguimientos(paciente_id);
+create index if not exists idx_seguimientos_fecha on public.seguimientos(fecha_seguimiento);
+

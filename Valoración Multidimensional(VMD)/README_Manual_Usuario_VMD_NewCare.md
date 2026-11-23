@@ -221,5 +221,35 @@ Todos los instrumentos psicométricos, escalas clínicas y calculadoras de riesg
     van Walraven C, Dhalla IA, Bell C, et al. Derivation and validation of an index to predict early death or unplanned readmission after discharge from hospital to the community. *CMAJ*. 2010;182(6):551-557. doi:10.1503/cmaj.091117.
 
 ---
+
+## 13. MÓDULO DE SEGUIMIENTO LONGITUDINAL, TRAZABILIDAD Y ANÁLISIS DE DELTAS (Δ)
+
+Para garantizar la continuidad asistencial y medir el impacto clínico de las intervenciones del equipo interdisciplinario, la herramienta incorpora el módulo de seguimiento longitudinal conforme al modelo New Care:
+
+### 13.1. Arquitectura Relacional ($1:N$)
+- **Ingreso VMD (Línea de Base):** Registro fundacional único por paciente con la foto basal de complejidad clínica, funcional, nutricional y sociofamiliar ($T_0, \text{Barthel}_0, \text{Zarit}_0$, etc.).
+- **Seguimientos Periódicos:** Cada revaloración ($S_1, S_2, \dots, S_n$) se vincula de manera inviolable al ID del paciente y a su valoración de ingreso, permitiendo registrar la evolución a los 30, 60, 90 o 180 días según el nivel de complejidad.
+
+### 13.2. Medición del Avance del Equipo de Salud: Cálculo de Deltas ($\Delta$)
+El sistema calcula automáticamente la variación neta respecto a la línea de base:
+$$\Delta = \text{Valor en Seguimiento} - \text{Valor en Ingreso}$$
+- **$\Delta T$ (Severidad Clínica):** $\Delta T < 0$ indica reducción de la carga clínica/descompensaciones (Mejoría).
+- **$\Delta\text{Barthel}$:** Incrementos $\ge +10$ puntos señalan ganancia funcional y rehabilitación efectiva; descensos $\le -15$ puntos activan alerta por deterioro funcional sobrevenido.
+- **$\Delta\text{MNA-SF}$:** Incrementos $\ge +3$ puntos reflejan recuperación del estado nutricional.
+- **$\Delta\text{Zarit}$:** Reducciones $\le -10$ puntos constatan el alivio de la sobrecarga del cuidador principal mediante las intervenciones de enfermería, trabajo social y psicología.
+- **Semáforo Global de Evolución:** Clasifica la visita en 🟢 **Avance Favorable (Mejoría)**, 🟡 **Estabilidad Clínica**, o 🔴 **Alerta Clínica (Deterioro)**.
+
+### 13.3. Trazabilidad de Metas del Plan de Atención Individualizado (PAI)
+En cada seguimiento, el profesional evalúa el grado de cumplimiento de los objetivos concertados en el PAI:
+- **Lograda (🟢):** Meta alcanzada satisfactoriamente (ej. control sintomático, reducción del dolor, educación nutricional afianzada).
+- **En Progreso (🟡):** Intervención en curso con adherencia adecuada.
+- **No Alcanzada (🔴):** Meta no lograda o barrera identificada, lo cual exige replantear la meta o ajustar el plan terapéutico.
+
+### 13.4. Diferenciación Visual y Documental de Registros
+- **Pestaña "Seguimiento & Trazabilidad":** Accesible desde el menú superior, muestra la Línea de Tiempo interactiva con hitos cronológicos, tarjetas KPI de deltas acumulados y la Matriz Comparativa Paralela (Ingreso vs. Último Seguimiento vs. Variación Neta).
+- **Badges distintivos:** Identificación visual inequívoca entre "VALORACIÓN BASAL (INGRESO)" y "SEGUIMIENTO PERIÓDICO #N".
+
+---
+
 *Manual elaborado por Inngeniar Health Suite para Optimus Health IPS.*  
-*Versión 1.0 — Noviembre 2026.*
+*Versión 2.0 (Seguimiento Longitudinal & Trazabilidad) — Noviembre 2026.*
