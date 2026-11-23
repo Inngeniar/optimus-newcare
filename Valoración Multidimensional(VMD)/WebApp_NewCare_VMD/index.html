@@ -764,11 +764,24 @@
     <!-- ======================================================== -->
     <section id="tab-risk" class="tab-content" style="display: none;">
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <i data-lucide="activity" style="color: var(--orange);"></i> Suite Integral de Calculadoras de Riesgo Clínico
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div class="card-title">
+              <i data-lucide="activity" style="color: var(--orange);"></i> Suite Integral de Calculadoras de Riesgo Clínico
+            </div>
+            <div style="font-size: 12px; color: #475569; margin-top: 3px;">
+              Paciente Activo: <strong id="risk-patient-banner-name" style="color: #1e3a8a;">Ninguno seleccionado</strong>
+              <span id="risk-saved-badge" class="badge badge-primary" style="margin-left: 6px; font-size: 10.5px;">Sin guardar</span>
+            </div>
           </div>
-          <span class="brand-badge" style="background: var(--orange); color: white;">Herramientas Clínicas Avanzadas</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-teal" onclick="saveRiskProfileToPatient()">
+              <i data-lucide="save" style="width: 14px; height: 14px;"></i> Guardar Riesgos en Ficha y PAI
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="applyCkdEpiToVmd()" title="Transferir estadio CKD-EPI al campo ERC de la Ficha VMD">
+              <i data-lucide="arrow-up-right" style="width: 14px; height: 14px;"></i> Aplicar CKD-EPI a ERC (VMD)
+            </button>
+          </div>
         </div>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
           Calculadoras clínicas para la estratificación del riesgo renal, pronóstico hepático, riesgo en EPOC, vulnerabilidad ante caídas, úlceras por presión y probabilidad de reingreso hospitalario no planificado.
@@ -1022,6 +1035,11 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Resumen de Riesgos Guardados en el Paciente -->
+        <div id="risk-saved-summary" style="margin-top: 18px; padding: 12px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid #0d9488; border-radius: 8px; font-size: 12px; color: #1e293b;">
+          Pulse <strong>"Guardar Riesgos en Ficha y PAI"</strong> para asociar estos puntajes a la valoración del paciente activo y reflejarlos en el Dictamen / PAI.
         </div>
       </div>
     </section>
@@ -1290,6 +1308,14 @@
             <p style="margin-bottom: 4px;"><strong>&bull; Metas Psicológicas:</strong> <span id="rep-pai-psi">-</span></p>
             <p style="margin-bottom: 4px;"><strong>&bull; Metas Sociales y Red de Cuidados:</strong> <span id="rep-pai-soc">-</span></p>
           </div>
+        </div>
+
+        <!-- Perfil de Riesgo Clínico Integrado (Suite de Riesgo) -->
+        <div id="rep-risk-section" style="margin-bottom: 16px; display: none;">
+          <h3 style="font-size: 13px; font-weight: 800; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px;">
+            4. PERFIL DE RIESGO CLÍNICO INTEGRADO (SUITE DE RIESGO)
+          </h3>
+          <div id="rep-risk-grid" class="grid-3" style="font-size: 11.5px; gap: 8px;"></div>
         </div>
 
         <!-- Signatures Block -->

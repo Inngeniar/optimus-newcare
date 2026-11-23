@@ -306,6 +306,9 @@ function switchTab(tabId) {
   if (tabId === "tab-ruta-pizarra") {
     renderRutaYPizarraTab();
   }
+  if (tabId === "tab-risk") {
+    syncRiskTabWithPatient();
+  }
   if (tabId === "tab-pai") {
     renderPrintablePAI();
   }
@@ -1505,6 +1508,26 @@ function renderPrintablePAI() {
   document.getElementById("rep-pai-nut").textContent = p.pai?.nutricionales || "Recomendaciones nutricionales según patología.";
   document.getElementById("rep-pai-psi").textContent = p.pai?.psicologicas || "Apoyo emocional y educación al paciente y familia.";
   document.getElementById("rep-pai-soc").textContent = p.pai?.sociales || "Acompañamiento social y articulación con red comunitaria.";
+
+  // Perfil de Riesgo Clínico Integrado (Suite de Riesgo)
+  const riskSec = document.getElementById("rep-risk-section");
+  const riskGrid = document.getElementById("rep-risk-grid");
+  if (riskSec && riskGrid) {
+    if (p.riesgos) {
+      riskSec.style.display = "block";
+      const r = p.riesgos;
+      riskGrid.innerHTML = `
+        <div style="border:1px solid #cbd5e1; padding:6px 8px; border-radius:4px;"><strong>CKD-EPI 2021:</strong> ${r.ckdepiVal} (${r.ckdepiStage})</div>
+        <div style="border:1px solid #cbd5e1; padding:6px 8px; border-radius:4px;"><strong>MELD-Na:</strong> ${r.meldVal} (${r.meldBadge})</div>
+        <div style="border:1px solid #cbd5e1; padding:6px 8px; border-radius:4px;"><strong>BODEx:</strong> ${r.bodexVal} (${r.bodexBadge})</div>
+        <div style="border:1px solid #cbd5e1; padding:6px 8px; border-radius:4px;"><strong>Caídas (Downton):</strong> ${r.downtonVal} (${r.downtonBadge})</div>
+        <div style="border:1px solid #cbd5e1; padding:6px 8px; border-radius:4px;"><strong>UPP (Braden):</strong> ${r.bradenVal} (${r.bradenBadge})</div>
+        <div style="border:1px solid #cbd5e1; padding:6px 8px; border-radius:4px;"><strong>Reingreso (LACE):</strong> ${r.laceVal} (${r.laceBadge})</div>
+      `;
+    } else {
+      riskSec.style.display = "none";
+    }
+  }
 
   // Signatures
   if (currentUser.role === "MED") {
@@ -4352,4 +4375,130 @@ function renderPizarraOperativa() {
         <td style="font-size:11px; color:#475569;">${hasSeg ? `Seg #${p.seguimientos.length} (${p.seguimientos[p.seguimientos.length - 1].fecha})` : (p.vmdDate || "Ingreso pendiente")}</td>
       </tr>`;
   }).join("");
+}
+
+// ============================================================================
+// INTEGRACIÓN DE SUITE DE RIESGO CLÍNICO CON FICHA DEL PACIENTE Y PAI
+// ============================================================================
+function syncRiskTabWithPatient() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  const nameEl = document.getElementById("risk-patient-banner-name");
+  const badgeEl = document.getElementById("risk-saved-badge");
+  if (!p) {
+    if (nameEl) nameEl.textContent = "Ninguno seleccionado";
+    return;
+  }
+  if (nameEl) nameEl.textContent = `${p.name} (C.C. ${p.doc || p.id})`;
+
+  // Precargar edad y sexo del paciente activo
+  const ageInput = document.getElementById("calc-age");
+  if (ageInput && p.age) ageInput.value = p.age;
+  const sexInput = document.getElementById("calc-sex");
+  if (sexInput && p.sex) {
+    sexInput.value = (String(p.sex).toUpperCase().startsWith("F")) ? "female" : "male";
+  }
+  if (typeof runRiskCalculators === "function") runRiskCalculators();
+
+  if (badgeEl) {
+    if (p.riesgos?.fecha) {
+      badgeEl.textContent = `Guardado (${p.riesgos.fecha})`;
+      badgeEl.className = "badge badge-success";
+    } else {
+      badgeEl.textContent = "Sin guardar en ficha";
+      badgeEl.className = "badge badge-warning";
+    }
+  }
+  renderSavedRiskSummary(p);
+}
+
+function saveRiskProfileToPatient() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) {
+    alert("Seleccione primero un paciente en el Padrón.");
+    return;
+  }
+  if (typeof runRiskCalculators === "function") runRiskCalculators();
+
+  const fecha = new Date().toISOString().split("T")[0];
+  const r = {
+    fecha,
+    evaluador: currentUser?.name || "Equipo New Care",
+    ckdepiVal: document.getElementById("res-ckdepi-val")?.textContent || "-",
+    ckdepiStage: document.getElementById("badge-risk-ckdepi")?.textContent || "-",
+    meldVal: document.getElementById("res-meld-val")?.textContent || "-",
+    meldBadge: document.getElementById("badge-risk-meld")?.textContent || "-",
+    bodexVal: document.getElementById("res-bodex-val")?.textContent || "-",
+    bodexBadge: document.getElementById("badge-risk-bodex")?.textContent || "-",
+    downtonVal: document.getElementById("res-downton-val")?.textContent || "-",
+    downtonBadge: document.getElementById("badge-risk-downton")?.textContent || "-",
+    bradenVal: document.getElementById("res-braden-val")?.textContent || "-",
+    bradenBadge: document.getElementById("badge-risk-braden")?.textContent || "-",
+    laceVal: document.getElementById("res-lace-val")?.textContent || "-",
+    laceBadge: document.getElementById("badge-risk-lace")?.textContent || "-"
+  };
+  p.riesgos = r;
+
+  // Integrar alertas preventivas automáticas al PAI si hay riesgo alto
+  if (!p.pai) p.pai = {};
+  const alertas = [];
+  if (r.downtonBadge.toLowerCase().includes("alto")) alertas.push(`Riesgo Alto de Caídas (Downton ${r.downtonVal})`);
+  if (r.bradenBadge.toLowerCase().includes("alto")) alertas.push(`Riesgo Alto de UPP (Braden ${r.bradenVal})`);
+  if (r.laceBadge.toLowerCase().includes("alto")) alertas.push(`Alto Riesgo de Reingreso 30d (LACE ${r.laceVal})`);
+  if (alertas.length > 0) {
+    const nota = `[Alertas Suite Riesgo ${fecha}]: ${alertas.join(" • ")}.`;
+    if (!p.pai.sanitarias || !p.pai.sanitarias.includes("[Alertas Suite Riesgo")) {
+      p.pai.sanitarias = (p.pai.sanitarias ? p.pai.sanitarias + " " : "") + nota;
+    }
+  }
+
+  saveToStorage();
+  syncRiskTabWithPatient();
+  alert(`✅ Perfil de Riesgo Clínico guardado en la ficha de ${p.name} e integrado en su Dictamen / PAI.`);
+}
+
+function applyCkdEpiToVmd() {
+  const p = patients.find(item => item.id === currentPatientId) || patients[0];
+  if (!p) return;
+  if (typeof runRiskCalculators === "function") runRiskCalculators();
+
+  const stageTxt = document.getElementById("badge-risk-ckdepi")?.textContent || "";
+  const gfrTxt = document.getElementById("res-ckdepi-val")?.textContent || "";
+  const scr = document.getElementById("calc-scr")?.value || "";
+  const match = stageTxt.match(/G[1-5][ab]?/);
+  const ercCode = match ? match[0] : "G3a";
+
+  p.erc = ercCode;
+  p.ercObs = `Creatinina ${scr} mg/dL, TFGe ${gfrTxt} (CKD-EPI 2021)`;
+  const vmdErc = document.getElementById("vmd-erc");
+  const vmdErcObs = document.getElementById("vmd-erc-obs");
+  if (vmdErc) vmdErc.value = ercCode;
+  if (vmdErcObs) vmdErcObs.value = p.ercObs;
+
+  saveToStorage();
+  if (typeof updateVmdCalculations === "function") updateVmdCalculations();
+  renderPatientsTable();
+  alert(`✅ Estadio renal ${ercCode} (${gfrTxt}) transferido a la Ficha VMD de ${p.name}.`);
+}
+
+function renderSavedRiskSummary(p) {
+  const box = document.getElementById("risk-saved-summary");
+  if (!box) return;
+  if (!p.riesgos) {
+    box.innerHTML = `Pulse <strong>"Guardar Riesgos en Ficha y PAI"</strong> para asociar estos puntajes a la valoración de <strong>${p.name}</strong> y reflejarlos en su Dictamen / PAI.`;
+    return;
+  }
+  const r = p.riesgos;
+  box.innerHTML = `
+    <div style="font-weight:800; color:#0f766e; margin-bottom:6px;">
+      ✅ Último Perfil de Riesgo Guardado en Ficha (${r.fecha} &bull; ${r.evaluador}) — Visible en Tab "Plan de Atención (PAI) & Dictamen"
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px 16px;">
+      <span><strong>CKD-EPI:</strong> ${r.ckdepiVal} (${r.ckdepiStage})</span>
+      <span><strong>MELD-Na:</strong> ${r.meldVal} (${r.meldBadge})</span>
+      <span><strong>BODEx:</strong> ${r.bodexVal} (${r.bodexBadge})</span>
+      <span><strong>Downton:</strong> ${r.downtonVal} (${r.downtonBadge})</span>
+      <span><strong>Braden:</strong> ${r.bradenVal} (${r.bradenBadge})</span>
+      <span><strong>LACE:</strong> ${r.laceVal} (${r.laceBadge})</span>
+    </div>
+  `;
 }
